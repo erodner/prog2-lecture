@@ -1,0 +1,35 @@
+# Jekyll build output
+_site/
+.jekyll-cache/
+.jekyll-metadata
+
+# Bundler
+.bundle/
+vendor/
+Gemfile.lock
+
+# .NET build output (examples/)
+bin/
+obj/
+TestResults/
+*.user
+.vs/
+.idea/
+
+# Native build output (examples/10_pinvoke)
+*.o
+*.so
+*.dylib
+*.dll
+
+# macOS
+.DS_Store
+
+# Claude Code project settings (local only)
+.claude/
+
+# Symlink to the local slide folder (not part of the repo)
+slides
+
+# Laufzeitdaten der Beispielprojekte
+examples/**/figuren.json

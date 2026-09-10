@@ -1,0 +1,24 @@
+@page "/"
+
+<PageTitle>Hallo Blazor</PageTitle>
+
+<h1>Hallo Blazor</h1>
+
+<p>Wie heißt du?</p>
+<input @bind="name" placeholder="Name eingeben" />
+<button @onclick="Begruessen">Begrüßen</button>
+
+<p class="ausgabe">@ausgabe</p>
+
+@code {
+    private string name = "";
+    private string ausgabe = "";
+    private int anzahlKlicks = 0;
+
+    private void Begruessen()
+    {
+        anzahlKlicks++;
+        string wer = string.IsNullOrWhiteSpace(name) ? "Unbekannte:r" : name;
+        ausgabe = $"Hallo, {wer}! (Klick Nr. {anzahlKlicks})";
+    }
+}

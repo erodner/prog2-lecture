@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- [LibraryImport] erzeugt unsafe-Code, daher muss das Projekt ihn erlauben. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Die selbst gebaute native Bibliothek (siehe native/build-native.*)
+         wird neben die PInvokeDemo.dll in den bin/-Ordner kopiert, damit der
+         Lader sie beim Aufruf von [DllImport("mathe")] findet.
+         Platzhalter statt fester Dateinamen: Fehlt die Datei, gibt es keinen Build-Fehler. -->
+    <None Include="native/*.dylib;native/*.so;native/*.dll"
+          Link="%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Bruch.Tests/Bruch.Tests.csproj" />
+  <Project Path="Bruch/Bruch.csproj" />
+</Solution>

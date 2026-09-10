@@ -1,0 +1,126 @@
+# Theme Settings
+theme                    : "minimal-mistakes-jekyll"
+minimal_mistakes_skin    : "contrast" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise", "default"
+
+# Site Settings
+locale                   : "de-DE"
+title                    : "Programmierung 2"
+title_separator          : "-"
+subtitle                 :
+name                     : "Programmierung 2"
+description              : "Programmierung 2 (C#) | HTW Berlin"
+url                      : "https://www.erodner.de/prog2-lecture"
+repository               : "erodner/prog2-lecture"
+logo                     : /assets/images/logo.png
+words_per_minute         : 200
+comments:
+  provider               : # false (default)
+search                   : # true, false (default)
+search_full_content      : # true, false (default)
+search_provider          : # lunr (default)
+
+# Site Author
+author:
+  name             : "Erik Rodner"
+  bio              : "Professur Informatik | HTW Berlin"
+  location         : "HTW Berlin"
+
+# Site Footer
+footer:
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/erodner/prog2-lecture"
+
+# Reading Files
+include:
+  - .htaccess
+  - modules
+  - lectures
+
+exclude:
+  - "*.sublime-project"
+  - "*.sublime-workspace"
+  - vendor
+  - .asset-cache
+  - .bundle
+  - .jekyll-assets-cache
+  - .sass-cache
+  - assets/js/plugins
+  - assets/js/_main.js
+  - assets/js/vendor
+  - Gemfile
+  - LICENSE
+  - README
+  - slides
+  - examples
+  - CLAUDE.md
+  - .claude
+
+keep_files:
+  - .git
+encoding: "utf-8"
+markdown_ext: "markdown,mkdown,mkdn,mkd,md"
+
+relative_links:
+  enabled:     true
+  collections: true
+
+# Conversion
+markdown: kramdown
+highlighter: rouge
+lsi: false
+excerpt_separator: "\n\n"
+incremental: false
+
+# Markdown Processing
+kramdown:
+  input: GFM
+  hard_wrap: false
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..2
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
+
+# Sass/SCSS
+sass:
+  sass_dir: _sass
+  style: compressed
+
+# Outputting
+permalink: /:categories/:title/
+timezone: Europe/Berlin
+
+# Plugins
+plugins:
+  - jekyll-relative-links
+  - jekyll-gist
+  - jekyll-include-cache
+
+whitelist:
+  - jekyll-gist
+  - jekyll-include-cache
+
+# HTML Compression
+compress_html:
+  clippings: all
+  ignore:
+    envs: development
+
+# Defaults
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: # true
+      related: true
+      lecture_name: "Programmierung 2"
+      lecture_desc: "Objektorientierte Programmierung mit C#"
+      licence: "CC-BY"
+      licence_desc: 2026 | HTW Berlin

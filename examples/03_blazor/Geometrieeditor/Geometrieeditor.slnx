@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Geometrieeditor.Datenhaltung/Geometrieeditor.Datenhaltung.csproj" />
+  <Project Path="Geometrieeditor.Fachkonzept/Geometrieeditor.Fachkonzept.csproj" />
+  <Project Path="Geometrieeditor.Tests/Geometrieeditor.Tests.csproj" />
+  <Project Path="Geometrieeditor.Web/Geometrieeditor.Web.csproj" />
+</Solution>

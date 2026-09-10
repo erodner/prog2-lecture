@@ -1,0 +1,11 @@
+Erik Rodner:
+  name        : "Erik Rodner"
+  avatar      : "/assets/images/authors/er.png"
+  home        : "https://www.erodner.de"
+  links:
+    - label: "Website"
+      icon: "fas fa-fw fa-link"
+      url: "https://www.erodner.de"
+    - label: "HTW Berlin"
+      icon: "fas fa-university"
+      url: "https://www.htw-berlin.de/hochschule/personen/person/?eid=12811"
