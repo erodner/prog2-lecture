@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Der Knopf „Neues Projekt“ in der IDE ruft im Hintergrund genau das auf, was wir in diesem Modul selbst tippen: das Kommandozeilenwerkzeug `dotnet`. Wer die CLI (*Command Line Interface*) kennt, versteht, was die IDE erzeugt, kann Projekte auch ohne IDE bauen – etwa auf einem Server oder in einer automatischen Test-Pipeline – und kann seinen Kolleginnen präzise sagen, welcher Befehl fehlgeschlagen ist. Außerdem brauchen wir die CLI ab der [Vorlesung 03](/lectures/03/03.md), wenn eine Anwendung aus mehreren Projekten besteht, die voneinander abhängen. Wir gehen den Weg vom einzelnen Konsolenprojekt bis zur Solution mit Klassenbibliothek.
+Der Knopf „Neues Projekt“ in der IDE ruft im Hintergrund genau das auf, was wir in diesem Modul selbst tippen: das Kommandozeilenwerkzeug `dotnet`. Wer die CLI (*Command Line Interface*) kennt, versteht, was die IDE erzeugt, kann Projekte auch ohne IDE bauen – etwa auf einem Server oder in einer automatischen Test-Pipeline – und kann seinen Kolleginnen präzise sagen, welcher Befehl fehlgeschlagen ist. Außerdem brauchen wir die CLI ab der [Vorlesung 04](/lectures/04/04.md), wenn eine Anwendung aus mehreren Projekten besteht, die voneinander abhängen. Wir gehen den Weg vom einzelnen Konsolenprojekt bis zur Solution mit Klassenbibliothek.
 
 ## Ein Konsolenprojekt anlegen
 
@@ -63,7 +63,7 @@ dotnet run
 # Hello, World!
 ```
 
-Compilerfehler erscheinen bei `dotnet build` mit Dateiname, Zeile und Spalte – dieselben Meldungen, die die IDE in der Fehlerliste anzeigt. Die Ordner `bin/` und `obj/` sind reine Build-Ausgaben; sie gehören nicht in ein Git-Repository, worauf wir in der [Vorlesung 09](/lectures/09/09.md) zurückkommen.
+Compilerfehler erscheinen bei `dotnet build` mit Dateiname, Zeile und Spalte – dieselben Meldungen, die die IDE in der Fehlerliste anzeigt. Die Ordner `bin/` und `obj/` sind reine Build-Ausgaben; sie gehören nicht in ein Git-Repository, worauf wir in der [Vorlesung 03](/lectures/03/03.md) zurückkommen.
 
 ## Solutions mit mehreren Projekten
 
@@ -93,7 +93,7 @@ In der `Notenverwaltung.Konsole.csproj` erscheint daraufhin ein neuer Eintrag:
 </ItemGroup>
 ```
 
-Die Richtung ist wichtig: Die Konsole kennt das Fachkonzept, aber nicht umgekehrt. Genau dieses Muster – Fachlogik in einer Bibliothek, Oberfläche in einem eigenen Projekt, das darauf verweist – ist die Grundlage der Schichten-Architektur, mit der wir in der [Vorlesung 03](/lectures/03/03.md) den Geometrieeditor bauen. Dort findest du im Repository unter `examples/03_blazor/Geometrieeditor/` eine Solution mit vier Projekten, die genau so entstanden ist.
+Die Richtung ist wichtig: Die Konsole kennt das Fachkonzept, aber nicht umgekehrt. Genau dieses Muster – Fachlogik in einer Bibliothek, Oberfläche in einem eigenen Projekt, das darauf verweist – ist die Grundlage der Schichten-Architektur, mit der wir in der [Vorlesung 04](/lectures/04/04.md) den Geometrieeditor bauen. Dort findest du im Repository unter `examples/04_blazor/Geometrieeditor/` eine Solution mit vier Projekten, die genau so entstanden ist.
 
 Referenziert Projekt A das Projekt B und B wiederum A, meldet `dotnet build` einen Zirkelbezug und bricht ab. Das ist kein Werkzeugfehler, sondern ein Designproblem: Zwei Projekte, die sich gegenseitig brauchen, gehören entweder zusammen oder eines von beiden hängt an der falschen Stelle.
 {: .notice--warning}
@@ -113,7 +113,7 @@ dotnet new list
 # Solution File         sln            ...         Solution
 ```
 
-Die Vorlage `nunit` werden wir in der [Vorlesung 12](/lectures/12/12.md) für Unit-Tests einsetzen; `blazor` in der Vorlesung 03. Alles, was du hier per CLI anlegst, kannst du anschließend ganz normal in Rider, Visual Studio oder VS Code öffnen.
+Die Vorlage `nunit` werden wir in der [Vorlesung 12](/lectures/12/12.md) für Unit-Tests einsetzen; `blazor` in der Vorlesung 04. Alles, was du hier per CLI anlegst, kannst du anschließend ganz normal in Rider, Visual Studio oder VS Code öffnen.
 
 Übung: Lege die Solution `Notenverwaltung` wie oben an. Schreibe im Fachkonzept eine Klasse `Student` mit `Name` und einer `List<double>` für Noten sowie einer Methode `Durchschnitt()`. Erzeuge im Konsolenprojekt zwei Studierende, gib ihre Durchschnitte aus und baue alles mit einem einzigen `dotnet build` im Solution-Ordner. Was passiert, wenn du die Projektreferenz aus der `.csproj` wieder löschst?
 {: .notice--info}

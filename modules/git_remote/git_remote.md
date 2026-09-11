@@ -56,7 +56,7 @@ cat ~/.ssh/id_ed25519.pub
 
 Den Inhalt der `.pub`-Datei kopierst du im GitLab unter *Preferences → SSH Keys* hinein. Die Datei **ohne** `.pub` ist der private Schlüssel – er verlässt deinen Rechner nie und landet insbesondere nicht im Repository. Alternativ funktioniert HTTPS: Dann verwendest du statt eines Passworts ein *Personal Access Token*, das du im GitLab erzeugst und das ein Credential Manager auf deinem Rechner speichert.
 
-Passwörter oder Tokens gehören nie in eine Datei im Repository – auch nicht „nur kurz“ in `appsettings.json` oder in eine Klon-URL der Form `https://name:token@server/...`. Was einmal committet ist, bleibt in der Historie und ist für alle sichtbar, die das Repository klonen können. Ein versehentlich committetes Secret gilt als kompromittiert und muss sofort zurückgezogen werden.
+Passwörter oder Tokens gehören nie in eine Datei im Repository – auch nicht „nur kurz“ in eine Konfigurationsdatei im Projekt oder in eine Klon-URL der Form `https://name:token@server/...`. Was einmal committet ist, bleibt in der Historie und ist für alle sichtbar, die das Repository klonen können. Ein versehentlich committetes Secret gilt als kompromittiert und muss sofort zurückgezogen werden.
 {: .notice--warning}
 
 ## push, fetch und pull

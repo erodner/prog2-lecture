@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Im Modul [Delegaten](/modules/delegaten/delegaten.md) haben wir für jede Aufgabe einen eigenen Delegattyp deklariert: `RechenHandler` für Rechnungen, `MeldungHandler` für Meldungen. Wer so weitermacht, hat bald Dutzende Delegattypen, die sich nur im Namen unterscheiden – `delegate int RechenHandler(int a, int b)` und `delegate int VergleichsHandler(int x, int y)` beschreiben exakt dieselbe Signatur. Das ist, als würde man für jeden Butler eine neue Stellenbeschreibung tippen, obwohl alle dasselbe können sollen. .NET bringt deshalb eine Handvoll **generischer Delegattypen** mit, die praktisch jede Signatur abdecken. Seit es sie gibt, braucht man eigene Delegattypen nur noch selten.
+Im Modul [Delegaten](/modules/delegaten/delegaten.md) haben wir für jede Aufgabe einen eigenen Delegattyp deklariert: `RechenHandler` für Rechnungen, `MeldungHandler` für Meldungen. Wer so weitermacht, hat bald Dutzende Delegattypen, die sich nur im Namen unterscheiden – `delegate int RechenHandler(int a, int b)` und `delegate int VergleichsHandler(int x, int y)` beschreiben exakt dieselbe Signatur. Das ist, als würde man für jeden Boten ein eigenes Auftragsformular entwerfen, obwohl alle Aufträge dieselbe Form haben. .NET bringt deshalb eine Handvoll **generischer Delegattypen** mit, die praktisch jede Signatur abdecken. Seit es sie gibt, braucht man eigene Delegattypen nur noch selten.
 
 ## `Func<…, TResult>` – Methoden mit Rückgabewert
 

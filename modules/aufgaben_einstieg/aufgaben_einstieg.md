@@ -201,7 +201,7 @@ class Notenverwaltung
 
 - **Der Durchschnitt gehört zu `Student`:** Er hängt nur von den Daten eines einzelnen Studierenden ab. `Notenverwaltung` nutzt ihn, berechnet ihn aber nicht selbst.
 - **`Noten` als `IReadOnlyList<double>`:** Von außen kann man Noten lesen, aber nur über `NoteEintragen` – mit Validierung – hinzufügen.
-- **Keine `Console`-Aufrufe in den Klassen:** Die Fachlogik weiß nichts von der Konsole. Genau diese Trennung ermöglicht in [Vorlesung 03](/lectures/03/03.md), dieselben Klassen hinter einer GUI zu verwenden.
+- **Keine `Console`-Aufrufe in den Klassen:** Die Fachlogik weiß nichts von der Konsole. Genau diese Trennung ermöglicht in [Vorlesung 04](/lectures/04/04.md), dieselben Klassen hinter einer GUI zu verwenden.
 
 </details>
 
@@ -263,7 +263,7 @@ Console.WriteLine(Zweitgroesste(new List<int> { -3, -1 }));      // -3
 
 - **Duplikate durch `aktuell < groesste` ausschließen:** Eine Zahl, die gleich der größten ist, darf nie zweitgrößte werden – sonst ergäbe `[7, 7, 3]` fälschlich `7`.
 - **Zwei getrennte Fehlerfälle:** „zu wenige Elemente“ wird vor der Schleife erkannt, „alle gleich“ erst danach. Beide Meldungen sagen dem Aufrufer genau, was falsch war.
-- **Ein Durchlauf statt Sortieren:** Sortieren kostet bei großen Listen deutlich mehr – wie viel, sehen wir in [Vorlesung 05](/lectures/05/05.md).
+- **Ein Durchlauf statt Sortieren:** Sortieren kostet bei großen Listen deutlich mehr – wie viel, sehen wir in [Vorlesung 06](/lectures/06/06.md).
 
 </details>
 

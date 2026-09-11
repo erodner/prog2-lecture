@@ -56,7 +56,7 @@ Egal welche IDE: Die Projektdatei `.csproj` ist die einzige Wahrheit. Wenn ein P
 
 ## Vorbereitung auf Blazor
 
-Ab der [Vorlesung 03](/lectures/03/03.md) bauen wir mit **Blazor** Oberflächen, die im Browser laufen. Blazor ist Teil von ASP.NET Core und damit bereits im SDK enthalten – eine zusätzliche Installation ist nicht nötig. Ob die Projektvorlage da ist, zeigt:
+Ab der [Vorlesung 04](/lectures/04/04.md) bauen wir mit **Blazor** Oberflächen, die im Browser laufen. Blazor ist Teil von ASP.NET Core und damit bereits im SDK enthalten – eine zusätzliche Installation ist nicht nötig. Ob die Projektvorlage da ist, zeigt:
 
 ```bash
 dotnet new list blazor

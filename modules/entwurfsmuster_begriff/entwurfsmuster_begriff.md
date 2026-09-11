@@ -21,7 +21,7 @@ Ein **Entwurfsmuster** (*Design Pattern*) ist eine wiederverwendbare, bewährte 
 
 Ein Muster ist also keine Bibliothek und kein Codeschnipsel. Es ist eine *Idee*, die man kennen und im richtigen Moment anwenden muss. Genau deshalb enthält die Beschreibung eines Musters immer mehr als nur Code: einen Namen, das Problem, die Lösung mit den beteiligten Klassen, Beispiele und – ganz wichtig – die Vor- und Nachteile. Nach diesem Schema sind auch die fünf Module dieser Vorlesung aufgebaut.
 
-Entwurfsmuster wirken **im Kleinen**: Sie lösen ein Problem innerhalb eines Bausteins und betreffen typischerweise zwei bis fünf zusammenarbeitende Klassen. Die Gesamtstruktur eines Systems – etwa die [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md) aus Vorlesung 03 – bezeichnet man dagegen als *Architekturmuster*. Beide Ebenen ergänzen sich: Innerhalb einer Schicht setzt man Entwurfsmuster ein.
+Entwurfsmuster wirken **im Kleinen**: Sie lösen ein Problem innerhalb eines Bausteins und betreffen typischerweise zwei bis fünf zusammenarbeitende Klassen. Die Gesamtstruktur eines Systems – etwa die [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md) aus Vorlesung 04 – bezeichnet man dagegen als *Architekturmuster*. Beide Ebenen ergänzen sich: Innerhalb einer Schicht setzt man Entwurfsmuster ein.
 {: .notice--primary}
 
 ## Warum Muster? Ein gemeinsames Vokabular
@@ -72,7 +72,7 @@ Wer Entwurfsmuster gerade erst gelernt hat, neigt dazu, sie überall einzubauen 
 Die richtige Reihenfolge ist deshalb immer: Erst das Problem verstehen, dann prüfen, ob es *wirklich* dem Problem eines Musters entspricht, und erst dann das Muster einsetzen. Ein Muster ist nur dann eine gute Lösung, wenn man das Problem auch tatsächlich hat. Im Zweifel: Die einfachste Lösung, die funktioniert – und ein Muster erst, wenn der Code danach verlangt.
 {: .notice--warning}
 
-Übung: Öffne den Geometrieeditor aus Vorlesung 03 (`examples/03_blazor/Geometrieeditor`) und suche nach Stellen, an denen bereits Entwurfsmuster stecken – auch aus der Tabelle oben, nicht nur die fünf fetten. Tipp: Schau dir an, wie `FigurenVerwaltung` an ihren `IFigurSpeicher` kommt, und wie `Figur.Beschreibung()` mit `Flaeche` zusammenspielt.
+Übung: Öffne den Geometrieeditor aus Vorlesung 04 (`examples/04_blazor/Geometrieeditor`) und suche nach Stellen, an denen bereits Entwurfsmuster stecken – auch aus der Tabelle oben, nicht nur die fünf fetten. Tipp: Schau dir an, wie `FigurenVerwaltung` an ihren `IFigurSpeicher` kommt, und wie `Figur.Beschreibung()` mit `Flaeche` zusammenspielt.
 {: .notice--info}
 
 ## Weitere Quellen

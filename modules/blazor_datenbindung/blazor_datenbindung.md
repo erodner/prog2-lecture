@@ -35,7 +35,7 @@ Alles, was eine Komponente anzeigt oder was der Benutzer in ihr ändert, liegt i
 }
 ```
 
-Die Komponente ist eine ganz normale C#-Klasse, die Felder sind ihr Objektzustand, und `Begruessen` ist eine Methode, die diesen Zustand verändert – so weit nichts Neues. Neu ist nur, dass das Markup und die Felder in beide Richtungen verbunden sind. Das vollständige Projekt findest du im Repository unter `examples/03_blazor/HalloBlazor`.
+Die Komponente ist eine ganz normale C#-Klasse, die Felder sind ihr Objektzustand, und `Begruessen` ist eine Methode, die diesen Zustand verändert – so weit nichts Neues. Neu ist nur, dass das Markup und die Felder in beide Richtungen verbunden sind. Das vollständige Projekt findest du im Repository unter `examples/04_blazor/HalloBlazor`.
 
 ## Einweg-Bindung: vom Feld ins Markup
 

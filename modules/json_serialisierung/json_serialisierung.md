@@ -198,7 +198,7 @@ Der Clou steckt in einer einzigen Zeile der GUI-Schicht, in der `Program.cs` von
 builder.Services.AddScoped<IFigurSpeicher>(_ => new JsonFigurSpeicher("figuren.json"));
 ```
 
-Vorher stand hier `new ArbeitsspeicherFigurSpeicher()`. Keine Seite, kein Dialog und keine Zeile in `FigurenVerwaltung` musste angepasst werden – das ist der versprochene Lohn der Schichtenarchitektur: Die Datenhaltung lässt sich austauschen, ohne dass die Oberfläche davon erfährt. Das vollständige Projekt findest du im Repository unter `examples/03_blazor/Geometrieeditor`; die Tests in `Geometrieeditor.Tests/JsonFigurSpeicherTests.cs` prüfen genau, dass nach Speichern und Laden die konkreten Typen erhalten bleiben.
+Vorher stand hier `new ArbeitsspeicherFigurSpeicher()`. Keine Seite, kein Dialog und keine Zeile in `FigurenVerwaltung` musste angepasst werden – das ist der versprochene Lohn der Schichtenarchitektur: Die Datenhaltung lässt sich austauschen, ohne dass die Oberfläche davon erfährt. Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`; die Tests in `Geometrieeditor.Tests/JsonFigurSpeicherTests.cs` prüfen genau, dass nach Speichern und Laden die konkreten Typen erhalten bleiben.
 
 Übung: Öffne die vom Geometrieeditor erzeugte `figuren.json` im Editor, ändere bei einem Dreieck `SeiteC` auf `100` und starte das Programm neu. Welche Ausnahme siehst du, und in welcher Schicht sollte sie abgefangen werden – in `JsonFigurSpeicher`, in `FigurenVerwaltung` oder im Fenster?
 {: .notice--info}

@@ -82,34 +82,34 @@ foreach (Tier t in zoo)
 Sage die Ausgabe des folgenden Programms voraus, bevor du es ausführst. Achte auf explizite Implementierungen, `new` und den Unterschied zwischen Kompilierzeit- und Laufzeittyp.
 
 ```csharp
-interface IHeissgetraenk { string Info(); }
-interface IHatKoffein { string Info(); }
+interface IAufladbar { string Info(); }
+interface IFunkfaehig { string Info(); }
 
-class Kaffee : IHeissgetraenk, IHatKoffein
+class Smartphone : IAufladbar, IFunkfaehig
 {
-    public string Info() => "Kaffee";
-    string IHeissgetraenk.Info() => "heiß";
-    string IHatKoffein.Info() => "koffeinhaltig";
+    public string Info() => "Smartphone";
+    string IAufladbar.Info() => "aufladbar";
+    string IFunkfaehig.Info() => "funkfähig";
 }
 
-class Espresso : Kaffee
+class Outdoorhandy : Smartphone
 {
-    public new string Info() => "Espresso";
+    public new string Info() => "Outdoorhandy";
 }
 
-Kaffee k = new Espresso();
-Console.WriteLine(k.Info());
-Console.WriteLine(((IHeissgetraenk)k).Info());
-Console.WriteLine(((IHatKoffein)k).Info());
-Espresso e = (Espresso)k;
-Console.WriteLine(e.Info());
-IHeissgetraenk h = e;
-Console.WriteLine(h.Info());
-Console.WriteLine(k is IHatKoffein);
+Smartphone s = new Outdoorhandy();
+Console.WriteLine(s.Info());
+Console.WriteLine(((IAufladbar)s).Info());
+Console.WriteLine(((IFunkfaehig)s).Info());
+Outdoorhandy o = (Outdoorhandy)s;
+Console.WriteLine(o.Info());
+IAufladbar a = o;
+Console.WriteLine(a.Info());
+Console.WriteLine(s is IFunkfaehig);
 ```
 
-- Welche `Info` ist über eine `Kaffee`-Variable erreichbar, welche nur über einen Interface-Typ?
-- Warum ändert `new` in `Espresso` nichts an den Interface-Aufrufen?
+- Welche `Info` ist über eine `Smartphone`-Variable erreichbar, welche nur über einen Interface-Typ?
+- Warum ändert `new` in `Outdoorhandy` nichts an den Interface-Aufrufen?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -117,28 +117,28 @@ Console.WriteLine(k is IHatKoffein);
 **Schritt 1 — Zeile für Zeile:**
 
 ```
-Kaffee
-heiß
-koffeinhaltig
-Espresso
-heiß
+Smartphone
+aufladbar
+funkfähig
+Outdoorhandy
+aufladbar
 True
 ```
 
 **Schritt 2 — Begründung:**
 
-`k.Info()` ist ein Aufruf über den Kompilierzeittyp `Kaffee`. Dort gibt es eine öffentliche `Info`, und `Espresso` **versteckt** sie mit `new`, statt sie zu überschreiben – wie in [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) besprochen zählt bei `new` der deklarierte Typ, also `Kaffee`. Die beiden Casts wählen jeweils die explizite Implementierung des Interfaces aus; die öffentliche `Info` spielt dabei keine Rolle. Über `e` vom Typ `Espresso` ist die versteckende Methode sichtbar. `h.Info()` geht wieder über das Interface: `Espresso` implementiert `IHeissgetraenk` nicht neu, also gilt weiterhin die explizite Implementierung aus `Kaffee`. `k is IHatKoffein` ist wahr, weil jedes `Espresso` ein `Kaffee` ist und `Kaffee` das Interface implementiert.
+`s.Info()` ist ein Aufruf über den Kompilierzeittyp `Smartphone`. Dort gibt es eine öffentliche `Info`, und `Outdoorhandy` **versteckt** sie mit `new`, statt sie zu überschreiben – wie in [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) besprochen zählt bei `new` der deklarierte Typ, also `Smartphone`. Die beiden Casts wählen jeweils die explizite Implementierung des Interfaces aus; die öffentliche `Info` spielt dabei keine Rolle. Über `o` vom Typ `Outdoorhandy` ist die versteckende Methode sichtbar. `a.Info()` geht wieder über das Interface: `Outdoorhandy` implementiert `IAufladbar` nicht neu, also gilt weiterhin die explizite Implementierung aus `Smartphone`. `s is IFunkfaehig` ist wahr, weil jedes `Outdoorhandy` ein `Smartphone` ist und `Smartphone` das Interface implementiert.
 
 **Zentrale Designentscheidungen:**
 
 - **Explizite Implementierung entkoppelt gleichnamige Interface-Mitglieder:** Zwei Interfaces mit `Info()` können unterschiedlich beantwortet werden, die Klasse behält eine eigene, dritte Version.
-- **Interface-Aufrufe sind immer polymorph, `new` nicht:** Wer `Info` in `Espresso` für alle Aufrufwege ändern will, muss die Interface-Methoden in `Kaffee` `virtual` machen oder in `Espresso` die Interfaces erneut implementieren.
+- **Interface-Aufrufe sind immer polymorph, `new` nicht:** Wer `Info` in `Outdoorhandy` für alle Aufrufwege ändern will, muss die Interface-Methoden in `Smartphone` `virtual` machen oder in `Outdoorhandy` die Interfaces erneut implementieren.
 
 </details>
 
 ## Aufgabe 3 — Zerlegung
 
-Der Geometrieeditor soll ein `Quadrat` bekommen. Der schnelle Vorschlag lautet: `class Quadrat : Rechteck`, denn ein Quadrat ist mathematisch ein Rechteck. Prüfe diesen Vorschlag anhand der Klasse `Rechteck` aus `examples/03_blazor/Geometrieeditor` (`Breite` und `Hoehe` sind `{ get; set; }`) und entscheide, ob `Quadrat` von `Rechteck` oder direkt von `Figur` erben sollte.
+Der Geometrieeditor soll ein `Quadrat` bekommen. Der schnelle Vorschlag lautet: `class Quadrat : Rechteck`, denn ein Quadrat ist mathematisch ein Rechteck. Prüfe diesen Vorschlag anhand der Klasse `Rechteck` aus `examples/04_blazor/Geometrieeditor` (`Breite` und `Hoehe` sind `{ get; set; }`) und entscheide, ob `Quadrat` von `Rechteck` oder direkt von `Figur` erben sollte.
 
 - Was passiert mit einem `Quadrat`, wenn jemand über eine `Rechteck`-Variable `Breite = 5` setzt?
 - Kann `Quadrat` das verhindern, ohne `Rechteck` zu ändern?
@@ -191,28 +191,28 @@ Die `FigurenVerwaltung` und alles, was mit `List<Figur>` arbeitet, funktioniert 
 Der folgende Code enthält drei Fehler, die der Compiler meldet. Finde sie, erkläre jede Fehlermeldung und korrigiere den Code so, dass die Absicht erhalten bleibt.
 
 ```csharp
-interface IHeissgetraenk
+interface IAufladbar
 {
-    int Temperatur { get; set; }
-    void Abkuehlen(int grad);
+    int Akkustand { get; set; }
+    void Aufladen();
 }
 
-abstract class Getraenk
+abstract class Geraet
 {
     public string Name { get; }
-    protected Getraenk(string name) { Name = name; }
+    protected Geraet(string name) { Name = name; }
     public abstract double Preis();
 }
 
-class Tee : Getraenk, IHeissgetraenk
+class Taschenlampe : Geraet, IAufladbar
 {
-    int Temperatur { get; set; }
-    public Tee() : base("Tee") { }
-    public double Preis() => 2.5;
+    int Akkustand { get; set; }
+    public Taschenlampe() : base("Taschenlampe") { }
+    public double Preis() => 24.9;
 }
 
-Getraenk g = new Getraenk("Wasser");
-IHeissgetraenk t = new Tee();
+Geraet g = new Geraet("Wecker");
+IAufladbar t = new Taschenlampe();
 ```
 
 <details markdown="1">
@@ -220,15 +220,15 @@ IHeissgetraenk t = new Tee();
 
 **Schritt 1 — Interface unvollständig implementiert:**
 
-`Tee` deklariert `Temperatur` ohne `public` – in einer Klasse bedeutet das `private`. Das Interface verlangt ein öffentliches Property, also meldet der Compiler *CS0737: „Tee“ implementiert den Schnittstellenmember „IHeissgetraenk.Temperatur“ nicht (nicht öffentlich)*. Außerdem fehlt `Abkuehlen` vollständig (*CS0535*). Korrektur: `public int Temperatur { get; set; }` und `public void Abkuehlen(int grad) => Temperatur -= grad;`.
+`Taschenlampe` deklariert `Akkustand` ohne `public` – in einer Klasse bedeutet das `private`. Das Interface verlangt ein öffentliches Property, also meldet der Compiler *CS0737: „Taschenlampe“ implementiert den Schnittstellenmember „IAufladbar.Akkustand“ nicht (nicht öffentlich)*. Außerdem fehlt `Aufladen` vollständig (*CS0535*). Korrektur: `public int Akkustand { get; set; }` und `public void Aufladen() => Akkustand = 100;`.
 
 **Schritt 2 — Fehlendes `override`:**
 
-`Preis()` in `Tee` hat dieselbe Signatur wie das abstrakte `Preis()` in `Getraenk`, aber kein `override`. Für den Compiler ist das eine neue Methode, die die geerbte versteckt – die abstrakte bleibt unimplementiert: *CS0534: „Tee“ implementiert den geerbten abstrakten Member „Getraenk.Preis()“ nicht*, dazu die Warnung *CS0108*, dass `Preis` ohne `new` versteckt. Korrektur: `public override double Preis() => 2.5;`.
+`Preis()` in `Taschenlampe` hat dieselbe Signatur wie das abstrakte `Preis()` in `Geraet`, aber kein `override`. Für den Compiler ist das eine neue Methode, die die geerbte versteckt – die abstrakte bleibt unimplementiert: *CS0534: „Taschenlampe“ implementiert den geerbten abstrakten Member „Geraet.Preis()“ nicht*, dazu die Warnung *CS0108*, dass `Preis` ohne `new` versteckt. Korrektur: `public override double Preis() => 24.9;`.
 
 **Schritt 3 — Abstrakte Klasse instanziiert:**
 
-`new Getraenk("Wasser")` ist *CS0144: Eine Instanz der abstrakten Klasse „Getraenk“ kann nicht erstellt werden*. Wer ein Wasser braucht, schreibt eine Klasse `Wasser : Getraenk` mit `override double Preis()`. Die Variable `Getraenk g` selbst ist in Ordnung – als Kompilierzeittyp ist eine abstrakte Klasse erlaubt.
+`new Geraet("Wecker")` ist *CS0144: Eine Instanz der abstrakten Klasse „Geraet“ kann nicht erstellt werden*. Wer einen Wecker braucht, schreibt eine Klasse `Wecker : Geraet` mit `override double Preis()`. Die Variable `Geraet g` selbst ist in Ordnung – als Kompilierzeittyp ist eine abstrakte Klasse erlaubt.
 
 **Zentrale Designentscheidungen:**
 

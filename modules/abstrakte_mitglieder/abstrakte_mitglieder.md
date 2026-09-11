@@ -82,7 +82,7 @@ Console.WriteLine(f.Beschreibung());
 // K1 bei (2, 3) mit Fläche 3,14 (r = 1)
 ```
 
-Die Ausgabe enthält am Ende `(r = 1)`, weil `Kreis` die Methode überschreibt und `base.Beschreibung()` um den Radius ergänzt. Das Grundgerüst der Beschreibung liegt in der Basisklasse, die variablen Teile liefern die Unterklassen. Dieses Muster – die Basisklasse definiert den Ablauf, die Unterklassen füllen einzelne Schritte – begegnet uns in Vorlesung 07 unter dem Namen *Template Method* wieder.
+Die Ausgabe enthält am Ende `(r = 1)`, weil `Kreis` die Methode überschreibt und `base.Beschreibung()` um den Radius ergänzt. Das Grundgerüst der Beschreibung liegt in der Basisklasse, die variablen Teile liefern die Unterklassen. Dieses Muster – die Basisklasse definiert den Ablauf, die Unterklassen füllen einzelne Schritte – begegnet uns in Vorlesung 08 unter dem Namen *Template Method* wieder.
 
 Eine abstrakte Klasse darf abstrakte Mitglieder in ihrem eigenen Code aufrufen, weil zum Zeitpunkt des Aufrufs garantiert ein konkretes Objekt existiert, das sie überschrieben hat. Der Compiler prüft das: Eine nicht-abstrakte Unterklasse ohne vollständige `override`s kompiliert nicht.
 {: .notice--primary}

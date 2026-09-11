@@ -130,7 +130,7 @@ Die Struktur ist Zeile für Zeile dieselbe wie bei den Grafiken – nur die Name
 
 ## Composite im Geometrieeditor
 
-Im Geometrieeditor aus Vorlesung 03 ist `Figur` die abstrakte Basisklasse, `Rechteck`, `Kreis` und `Dreieck` sind die Blätter. Was fehlt, ist das Kompositum – eine `Figurengruppe`, die selbst eine `Figur` ist:
+Im Geometrieeditor aus Vorlesung 04 ist `Figur` die abstrakte Basisklasse, `Rechteck`, `Kreis` und `Dreieck` sind die Blätter. Was fehlt, ist das Kompositum – eine `Figurengruppe`, die selbst eine `Figur` ist:
 
 ```csharp
 public class Figurengruppe : Figur
@@ -146,7 +146,7 @@ public class Figurengruppe : Figur
 }
 ```
 
-`Flaeche` und `Umfang` sind in `Figur` abstrakt (siehe Modul [Abstrakte Mitglieder](/modules/abstrakte_mitglieder/abstrakte_mitglieder.md)), also überschreiben wir sie mit der Summe der Teile. Beim Verschieben ist Vorsicht geboten: Das geerbte `Figur.Verschieben` ändert nur `X` und `Y` der Gruppe – die enthaltenen Figuren blieben, wo sie sind. Deshalb ist die Methode in `Figur` als `virtual` freigegeben, und die Gruppe überschreibt sie, um das Verschieben an ihre Teile weiterzureichen – genau wie im Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) gesehen. Danach kann `FigurenVerwaltung` eine Gruppe wie jede andere Figur hinzufügen, und `GesamtFlaeche()` zählt die Fläche der Gruppe automatisch mit. Das vollständige Projekt findest du im Repository unter `examples/03_blazor/Geometrieeditor`.
+`Flaeche` und `Umfang` sind in `Figur` abstrakt (siehe Modul [Abstrakte Mitglieder](/modules/abstrakte_mitglieder/abstrakte_mitglieder.md)), also überschreiben wir sie mit der Summe der Teile. Beim Verschieben ist Vorsicht geboten: Das geerbte `Figur.Verschieben` ändert nur `X` und `Y` der Gruppe – die enthaltenen Figuren blieben, wo sie sind. Deshalb ist die Methode in `Figur` als `virtual` freigegeben, und die Gruppe überschreibt sie, um das Verschieben an ihre Teile weiterzureichen – genau wie im Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) gesehen. Danach kann `FigurenVerwaltung` eine Gruppe wie jede andere Figur hinzufügen, und `GesamtFlaeche()` zählt die Fläche der Gruppe automatisch mit. Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`.
 
 ## Beispiel in .NET: der Komponentenbaum von Blazor
 

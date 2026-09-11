@@ -101,7 +101,7 @@ Die drei ursprünglichen Verwendungen werden zu:
 
 ```csharp
 var zahlen = new Paar<int, int>(3, 7);
-var woerter = new Paar<string, string>("Glas", "Papier");
+var woerter = new Paar<string, string>("Rechnung", "Brief");
 var benannt = new Paar<string, Figur>("Logo", new Kreis("K1", 0, 0, 2));
 
 Console.WriteLine(zahlen.Vertauscht());   // (7, 3)
@@ -196,7 +196,7 @@ Console.WriteLine(kreise.Count);  // 2
 
 - **Generisches Interface statt `IPruefer` mit `object`:** `IPruefer<Figur>.Pruefen` bekommt eine `Figur` und kann direkt auf `Flaeche` zugreifen. Mit `object` müsste jede Bedingung erst casten – und `Filtern` könnte einen `IPruefer` für Strings mit einer Figurenliste kombinieren, ohne dass der Compiler es merkt.
 - **`Filtern<T>` weiß nichts über Figuren:** Die Methode funktioniert genauso für `List<int>` mit einem `IPruefer<int>`. Der Algorithmus (durchlaufen, prüfen, sammeln) ist vom Elementtyp und von der Bedingung getrennt – das ist das Ziel.
-- **Das Umständliche:** Für jede noch so kleine Bedingung braucht man eine ganze Klasse mit Konstruktor und Feld. Der eigentliche Inhalt ist eine einzige Zeile (`figur.Flaeche > grenze`), umgeben von zehn Zeilen Verpackung. Genau dieses Problem lösen Delegates und Lambdas in Vorlesung 06: Dort wird aus `new FlaecheUeber(10)` ein `f => f.Flaeche > 10`, und `Filtern<T>` wird zu `Where` aus LINQ. Das Muster – Algorithmus generisch, Bedingung austauschbar – bleibt dasselbe.
+- **Das Umständliche:** Für jede noch so kleine Bedingung braucht man eine ganze Klasse mit Konstruktor und Feld. Der eigentliche Inhalt ist eine einzige Zeile (`figur.Flaeche > grenze`), umgeben von zehn Zeilen Verpackung. Genau dieses Problem lösen Delegates und Lambdas in Vorlesung 07: Dort wird aus `new FlaecheUeber(10)` ein `f => f.Flaeche > 10`, und `Filtern<T>` wird zu `Where` aus LINQ. Das Muster – Algorithmus generisch, Bedingung austauschbar – bleibt dasselbe.
 
 </details>
 
@@ -375,6 +375,6 @@ Nach dem vierten `Hinzufuegen` steht die `4.0` physisch an Index 0 des Arrays, a
 - **`start` und `anzahl` statt `start` und `ende`:** Mit zwei Indizes kann man „leer“ und „voll“ nicht unterscheiden – in beiden Fällen wäre `start == ende`. Der Zähler `anzahl` macht beide Zustände eindeutig.
 - **Kein Constraint nötig:** Der Ringpuffer speichert, überschreibt und liefert Elemente, vergleicht sie aber nie und erzeugt keine. Er funktioniert daher mit jedem Typ – `double` für Messwerte, `string` für Logzeilen, `Figur` für eine Undo-Historie im Geometrieeditor. Das ist ein gutes Zeichen: Je weniger Constraints eine Datenstruktur braucht, desto allgemeiner ist sie.
 - **Kapazität 0 wird im Konstruktor abgelehnt:** Sonst würde `% daten.Length` zu einer `DivideByZeroException` führen – ein Fehler, den man lieber sofort und mit klarer Meldung sieht.
-- **`AlsArray()` kopiert in logischer Reihenfolge:** Der Aufrufer sieht nie den internen Ring, sondern immer „ältestes zuerst“. Eleganter wäre es, `IEnumerable<T>` zu implementieren, damit `foreach` direkt funktioniert – wie das geht, sehen wir beim Iterator-Muster in Vorlesung 07.
+- **`AlsArray()` kopiert in logischer Reihenfolge:** Der Aufrufer sieht nie den internen Ring, sondern immer „ältestes zuerst“. Eleganter wäre es, `IEnumerable<T>` zu implementieren, damit `foreach` direkt funktioniert – wie das geht, sehen wir beim Iterator-Muster in Vorlesung 08.
 
 </details>

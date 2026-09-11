@@ -39,9 +39,9 @@ _data/          # Navigation und Autorenprofile
 
 ```bash
 cd examples
-dotnet build 03_blazor/Geometrieeditor                          # Blazor-App + Schichten-Architektur
-dotnet test  03_blazor/Geometrieeditor                          # NUnit-Tests des Fachkonzepts
-dotnet run --project 03_blazor/Geometrieeditor/Geometrieeditor.Web  # dann http://localhost:5xxx im Browser öffnen
+dotnet build 04_blazor/Geometrieeditor                          # Blazor-App + Schichten-Architektur
+dotnet test  04_blazor/Geometrieeditor                          # NUnit-Tests des Fachkonzepts
+dotnet run --project 04_blazor/Geometrieeditor/Geometrieeditor.Web  # dann http://localhost:5xxx im Browser öffnen
 ```
 
 Details zu allen Projekten stehen in [`examples/README.md`](examples/README.md).

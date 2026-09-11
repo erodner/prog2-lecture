@@ -54,7 +54,7 @@ Die Referenzen ergeben folgendes Bild – jeder Pfeil bedeutet „kennt und benu
    IFigurSpeicher        ◄───────────── implementiert IFigurSpeicher
 ```
 
-Auffällig ist, dass **niemand** auf `Geometrieeditor.Web` zeigt und das Fachkonzept auf **nichts** zeigt. Damit sind die Schichtregeln 1 und 2 vom Compiler garantiert: Wollte jemand aus der Datenhaltung eine Komponente aufrufen, bräuchte er eine Referenz auf das Web-Projekt, und die wäre ein Zirkelbezug. Der Pfeil vom Web-Projekt zur Datenhaltung ist die eine bewusste Ausnahme; wozu er nötig ist, sehen wir gleich in `Program.cs`. Das vollständige Projekt findest du im Repository unter `examples/03_blazor/Geometrieeditor`.
+Auffällig ist, dass **niemand** auf `Geometrieeditor.Web` zeigt und das Fachkonzept auf **nichts** zeigt. Damit sind die Schichtregeln 1 und 2 vom Compiler garantiert: Wollte jemand aus der Datenhaltung eine Komponente aufrufen, bräuchte er eine Referenz auf das Web-Projekt, und die wäre ein Zirkelbezug. Der Pfeil vom Web-Projekt zur Datenhaltung ist die eine bewusste Ausnahme; wozu er nötig ist, sehen wir gleich in `Program.cs`. Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`.
 
 ## Die Komponente enthält keine Geschäftslogik
 

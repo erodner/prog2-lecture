@@ -29,7 +29,7 @@ git config --global user.email "vorname.nachname@student.htw-berlin.de"
 
 ## Ein Repository anlegen
 
-Wir wechseln in den Ordner der Solution und machen daraus ein Repository. `git init` legt dabei nur den versteckten Ordner `.git/` an – die Dateien selbst bleiben unberührt und sind Git noch unbekannt:
+Wir wechseln in den Ordner `Geometrieeditor`, der die Klassenbibliothek `Geometrieeditor.Fachkonzept` aus der letzten Vorlesung und ein kleines Konsolenprojekt `Geometrieeditor.Konsole` zum Ausprobieren enthält, und machen daraus ein Repository. Die Oberfläche und die Tests kommen in späteren Vorlesungen als weitere Projekte daneben – für Git ändert das nichts. `git init` legt dabei nur den versteckten Ordner `.git/` an – die Dateien selbst bleiben unberührt und sind Git noch unbekannt:
 
 ```bash
 cd Geometrieeditor
@@ -39,17 +39,15 @@ git status
 # On branch main
 # No commits yet
 # Untracked files:
-#   Geometrieeditor.slnx
 #   Geometrieeditor.Fachkonzept/
-#   Geometrieeditor.Datenhaltung/
-#   ...
+#   Geometrieeditor.Konsole/
 ```
 
 `git status` ist der Befehl, den du am häufigsten tippen wirst. Er zeigt, in welchem Branch du bist, welche Dateien Git nicht kennt (*untracked*), welche geändert sind und welche im Staging-Bereich liegen. Bevor wir etwas hinzufügen, müssen wir aber eine Falle entschärfen.
 
 ## .gitignore: Was nicht ins Repository gehört
 
-Wer die Solution schon einmal gebaut hat, findet in jedem Projekt die Ordner `bin/` und `obj/` mit kompilierten `.dll`-Dateien und Zwischenständen des Compilers, dazu eventuell einen Ordner `.vs/` oder `.idea/` mit IDE-Einstellungen. Diese Dateien werden bei jedem Build neu erzeugt, sind binär und unterscheiden sich von Rechner zu Rechner – sie haben im Repository nichts verloren. Eine Datei `.gitignore` im Wurzelordner sagt Git, welche Pfade es ignorieren soll. Für .NET-Projekte erzeugt das SDK eine fertige Vorlage:
+Wer die Projekte schon einmal gebaut hat, findet in jedem Projektordner die Ordner `bin/` und `obj/` mit kompilierten `.dll`-Dateien und Zwischenständen des Compilers, dazu eventuell einen Ordner `.vs/` oder `.idea/` mit IDE-Einstellungen. Diese Dateien werden bei jedem Build neu erzeugt, sind binär und unterscheiden sich von Rechner zu Rechner – sie haben im Repository nichts verloren. Eine Datei `.gitignore` im Wurzelordner sagt Git, welche Pfade es ignorieren soll. Für .NET-Projekte erzeugt das SDK eine fertige Vorlage:
 
 ```bash
 dotnet new gitignore
@@ -79,15 +77,17 @@ git status
 # On branch main
 # Changes to be committed:
 #   new file:   .gitignore
-#   new file:   Geometrieeditor.slnx
+#   new file:   Geometrieeditor.Fachkonzept/Dreieck.cs
 #   new file:   Geometrieeditor.Fachkonzept/Figur.cs
+#   new file:   Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
 #   ...
-git commit -m "Geometrieeditor als Solution mit vier Projekten anlegen"
-# [main (root-commit) 7d2b0e4] Geometrieeditor als Solution mit vier Projekten anlegen
-#  21 files changed, 612 insertions(+)
+#   new file:   Geometrieeditor.Konsole/Program.cs
+git commit -m "Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen"
+# [main (root-commit) 7d2b0e4] Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen
+#  11 files changed, 689 insertions(+)
 ```
 
-Die Ausgabe nennt den Branch, die ersten sieben Zeichen des Commit-Hashs und die Anzahl geänderter Dateien. Ab jetzt ist dieser Stand unveränderlich gespeichert. Zwei Dateien gehören in praktisch jedes Repository und sollten früh committet werden: eine `README.md`, die erklärt, was das Projekt ist und wie man es baut (`dotnet build`, `dotnet test`), und eine `LICENSE`, die festlegt, was andere mit dem Code tun dürfen – ohne Lizenz ist Code trotz Veröffentlichung nicht frei nutzbar. GitLab und GitHub bieten beim Anlegen eines Projekts Vorlagen für beides an.
+Die Ausgabe nennt den Branch, die ersten sieben Zeichen des Commit-Hashs und die Anzahl geänderter Dateien. Ab jetzt ist dieser Stand unveränderlich gespeichert. Zwei Dateien gehören in praktisch jedes Repository und sollten früh committet werden: eine `README.md`, die erklärt, was das Projekt ist und wie man es baut (`dotnet build`), und eine `LICENSE`, die festlegt, was andere mit dem Code tun dürfen – ohne Lizenz ist Code trotz Veröffentlichung nicht frei nutzbar. GitLab und GitHub bieten beim Anlegen eines Projekts Vorlagen für beides an.
 
 ## Der Zyklus: modified → staged → committed
 
@@ -131,14 +131,14 @@ git commit -m "Entfernen einer Figur in FigurenVerwaltung ergänzen"
 ```bash
 git log --oneline
 # a1f9c3e Entfernen einer Figur in FigurenVerwaltung ergänzen
-# 7d2b0e4 Geometrieeditor als Solution mit vier Projekten anlegen
+# 7d2b0e4 Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen
 ```
 
 Manchmal will man eine Änderung nicht behalten. `git restore Datei` setzt die Arbeitskopie auf den Stand des Staging-Bereichs bzw. des letzten Commits zurück; `git restore --staged Datei` nimmt eine Datei nur aus dem Staging-Bereich heraus, lässt die Änderung in der Arbeitskopie aber stehen:
 
 ```bash
-git restore --staged Geometrieeditor.Web/Components/Pages/Home.razor   # doch nicht in diesen Commit
-git restore Geometrieeditor.Web/Components/Pages/Home.razor            # Änderung komplett verwerfen
+git restore --staged Geometrieeditor.Fachkonzept/Kreis.cs   # doch nicht in diesen Commit
+git restore Geometrieeditor.Fachkonzept/Kreis.cs            # Änderung komplett verwerfen
 ```
 
 `git restore` ohne `--staged` löscht deine ungespeicherten Änderungen unwiderruflich – Git hat davon keine Kopie, weil sie nie committet wurden. Im Zweifel erst committen, dann aufräumen: Ein überflüssiger Commit ist harmlos, verlorene Arbeit nicht.
@@ -146,7 +146,7 @@ git restore Geometrieeditor.Web/Components/Pages/Home.razor            # Änderu
 
 ## Gute Commits
 
-Ein Commit sollte **eine** zusammengehörige Änderung enthalten: ein Bugfix, ein kleines Feature, eine Umbenennung. Wer „Kreis-Bug gefixt, JSON-Speicher angefangen, Layout umgebaut“ in einen Commit packt, kann später nichts davon einzeln ansehen oder rückgängig machen. Die Nachricht beschreibt im **Imperativ**, was der Commit tut, wie eine Anweisung an das Projekt: „Fläche von Dreieck mit Heron-Formel berechnen“, nicht „habe was am Dreieck gemacht“. Die erste Zeile bleibt unter 70 Zeichen; braucht man mehr, folgt nach einer Leerzeile ein Absatz mit dem *Warum*.
+Ein Commit sollte **eine** zusammengehörige Änderung enthalten: ein Bugfix, ein kleines Feature, eine Umbenennung. Wer „Kreis-Bug gefixt, Sortieren angefangen, Beschreibung umformuliert“ in einen Commit packt, kann später nichts davon einzeln ansehen oder rückgängig machen. Die Nachricht beschreibt im **Imperativ**, was der Commit tut, wie eine Anweisung an das Projekt: „Fläche von Dreieck mit Heron-Formel berechnen“, nicht „habe was am Dreieck gemacht“. Die erste Zeile bleibt unter 70 Zeichen; braucht man mehr, folgt nach einer Leerzeile ein Absatz mit dem *Warum*.
 
 Übung: Lege ein Repository für ein kleines Konsolenprojekt an (`dotnet new console`, `dotnet new gitignore`, `git init`). Baue das Projekt, prüfe mit `git status`, dass `bin/` und `obj/` nicht auftauchen, und mache drei Commits mit sinnvollen Nachrichten. Sieh dir mit `git log --oneline` und `git diff HEAD~1` an, was du festgehalten hast.
 {: .notice--info}

@@ -119,7 +119,7 @@ Hot Reload hat Grenzen: Änderungen am Markup und an Methodenrümpfen übernimmt
 Übung: Erweitere `Home.razor` um ein zweites Eingabefeld für das Alter und lasse `Begruessen` ausgeben, in welchem Jahr die Person 100 wird. Ändere anschließend den Methodennamen im `@onclick`-Attribut absichtlich falsch und beobachte, wo und wann der Fehler auftaucht.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository unter `examples/03_blazor/HalloBlazor`.
+Das vollständige Projekt findest du im Repository unter `examples/04_blazor/HalloBlazor`.
 
 ## Weitere Quellen
 

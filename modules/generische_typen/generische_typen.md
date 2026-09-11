@@ -9,19 +9,19 @@ toc: false
 classes: wide
 ---
 
-Mülltrennung funktioniert nur, wenn es für jede Sorte einen eigenen Behälter gibt: einen für Glas, einen für Papier, einen für Biomüll. Alle Behälter verhalten sich gleich – man wirft etwas hinein, und was zuletzt hineingeworfen wurde, liegt oben und kommt als Erstes wieder heraus. Der einzige Unterschied ist, **was** hinein darf. Niemand würde für jede Müllsorte eine eigene Behälterklasse konstruieren; man baut einen Behälter und beschriftet ihn. Genau das leisten **generische Klassen**: Das Verhalten wird einmal implementiert, und der Elementtyp wird erst beim Erzeugen des Objekts festgelegt. Im Modul [Generische Methoden](/modules/generische_methoden/generische_methoden.md) haben wir den Typparameter `T` an einzelnen Methoden kennengelernt – jetzt heben wir ihn auf die Ebene der ganzen Klasse.
+Auf einem aufgeräumten Schreibtisch liegt für jede Art von Dokument ein eigener Ablagestapel: einer für Rechnungen, einer für Briefe, einer für Notizen. Alle Stapel verhalten sich gleich – man legt etwas obenauf, und was zuletzt draufgelegt wurde, liegt oben und wird als Erstes wieder heruntergenommen. Der einzige Unterschied ist, **was** auf den Stapel darf. Niemand würde für jede Dokumentart eine eigene Stapelklasse konstruieren; man legt einen Stapel an und beschriftet ihn. Genau das leisten **generische Klassen**: Das Verhalten wird einmal implementiert, und der Elementtyp wird erst beim Erzeugen des Objekts festgelegt. Im Modul [Generische Methoden](/modules/generische_methoden/generische_methoden.md) haben wir den Typparameter `T` an einzelnen Methoden kennengelernt – jetzt heben wir ihn auf die Ebene der ganzen Klasse.
 
-## Der Müllcontainer ohne Generics
+## Der Ablagestapel ohne Generics
 
-Beginnen wir mit dem, was ohne Generics möglich wäre. Ein Behälter, in den man alles werfen kann, speichert seine Elemente als `object`:
+Beginnen wir mit dem, was ohne Generics möglich wäre. Ein Stapel, auf den man alles legen kann, speichert seine Elemente als `object`:
 
 ```csharp
-class ObjektContainer
+class ObjektStapel
 {
     private object[] inhalt;
     private int anzahl;
 
-    public ObjektContainer(int kapazitaet)
+    public ObjektStapel(int kapazitaet)
     {
         inhalt = new object[kapazitaet];
     }
@@ -40,28 +40,28 @@ class ObjektContainer
 }
 ```
 
-Das funktioniert, hat aber genau die Schwächen, die wir bei `object` schon kennen. Der Behälter weiß nicht, was er enthält, und der Aufrufer muss beim Herausnehmen raten:
+Das funktioniert, hat aber genau die Schwächen, die wir bei `object` schon kennen. Der Stapel weiß nicht, was auf ihm liegt, und der Aufrufer muss beim Herunternehmen raten:
 
 ```csharp
-ObjektContainer glas = new ObjektContainer(10);
-glas.Push("Weinflasche");
-glas.Push(42);                       // kompiliert – 42 ist auch ein object
-string oben = (string)glas.Pop();    // InvalidCastException zur Laufzeit!
+ObjektStapel rechnungen = new ObjektStapel(10);
+rechnungen.Push("Stromrechnung");
+rechnungen.Push(42);                       // kompiliert – 42 ist auch ein object
+string oben = (string)rechnungen.Pop();    // InvalidCastException zur Laufzeit!
 ```
 
-Der Behälter für Glas nimmt klaglos eine Zahl an, und der Cast beim Herausholen fliegt uns erst zur Laufzeit um die Ohren. Wir wollen, dass der Compiler den Fehler in der Zeile `glas.Push(42)` meldet – und nicht der Kunde beim Ausführen.
+Der Stapel für Rechnungen nimmt klaglos eine nackte Zahl an, und der Cast beim Herunternehmen fliegt uns erst zur Laufzeit um die Ohren. Wir wollen, dass der Compiler den Fehler in der Zeile `rechnungen.Push(42)` meldet – und nicht der Kunde beim Ausführen.
 
-## Der Müllcontainer mit Typparameter
+## Der Ablagestapel mit Typparameter
 
 Bei einer generischen Klasse steht der Typparameter direkt hinter dem Klassennamen. Innerhalb der Klasse verwenden wir `T` überall dort, wo vorher `object` stand – für das Array, den Parameter von `Push` und den Rückgabetyp von `Pop`:
 
 ```csharp
-class Muellcontainer<T>
+class Ablagestapel<T>
 {
     private T[] inhalt;
     private int anzahl;
 
-    public Muellcontainer(int kapazitaet)
+    public Ablagestapel(int kapazitaet)
     {
         inhalt = new T[kapazitaet];
     }
@@ -72,7 +72,7 @@ class Muellcontainer<T>
     {
         if (anzahl == inhalt.Length)
         {
-            throw new InvalidOperationException("Der Container ist voll.");
+            throw new InvalidOperationException("Der Stapel ist voll.");
         }
         inhalt[anzahl] = element;
         anzahl++;
@@ -82,7 +82,7 @@ class Muellcontainer<T>
     {
         if (anzahl == 0)
         {
-            throw new InvalidOperationException("Der Container ist leer.");
+            throw new InvalidOperationException("Der Stapel ist leer.");
         }
         anzahl--;
         return inhalt[anzahl];
@@ -90,30 +90,30 @@ class Muellcontainer<T>
 }
 ```
 
-Der Rumpf ist fast identisch mit der `object`-Version – nur das Wort `object` ist durch `T` ersetzt. Zusätzlich haben wir die beiden Randfälle abgefangen, die in einer naiven Version gern vergessen werden: Ein voller Container darf nichts mehr annehmen, und aus einem leeren kann man nichts herausholen. Beim Erzeugen eines Objekts geben wir jetzt an, für welche Sorte der Behälter gedacht ist:
+Der Rumpf ist fast identisch mit der `object`-Version – nur das Wort `object` ist durch `T` ersetzt. Zusätzlich haben wir die beiden Randfälle abgefangen, die in einer naiven Version gern vergessen werden: Ein voller Stapel darf nichts mehr annehmen, und von einem leeren kann man nichts herunternehmen. Beim Erzeugen eines Objekts geben wir jetzt an, für welche Art von Dokument der Stapel gedacht ist:
 
 ```csharp
-Muellcontainer<string> papier = new Muellcontainer<string>(10);
-papier.Push("Zeitung");
-papier.Push("Karton");
-string oben = papier.Pop();     // "Karton" – kein Cast nötig
-Console.WriteLine(oben);        // Karton
+Ablagestapel<string> notizen = new Ablagestapel<string>(10);
+notizen.Push("Zahnarzt anrufen");
+notizen.Push("Milch kaufen");
+string oben = notizen.Pop();     // "Milch kaufen" – kein Cast nötig
+Console.WriteLine(oben);         // Milch kaufen
 
-papier.Push(42);                // Compilerfehler CS1503:
-                                // Argument 1: Konvertierung von "int" in "string" nicht möglich.
+notizen.Push(42);                // Compilerfehler CS1503:
+                                 // Argument 1: Konvertierung von "int" in "string" nicht möglich.
 ```
 
-Der Container `papier` ist ein `Muellcontainer<string>` – der Compiler hat `T` durch `string` ersetzt und prüft jeden Aufruf von `Push` und `Pop` mit diesem Wissen. Die Zahl wird sofort zurückgewiesen, und der Rückgabewert von `Pop` ist ein `string`, ohne dass wir etwas casten müssten.
+Der Stapel `notizen` ist ein `Ablagestapel<string>` – der Compiler hat `T` durch `string` ersetzt und prüft jeden Aufruf von `Push` und `Pop` mit diesem Wissen. Die Zahl wird sofort zurückgewiesen, und der Rückgabewert von `Pop` ist ein `string`, ohne dass wir etwas casten müssten.
 
-Der Typ heißt vollständig `Muellcontainer<string>`. `Muellcontainer<string>` und `Muellcontainer<int>` sind zwei **verschiedene Typen** ohne Zuweisungsbeziehung – so wenig, wie man einen Papiercontainer als Glascontainer verwenden kann.
+Der Typ heißt vollständig `Ablagestapel<string>`. `Ablagestapel<string>` und `Ablagestapel<int>` sind zwei **verschiedene Typen** ohne Zuweisungsbeziehung – so wenig, wie man den Rechnungsstapel als Briefstapel verwenden kann.
 {: .notice--primary}
 
-## Ein Container für Figuren
+## Ein Stapel für Figuren
 
-Der Elementtyp muss kein eingebauter Typ sein. Ein Container für die Figuren des Geometrieeditors nimmt alle Objekte an, die den Typ `Figur` haben – wegen der Vererbung also auch `Kreis` und `Rechteck`:
+Der Elementtyp muss kein eingebauter Typ sein. Ein Stapel für die Figuren des Geometrieeditors nimmt alle Objekte an, die den Typ `Figur` haben – wegen der Vererbung also auch `Kreis` und `Rechteck`:
 
 ```csharp
-Muellcontainer<Figur> figuren = new Muellcontainer<Figur>(5);
+Ablagestapel<Figur> figuren = new Ablagestapel<Figur>(5);
 figuren.Push(new Kreis("K1", 0, 0, 1.5));
 figuren.Push(new Rechteck("R1", 2, 2, 3, 4));
 
@@ -125,11 +125,11 @@ Console.WriteLine(figuren.Anzahl);      // 1
 `Pop` liefert eine `Figur` zurück, und über den polymorphen Aufruf von `Beschreibung()` kommt die Variante des Laufzeittyps `Rechteck` zum Zug – Generizität und Vererbung ergänzen sich also. Das `var`-Schlüsselwort und die zieltypisierte `new()`-Syntax machen den Code kürzer, ohne die Typsicherheit aufzugeben:
 
 ```csharp
-var glas = new Muellcontainer<string>(20);
-Muellcontainer<Figur> figuren = new(5);
+var briefe = new Ablagestapel<string>(20);
+Ablagestapel<Figur> figuren = new(5);
 ```
 
-Übung: Erweitere `Muellcontainer<T>` um eine Methode `Clear()`, die alle Elemente entfernt, und eine Methode `Peek()`, die das oberste Element zurückgibt, ohne es zu entfernen. Überlege, ob `Clear()` das Array wirklich leeren muss oder ob es reicht, `anzahl` zurückzusetzen – und was das für Referenztypen und die Garbage Collection bedeutet.
+Übung: Erweitere `Ablagestapel<T>` um eine Methode `Clear()`, die alle Elemente entfernt, und eine Methode `Peek()`, die das oberste Element zurückgibt, ohne es zu entfernen. Überlege, ob `Clear()` das Array wirklich leeren muss oder ob es reicht, `anzahl` zurückzusetzen – und was das für Referenztypen und die Garbage Collection bedeutet.
 {: .notice--info}
 
 ## Das gibt es schon: `Stack<T>`
@@ -137,15 +137,15 @@ Muellcontainer<Figur> figuren = new(5);
 Das Verhalten „Was zuletzt hinein kam, kommt zuerst heraus“ heißt **LIFO** (*Last In, First Out*) und ist eine der grundlegenden Datenstrukturen der Informatik: ein **Stack** (Stapel). .NET bringt ihn als `Stack<T>` fertig mit – mit exakt den Methoden, die wir gerade selbst geschrieben haben:
 
 ```csharp
-Stack<string> bio = new Stack<string>();
-bio.Push("Apfelschale");
-bio.Push("Kaffeesatz");
-Console.WriteLine(bio.Peek());  // Kaffeesatz
-Console.WriteLine(bio.Pop());   // Kaffeesatz
-Console.WriteLine(bio.Count);   // 1
+Stack<string> briefe = new Stack<string>();
+briefe.Push("Brief vom Finanzamt");
+briefe.Push("Postkarte aus Rom");
+Console.WriteLine(briefe.Peek());  // Postkarte aus Rom
+Console.WriteLine(briefe.Pop());   // Postkarte aus Rom
+Console.WriteLine(briefe.Count);   // 1
 ```
 
-Der Unterschied zu unserem `Muellcontainer<T>`: `Stack<T>` wächst automatisch, wenn er voll wird, so wie wir es von `List<T>` kennen. Den eigenen Container zu schreiben war trotzdem nicht umsonst – wir verstehen jetzt, wie die Klassen in .NET aufgebaut sind, die wir seit Programmierung 1 benutzen.
+Der Unterschied zu unserem `Ablagestapel<T>`: `Stack<T>` wächst automatisch, wenn er voll wird, so wie wir es von `List<T>` kennen. Den eigenen Stapel zu schreiben war trotzdem nicht umsonst – wir verstehen jetzt, wie die Klassen in .NET aufgebaut sind, die wir seit Programmierung 1 benutzen.
 
 ## Generische Klassen in .NET
 
@@ -164,7 +164,7 @@ Die letzte Zeile ist ein schönes Beispiel dafür, wie tief Generics in der Spra
 
 ## Was Generics wirklich leisten
 
-Generische Typen sind keine Laufzeit-Magie, sondern **Typsicherheit zur Kompilierzeit**. Der Compiler kennt für jedes `Muellcontainer<string>`-Objekt den Elementtyp und prüft alle Aufrufe damit. Fehler, die in der `object`-Version als `InvalidCastException` beim Kunden auftauchen, werden zu roten Wellenlinien in der IDE. Gleichzeitig entfallen Casts und Boxing, sodass generischer Code für Werttypen wie `int` sogar schneller ist als die `object`-Variante.
+Generische Typen sind keine Laufzeit-Magie, sondern **Typsicherheit zur Kompilierzeit**. Der Compiler kennt für jedes `Ablagestapel<string>`-Objekt den Elementtyp und prüft alle Aufrufe damit. Fehler, die in der `object`-Version als `InvalidCastException` beim Kunden auftauchen, werden zu roten Wellenlinien in der IDE. Gleichzeitig entfallen Casts und Boxing, sodass generischer Code für Werttypen wie `int` sogar schneller ist als die `object`-Variante.
 
 Im Zweifel: Wann immer du eine Klasse mit `object`-Feldern schreibst oder dieselbe Klasse für mehrere Elementtypen kopierst, ist ein Typparameter die bessere Lösung.
 {: .notice--primary}

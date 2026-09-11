@@ -33,13 +33,13 @@ Lectures are the "table of contents"; modules contain the actual teaching conten
 - Lecture 00: Einstieg – Rückblick auf Programmierung 1 (links to the Prog-1 site), .NET SDK, IDE, dotnet-CLI
 - Lecture 01: Vererbung (virtual/override, sealed, Laufzeittyp, object, Garbage Collection)
 - Lecture 02: Abstrakte Klassen und Interfaces
-- Lecture 03: GUI mit Blazor + Schichten-Architekturen (replaces the former Windows-Forms lecture)
-- Lecture 04: Generizität
-- Lecture 05: Hashing, Sortieren, Suchen, Collections, LINQ (query syntax)
-- Lecture 06: Delegaten, Func/Action, Lambdas, LINQ-Methodensyntax, Ereignisse
-- Lecture 07: Entwurfsmuster (Singleton, Adapter, Composite, Iterator, Observer)
-- Lecture 08: Dateien, Streams, IDisposable, JSON/XML-Serialisierung, HttpClient
-- Lecture 09: Git (CLI first, IDE integration second, HTW GitLab)
+- Lecture 03: Git (CLI first, IDE integration second, HTW GitLab)
+- Lecture 04: GUI mit Blazor + Schichten-Architekturen (replaces the former Windows-Forms lecture)
+- Lecture 05: Generizität
+- Lecture 06: Hashing, Sortieren, Suchen, Collections, LINQ (query syntax)
+- Lecture 07: Delegaten, Func/Action, Lambdas, LINQ-Methodensyntax, Ereignisse
+- Lecture 08: Entwurfsmuster (Singleton, Adapter, Composite, Iterator, Observer)
+- Lecture 09: Dateien, Streams, IDisposable, JSON/XML-Serialisierung, HttpClient
 - Lecture 10: Native Bibliotheken (P/Invoke, LibraryImport)
 - Lecture 11: NuGet
 - Lecture 12: Unit-Testing mit NUnit
@@ -55,8 +55,8 @@ Lectures are the "table of contents"; modules contain the actual teaching conten
 
 `examples/` is excluded from the Jekyll build but committed. It holds runnable .NET projects for everything that does not fit into a single snippet. `examples/Directory.Build.props` sets `net10.0`, `Nullable`, `ImplicitUsings`. Everything must build with `dotnet build` and tests must pass with `dotnet test` (see `examples/README.md`).
 
-- `03_blazor/HalloBlazor` – minimal Blazor Web App (`dotnet new blazor --empty -int Server -ai`): input, button, output with `@bind`/`@onclick`
-- `03_blazor/Geometrieeditor` – the running example of the course, a 3-layer solution (`Geometrieeditor.slnx`, the XML solution format of .NET 10):
+- `04_blazor/HalloBlazor` – minimal Blazor Web App (`dotnet new blazor --empty -int Server -ai`): input, button, output with `@bind`/`@onclick`
+- `04_blazor/Geometrieeditor` – the running example of the course, a 3-layer solution (`Geometrieeditor.slnx`, the XML solution format of .NET 10):
   - `Geometrieeditor.Fachkonzept` (classlib): `Figur` (abstract), `Rechteck`, `Kreis`, `Dreieck`, `FigurenVerwaltung`, interface `IFigurSpeicher`
   - `Geometrieeditor.Datenhaltung` (classlib): `ArbeitsspeicherFigurSpeicher`, `JsonFigurSpeicher` (implement `IFigurSpeicher`)
   - `Geometrieeditor.Web` (Blazor): `Components/Pages/Home.razor`, `Components/NeueFigurDialog.razor`; `Program.cs` registers `IFigurSpeicher`/`FigurenVerwaltung` via DI (`AddScoped`), pages use `@inject`
@@ -75,7 +75,7 @@ Module snippets that show the Geometrieeditor must use exactly these identifiers
 - Exercises use `{: .notice--info}` blocks
 - Important notes use `{: .notice--primary}`, warnings use `{: .notice--warning}`
 - External references (Microsoft Learn de-de, docs.avaloniaui.net, git-scm.com/book/de, nunit.org) go in a `## Weitere Quellen` section at the bottom
-- Code examples are C# with German variable/method names (PascalCase methods, camelCase parameters), umlauts transliterated in identifiers (`Flaeche`, `Muellcontainer`)
+- Code examples are C# with German variable/method names (PascalCase methods, camelCase parameters), umlauts transliterated in identifiers (`Flaeche`, `Groesse`)
 - Modern .NET only: `System.Text.Json` (not Newtonsoft), `HttpClient` (not WebClient), NUnit 4 `Assert.That`, `PackageReference`, `[LibraryImport]` alongside `[DllImport]`, git CLI (not Sourcetree)
 - Blazor: Razor components with markup + `@code`, `@onclick`/`@bind`, dialogs as components with `EventCallback<T>`, no JavaScript, no Bootstrap (plain CSS flexbox/grid in `wwwroot/app.css`)
 - Cross-module references should mention previously learned concepts by name
@@ -86,7 +86,7 @@ Module snippets that show the Geometrieeditor must use exactly these identifiers
 
 - Motivating intro paragraphs that explain *why* a concept matters
 - Verbindungssätze (connecting sentences) between code examples — explain transitions
-- Real-world analogies where helpful (Butler for delegates, Mülltrennung for generics, Schließfächer for arrays, etc.)
+- Real-world analogies where helpful (Bote for delegates, Ablagestapel for generics, Schließfächer for arrays, etc.)
 - Back-references to earlier modules when building on prior concepts
 - "Im Zweifel..." guidance for students (e.g., "Im Zweifel Interface statt abstrakte Klasse")
 - The user (professor) dislikes: artificial overloading examples (no `bool` flags), summaries at end of responses, overly simple exercises

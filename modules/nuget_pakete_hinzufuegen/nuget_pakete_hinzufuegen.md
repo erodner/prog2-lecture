@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Im Modul [NuGet-Grundlagen](/modules/nuget_grundlagen/nuget_grundlagen.md) haben wir gelernt, ein Paket zu bewerten. Jetzt holen wir es ins Projekt – und schauen dabei genau hin, was auf der Festplatte passiert. Wie bei Git in der [Vorlesung 09](/lectures/09/09.md) fangen wir mit der Kommandozeile an, weil man dort jeden Schritt sieht, und ordnen die Schaltflächen der IDEs danach ein. Als Beispiel dient das Logging-Paket NLog, mit dem wir im nächsten Modul arbeiten.
+Im Modul [NuGet-Grundlagen](/modules/nuget_grundlagen/nuget_grundlagen.md) haben wir gelernt, ein Paket zu bewerten. Jetzt holen wir es ins Projekt – und schauen dabei genau hin, was auf der Festplatte passiert. Wie bei Git in der [Vorlesung 03](/lectures/03/03.md) fangen wir mit der Kommandozeile an, weil man dort jeden Schritt sieht, und ordnen die Schaltflächen der IDEs danach ein. Als Beispiel dient das Logging-Paket NLog, mit dem wir im nächsten Modul arbeiten.
 
 ## Ein Paket hinzufügen
 

@@ -81,7 +81,7 @@ Die Query-Syntax kennt nur eine Handvoll Schlüsselwörter. Die Methodensyntax b
 | `e.GroupBy(x => …)` | nach Schlüssel gruppieren | `IEnumerable<IGrouping<TKey, T>>` |
 | `e.ToList()`, `ToArray()`, `ToDictionary(x => …)` | Ergebnis in eine Collection überführen | `List<T>`, `T[]`, `Dictionary` |
 
-Die Methoden lassen sich beliebig verketten, weil die meisten wieder ein `IEnumerable<T>` zurückgeben. Ein Beispiel mit dem Geometrieeditor aus [Vorlesung 03](/lectures/03/03.md):
+Die Methoden lassen sich beliebig verketten, weil die meisten wieder ein `IEnumerable<T>` zurückgeben. Ein Beispiel mit dem Geometrieeditor aus [Vorlesung 04](/lectures/04/04.md):
 
 ```csharp
 List<Figur> figuren =

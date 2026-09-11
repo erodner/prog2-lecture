@@ -13,7 +13,7 @@ Bis hierhin haben wir Fenster gebaut und Handler geschrieben – und dabei die v
 
 ## Was ist ein Architekturstil?
 
-Ein **Architekturstil** ist ein bewährtes Grundmuster dafür, wie ein Programm in große Bausteine zerlegt wird und welche Bausteine miteinander reden dürfen. Während ein [Entwurfsmuster](/modules/entwurfsmuster_begriff/entwurfsmuster_begriff.md) (Vorlesung 07) das Zusammenspiel weniger Klassen beschreibt, geht es beim Architekturstil um die Struktur der ganzen Anwendung. Zwei Stile stellen wir gegenüber: den Monolithen, der historisch der Normalfall war, und die Schichtenarchitektur, die heute der Standard für Desktop- und Geschäftsanwendungen ist.
+Ein **Architekturstil** ist ein bewährtes Grundmuster dafür, wie ein Programm in große Bausteine zerlegt wird und welche Bausteine miteinander reden dürfen. Während ein [Entwurfsmuster](/modules/entwurfsmuster_begriff/entwurfsmuster_begriff.md) (Vorlesung 08) das Zusammenspiel weniger Klassen beschreibt, geht es beim Architekturstil um die Struktur der ganzen Anwendung. Zwei Stile stellen wir gegenüber: den Monolithen, der historisch der Normalfall war, und die Schichtenarchitektur, die heute der Standard für Desktop- und Geschäftsanwendungen ist.
 
 ## Monolithisch
 

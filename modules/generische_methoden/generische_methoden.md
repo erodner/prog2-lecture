@@ -88,7 +88,7 @@ static void Tausche<T>(ref T a, ref T b)
 int x = 3, y = 7;
 Tausche<int>(ref x, ref y);
 
-string s1 = "Papier", s2 = "Glas";
+string s1 = "Rechnung", s2 = "Brief";
 Tausche<string>(ref s1, ref s2);
 
 Figur f1 = new Kreis("K1", 0, 0, 2);
@@ -130,10 +130,10 @@ static Dictionary<TKey, TValue> Zuordnen<TKey, TValue>(TKey[] schluessel, TValue
     return ergebnis;
 }
 
-string[] namen = { "Glas", "Papier", "Bio" };
-int[] leerungen = { 2, 4, 1 };
-Dictionary<string, int> plan = Zuordnen(namen, leerungen);
-Console.WriteLine(plan["Papier"]); // 4
+string[] stapel = { "Rechnungen", "Briefe", "Notizen" };
+int[] hoehen = { 2, 4, 1 };
+Dictionary<string, int> ablage = Zuordnen(stapel, hoehen);
+Console.WriteLine(ablage["Briefe"]); // 4
 ```
 
 Die Zeile `where TKey : notnull` ist ein erster Vorgeschmack auf **Constraints**: `Dictionary` verlangt, dass Schlüssel nicht `null` sein dürfen, und diese Anforderung müssen wir an unseren Typparameter weiterreichen. Die Typinferenz funktioniert auch hier – aus `string[]` und `int[]` erkennt der Compiler `TKey = string` und `TValue = int`.

@@ -83,7 +83,7 @@ Die Messstation enthält keine Zeile, in der `Anzeige` oder `Frostalarm` vorkomm
 
 ## In C#: `event` und Delegat
 
-Wer die Messstation mit dem Bar-Beispiel aus dem Modul [Ereignisse](/modules/ereignisse/ereignisse.md) vergleicht, erkennt dieselbe Struktur. Und tatsächlich ist ein `event` nichts anderes als das Observer-Muster mit eingebauter Sprachunterstützung: Der Multicast-Delegat *ist* die Liste der Beobachter, `+=` ist `Registrieren`, `-=` ist `Abmelden`, und `?.Invoke` ist der Rundruf. Das Interface `IBeobachter` wird durch die Delegat-Signatur ersetzt – ein Beobachter muss keine Klasse mehr sein, eine passende Methode genügt:
+Wer die Messstation mit dem Café-Beispiel aus dem Modul [Ereignisse](/modules/ereignisse/ereignisse.md) vergleicht, erkennt dieselbe Struktur. Und tatsächlich ist ein `event` nichts anderes als das Observer-Muster mit eingebauter Sprachunterstützung: Der Multicast-Delegat *ist* die Liste der Beobachter, `+=` ist `Registrieren`, `-=` ist `Abmelden`, und `?.Invoke` ist der Rundruf. Das Interface `IBeobachter` wird durch die Delegat-Signatur ersetzt – ein Beobachter muss keine Klasse mehr sein, eine passende Methode genügt:
 
 ```csharp
 public class Messstation
@@ -118,7 +118,7 @@ Der Vergleich mit dem Setter zeigt auch, was das Muster *nicht* regelt: In welch
 
 ## Model und View
 
-Der wichtigste Einsatz des Musters ist die Verbindung von Datenmodell und Oberfläche. Im Geometrieeditor aus Vorlesung 03 rendert Blazor die Seite nach jedem Klick von selbst neu – aber nur, wenn die Komponente den Klick selbst behandelt hat. Ändert sich das Modell von außen, muss die Oberfläche davon erfahren. Mit Observer wird die Richtung umgedreht: Das Modell meldet, dass sich etwas geändert hat, und die Oberfläche hört zu. Desktop-Frameworks wie WPF und MAUI haben dafür ein standardisiertes Interface, `INotifyPropertyChanged`, das aus genau einem Ereignis besteht:
+Der wichtigste Einsatz des Musters ist die Verbindung von Datenmodell und Oberfläche. Im Geometrieeditor aus Vorlesung 04 rendert Blazor die Seite nach jedem Klick von selbst neu – aber nur, wenn die Komponente den Klick selbst behandelt hat. Ändert sich das Modell von außen, muss die Oberfläche davon erfahren. Mit Observer wird die Richtung umgedreht: Das Modell meldet, dass sich etwas geändert hat, und die Oberfläche hört zu. Desktop-Frameworks wie WPF und MAUI haben dafür ein standardisiertes Interface, `INotifyPropertyChanged`, das aus genau einem Ereignis besteht:
 
 ```csharp
 public class FigurModell : INotifyPropertyChanged

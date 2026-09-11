@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Stell dir vor, du baust den JSON-Speicher des Geometrieeditors um und bist mittendrin – die Tests sind rot, die GUI startet nicht. Genau jetzt meldet eine Kommilitonin einen Fehler in `Kreis.Umfang`, der schnell behoben werden muss. Ohne Branches müsstest du deinen halbfertigen Umbau irgendwie beiseitelegen oder den Bugfix mit deinem Chaos zusammen committen. Mit Branches arbeitest du am Feature in einem eigenen Zweig, wechselst kurz auf `main`, behebst den Fehler, und kehrst zurück. Der Hauptzweig bleibt dabei zu jedem Zeitpunkt baubar. Branches sind in Git so billig – ein Zeiger auf einen Commit, wie wir in [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) gesehen haben –, dass man sie für jedes Feature und jeden Bugfix anlegt.
+Stell dir vor, du ergänzt im Geometrieeditor eine neue Figur `Ellipse` und bist mittendrin – `Flaeche` ist fertig, `Umfang` noch nicht, und weil die abstrakte Property nicht überschrieben ist, kompiliert das Projekt nicht. Genau jetzt meldet eine Kommilitonin einen Fehler in `Kreis.Umfang`, der schnell behoben werden muss. Ohne Branches müsstest du deinen halbfertigen Umbau irgendwie beiseitelegen oder den Bugfix mit deinem Chaos zusammen committen. Mit Branches arbeitest du am Feature in einem eigenen Zweig, wechselst kurz auf `main`, behebst den Fehler, und kehrst zurück. Der Hauptzweig bleibt dabei zu jedem Zeitpunkt baubar. Branches sind in Git so billig – ein Zeiger auf einen Commit, wie wir in [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) gesehen haben –, dass man sie für jedes Feature und jeden Bugfix anlegt.
 
 ## Branches anlegen und wechseln
 
@@ -18,32 +18,32 @@ Stell dir vor, du baust den JSON-Speicher des Geometrieeditors um und bist mitte
 ```bash
 git branch
 # * main
-git switch -c feature/json-speicher
-# Switched to a new branch 'feature/json-speicher'
+git switch -c feature/ellipse
+# Switched to a new branch 'feature/ellipse'
 git branch
 #   main
-# * feature/json-speicher
+# * feature/ellipse
 ```
 
-Der neue Branch zeigt zunächst auf denselben Commit wie `main` – nichts hat sich an den Dateien geändert. Erst der nächste Commit lässt die beiden auseinanderlaufen. Wir legen `JsonFigurSpeicher.cs` an und committen:
+Der neue Branch zeigt zunächst auf denselben Commit wie `main` – nichts hat sich an den Dateien geändert. Erst der nächste Commit lässt die beiden auseinanderlaufen. Wir legen `Ellipse.cs` an – eine weitere Unterklasse von `Figur` nach dem Muster von `Kreis` – und committen:
 
 ```bash
-git add Geometrieeditor.Datenhaltung/JsonFigurSpeicher.cs
-git commit -m "JsonFigurSpeicher mit System.Text.Json implementieren"
-# [feature/json-speicher 5c21a8f] JsonFigurSpeicher mit System.Text.Json implementieren
+git add Geometrieeditor.Fachkonzept/Ellipse.cs
+git commit -m "Ellipse als neue Figur mit Fläche und Umfang ergänzen"
+# [feature/ellipse 5c21a8f] Ellipse als neue Figur mit Fläche und Umfang ergänzen
 git log --oneline --all
-# 5c21a8f (HEAD -> feature/json-speicher) JsonFigurSpeicher mit System.Text.Json implementieren
+# 5c21a8f (HEAD -> feature/ellipse) Ellipse als neue Figur mit Fläche und Umfang ergänzen
 # a1f9c3e (main) Entfernen einer Figur in FigurenVerwaltung ergänzen
 ```
 
-`HEAD` ist Gits Bezeichnung für „der Branch, in dem ich gerade bin“. Jetzt kommt der Bugfix dazwischen. Wir wechseln zu `main` – Git tauscht dabei die Dateien in der Arbeitskopie aus, `JsonFigurSpeicher.cs` verschwindet vorübergehend – und beheben den Fehler dort:
+`HEAD` ist Gits Bezeichnung für „der Branch, in dem ich gerade bin“. Jetzt kommt der Bugfix dazwischen. Wir wechseln zu `main` – Git tauscht dabei die Dateien in der Arbeitskopie aus, `Ellipse.cs` verschwindet vorübergehend – und beheben den Fehler dort:
 
 ```bash
 git switch main
 # Switched to branch 'main'
 # ... Kreis.cs korrigieren ...
 git commit -am "Kreis: Umfang mit 2·π·r statt π·r berechnen"
-git switch feature/json-speicher       # zurück zum Feature, JsonFigurSpeicher.cs ist wieder da
+git switch feature/ellipse             # zurück zum Feature, Ellipse.cs ist wieder da
 ```
 
 `git commit -a` staged alle bereits verfolgten, geänderten Dateien automatisch – praktisch für kleine Fixes, aber neue Dateien braucht weiterhin ein `git add`. Ein Wechsel funktioniert nur, wenn die Arbeitskopie sauber ist oder die Änderungen nicht mit dem Ziel kollidieren; sonst verlangt Git, dass du erst committest oder mit `git stash` beiseitelegst.
@@ -79,14 +79,14 @@ In unserem Szenario hat `main` sich aber bewegt: Der Kreis-Bugfix `C4` liegt dor
 
 ```bash
 git switch main
-git merge feature/json-speicher
+git merge feature/ellipse
 # Merge made by the 'ort' strategy.
-#  Geometrieeditor.Datenhaltung/JsonFigurSpeicher.cs | 38 ++++++++++++
-#  1 file changed, 38 insertions(+)
+#  Geometrieeditor.Fachkonzept/Ellipse.cs | 21 ++++++++++++
+#  1 file changed, 21 insertions(+)
 git log --oneline --graph --all
-# *   b90e2d1 (HEAD -> main) Merge branch 'feature/json-speicher'
+# *   b90e2d1 (HEAD -> main) Merge branch 'feature/ellipse'
 # |\
-# | * 5c21a8f (feature/json-speicher) JsonFigurSpeicher mit System.Text.Json implementieren
+# | * 5c21a8f (feature/ellipse) Ellipse als neue Figur mit Fläche und Umfang ergänzen
 # * | 3e7f0c2 Kreis: Umfang mit 2·π·r statt π·r berechnen
 # |/
 # * a1f9c3e Entfernen einer Figur in FigurenVerwaltung ergänzen
@@ -97,9 +97,9 @@ Die Ausgabe von `git log --oneline --graph --all` ist das Werkzeug, um sich jede
 Nach dem Merge hat der Feature-Branch seinen Zweck erfüllt und wird gelöscht. Das entfernt nur den Zeiger, keine Commits – sie sind über `main` weiterhin erreichbar:
 
 ```bash
-git branch -d feature/json-speicher
-# Deleted branch feature/json-speicher (was 5c21a8f).
-git push origin --delete feature/json-speicher    # falls er auch auf dem Server lag
+git branch -d feature/ellipse
+# Deleted branch feature/ellipse (was 5c21a8f).
+git push origin --delete feature/ellipse    # falls er auch auf dem Server lag
 ```
 
 `git branch -d` weigert sich, einen Branch zu löschen, der noch nicht gemergte Commits enthält – eine Sicherung gegen Datenverlust. Wer die Commits wirklich verwerfen will, braucht `-D`.

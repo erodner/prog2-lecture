@@ -130,7 +130,7 @@ Es gibt zwei gute Gründe für `sealed`:
 Im Zweifel nicht `sealed` – außer du hast einen Grund. Jedes Siegel nimmt späteren Erweiterungen eine Option weg, und die beste Erweiterung ist oft eine, an die man beim Schreiben der Klasse noch nicht gedacht hat. Wenn du aber weißt, dass eine Klasse ein abgeschlossenes Konzept ist (ein Wert wie `Bruch`, ein Sicherheitsbaustein wie `SicheresKonto`), dann versiegle sie und dokumentiere damit deine Absicht.
 {: .notice--primary}
 
-Übung: Die Klasse `Geist` aus den vorigen Modulen soll erweiterbar bleiben, aber ihre `Name`-Property soll in keiner abgeleiteten Klasse überschrieben werden können. Wie erreichst du das, ohne die Klasse selbst zu versiegeln? Und was passiert, wenn du `Schleimgeist` versiegelst und anschließend `Schleimkoenig : Schleimgeist` schreibst?
+Übung: Die Klasse `Roboter` aus den vorigen Modulen soll erweiterbar bleiben, aber ihre `Name`-Property soll in keiner abgeleiteten Klasse überschrieben werden können. Wie erreichst du das, ohne die Klasse selbst zu versiegeln? Und was passiert, wenn du `Putzroboter` versiegelst und anschließend `Fensterputzroboter : Putzroboter` schreibst?
 {: .notice--info}
 
 ## Weitere Quellen

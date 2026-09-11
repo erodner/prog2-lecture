@@ -87,7 +87,7 @@ Ein Nebeneffekt, den man leicht unterschätzt: Tests beschreiben, wie eine Klass
 
 Manche Teams schreiben den Test sogar *vor* dem Code. Bei **Test-Driven Development (TDD)** läuft ein kurzer Zyklus: erst einen Test schreiben, der fehlschlägt (rot), dann gerade so viel Code, dass er besteht (grün), dann den Code aufräumen, ohne dass ein Test rot wird (refactor). Der rote Schritt ist dabei kein Umweg, sondern der Beweis, dass der Test überhaupt etwas prüft – ein Test, der nie rot war, könnte auch immer grün sein, weil er nichts aussagt. Du musst nicht dogmatisch nach TDD arbeiten; aber die Gewohnheit, jede neue Funktion mit einem Test zu beginnen, sorgt fast automatisch für testbaren Code.
 
-Übung: Schau dir den Ereignisbehandler `DialogGeschlossen` im `@code`-Block von `Components/Pages/Home.razor` des Geometrieeditors an (`examples/03_blazor/Geometrieeditor/Geometrieeditor.Web`). Welche Zeilen darin ließen sich testen, welche nicht – und woran liegt das?
+Übung: Schau dir den Ereignisbehandler `DialogGeschlossen` im `@code`-Block von `Components/Pages/Home.razor` des Geometrieeditors an (`examples/04_blazor/Geometrieeditor/Geometrieeditor.Web`). Welche Zeilen darin ließen sich testen, welche nicht – und woran liegt das?
 {: .notice--info}
 
 ## Weitere Quellen

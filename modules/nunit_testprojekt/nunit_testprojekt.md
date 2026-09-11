@@ -176,7 +176,7 @@ Alle Tests in diesem Kurs folgen einem dreiteiligen Namensschema: `Konstruktor_N
 Übung: Lege für den Geometrieeditor eine Testklasse `KreisTests` an und schreibe zwei Tests nach dem Namensschema: einen für `Flaeche` bei Radius 1 und einen für `Verschieben`, der prüft, dass sich `X` und `Y` um die übergebenen Werte ändern. Führe sie mit `dotnet test` aus.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository unter `examples/12_unittests/Bruch`, die Tests des Geometrieeditors unter `examples/03_blazor/Geometrieeditor/Geometrieeditor.Tests`.
+Das vollständige Projekt findest du im Repository unter `examples/12_unittests/Bruch`, die Tests des Geometrieeditors unter `examples/04_blazor/Geometrieeditor/Geometrieeditor.Tests`.
 
 ## Weitere Quellen
 

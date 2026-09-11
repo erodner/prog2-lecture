@@ -15,7 +15,7 @@ Willkommen zur Veranstaltung **Programmierung 2** für den Studiengang Ingenieur
 
 ## ➤ Worum geht es?
 
-In Programmierung 1 ging es um die „Grundrechenarten“ des Programmierens. In Programmierung 2 geht es um **Entwurf**: Wie baut man aus Klassen ein System, das man erweitern kann, ohne alles umzuschreiben? Vererbung, Interfaces, Generizität, Delegaten und Entwurfsmuster sind die Antworten der Objektorientierung auf diese Frage. Als Anwendung bauen wir eine grafische Oberfläche im Browser mit **Blazor** und lernen dabei, Software in Schichten zu organisieren. Im letzten Teil geht es um das Handwerkszeug, ohne das kein Softwareprojekt auskommt: Versionsverwaltung mit Git, Bibliotheken über NuGet, native Bibliotheken und automatisierte Unit-Tests.
+In Programmierung 1 ging es um die „Grundrechenarten“ des Programmierens. In Programmierung 2 geht es um **Entwurf**: Wie baut man aus Klassen ein System, das man erweitern kann, ohne alles umzuschreiben? Vererbung, Interfaces, Generizität, Delegaten und Entwurfsmuster sind die Antworten der Objektorientierung auf diese Frage. Als Anwendung bauen wir eine grafische Oberfläche im Browser mit **Blazor** und lernen dabei, Software in Schichten zu organisieren. Dazu kommt das Handwerkszeug, ohne das kein Softwareprojekt auskommt: Versionsverwaltung mit Git gleich zu Beginn, später Bibliotheken über NuGet, native Bibliotheken und automatisierte Unit-Tests.
 
 Durch die gesamte Veranstaltung zieht sich ein Beispiel: der **Geometrieeditor**. Er beginnt als kleine Klassenhierarchie, bekommt eine Oberfläche, speichert seine Daten als JSON und wird am Ende automatisch getestet. Alle Beispielprojekte findest du im Repository unter `examples/`.
 
@@ -36,33 +36,36 @@ Die Vorlesung besteht aus:
 
 ### Teil 1: Objektorientierung vertieft
 
-1. [Erben ohne Sterben – Vererbung](/lectures/01/01.md) – `virtual`/`override`, `sealed`, Laufzeittyp, `object`, Garbage Collection
-2. [Abstrakte Kunst – Abstrakte Klassen und Interfaces](/lectures/02/02.md) – `abstract`, `interface`, Schnittstellen- vs. Implementierungsvererbung
+1. [Vererbung](/lectures/01/01.md) – `virtual`/`override`, `sealed`, Laufzeittyp, `object`, Garbage Collection
+2. [Abstrakte Klassen und Interfaces](/lectures/02/02.md) – `abstract`, `interface`, Schnittstellen- vs. Implementierungsvererbung
 
-### Teil 2: Anwendungen bauen
+### Teil 2: Zusammenarbeit
 
-3. [Blick durchs Fenster – GUI mit Blazor und Schichten-Architekturen](/lectures/03/03.md) – Razor-Komponenten, Layout, Ereignisse, Datenbindung, Dialoge, Drei-Schichten-Architektur
+3. [Git – Versionsverwaltung](/lectures/03/03.md) – Konzepte, Kommandozeile, Branches, Merge-Konflikte, IDE-Integration
 
-### Teil 3: Generisch und funktional
+### Teil 3: Anwendungen bauen
 
-4. [Mal ganz generell gesagt – Generizität](/lectures/04/04.md) – Generische Methoden und Typen, Constraints
-5. [Gut gesammelt und sortiert – Collections, Algorithmen und LINQ](/lectures/05/05.md) – Hashing, Sortieren, Suchen, Collections, LINQ-Abfragen
-6. [Blumen für die Dame – Delegaten, Lambdas und Ereignisse](/lectures/06/06.md) – `delegate`, `Func`/`Action`, Lambda-Ausdrücke, `event`
+4. [GUI mit Blazor und Schichten-Architekturen](/lectures/04/04.md) – Razor-Komponenten, Layout, Ereignisse, Datenbindung, Dialoge, Drei-Schichten-Architektur
 
-### Teil 4: Entwurf
+### Teil 4: Generisch und funktional
 
-7. [Aus Erfahrung gut – Entwurfsmuster](/lectures/07/07.md) – Singleton, Adapter, Composite, Iterator, Observer
+5. [Generizität](/lectures/05/05.md) – Generische Methoden und Typen, Constraints
+6. [Collections, Algorithmen und LINQ](/lectures/06/06.md) – Hashing, Sortieren, Suchen, Collections, LINQ-Abfragen
+7. [Delegaten, Lambdas und Ereignisse](/lectures/07/07.md) – `delegate`, `Func`/`Action`, Lambda-Ausdrücke, `event`
 
-### Teil 5: Daten rein und raus
+### Teil 5: Entwurf
 
-8. [Ich muss mal raus – Dateien, Streams und Serialisierung](/lectures/08/08.md) – `File`, Streams, `IDisposable`, JSON/XML, `HttpClient`
+8. [Entwurfsmuster](/lectures/08/08.md) – Singleton, Adapter, Composite, Iterator, Observer
 
-### Teil 6: Werkzeuge der Softwareentwicklung
+### Teil 6: Daten rein und raus
 
-9. [Wohin mit dem Code – Git](/lectures/09/09.md) – Konzepte, Kommandozeile, Branches, Merge-Konflikte, IDE-Integration
-10. [Einbindung nativer Bibliotheken – P/Invoke](/lectures/10/10.md) – `DllImport`, `LibraryImport`, Marshalling
-11. [Nimm doch, was andere schon gemacht haben – NuGet](/lectures/11/11.md) – Pakete finden, einbinden, bewerten
-12. [Funktioniert das wirklich? – Unit-Testing](/lectures/12/12.md) – NUnit, Assertions, `dotnet test`
+9. [Dateien, Streams und Serialisierung](/lectures/09/09.md) – `File`, Streams, `IDisposable`, JSON/XML, `HttpClient`
+
+### Teil 7: Werkzeuge der Softwareentwicklung
+
+10. [Native Bibliotheken – P/Invoke](/lectures/10/10.md) – `DllImport`, `LibraryImport`, Marshalling
+11. [NuGet – Paketverwaltung](/lectures/11/11.md) – Pakete finden, einbinden, bewerten
+12. [Unit-Testing](/lectures/12/12.md) – NUnit, Assertions, `dotnet test`
 
 ---
 

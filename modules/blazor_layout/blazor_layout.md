@@ -130,7 +130,7 @@ Die Standardvorlage von `dotnet new blazor` bringt außerdem das CSS-Framework *
 Übung: Ergänze den Arbeitsbereich um eine dritte Spalte mit einer Vorschau der ausgewählten Figur (zunächst nur Name und Fläche) und wähle die Spaltenverhältnisse so, dass die Liste schmal, Vorschau und Details gleich breit sind. Verändere anschließend nur das CSS so, dass die Statuszeile in der Kopfzeile rechts neben der Überschrift erscheint. Welche Eigenschaft braucht die Kopfzeile dafür?
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository unter `examples/03_blazor/Geometrieeditor`.
+Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`.
 
 ## Weitere Quellen
 

@@ -211,7 +211,7 @@ Ein leerer Ordner liefert `Sum` über eine leere Liste, also `0` – ohne Sonder
 
 ## Aufgabe 3 — Algorithmenentwurf
 
-Die folgende Iterator-Methode arbeitet mit den Figuren des Geometrieeditors (`Rechteck` und `Kreis` aus `examples/03_blazor/Geometrieeditor`). Sie soll nur Figuren liefern, deren Fläche mindestens `minFlaeche` ist – und von diesen nur jede zweite.
+Die folgende Iterator-Methode arbeitet mit den Figuren des Geometrieeditors (`Rechteck` und `Kreis` aus `examples/04_blazor/Geometrieeditor`). Sie soll nur Figuren liefern, deren Fläche mindestens `minFlaeche` ist – und von diesen nur jede zweite.
 
 ```csharp
 static IEnumerable<Figur> GrosseJedeZweite(List<Figur> figuren, double minFlaeche)

@@ -15,7 +15,7 @@ Wer schon einmal einen Ordner mit `Geometrieeditor_final`, `Geometrieeditor_fina
 
 Ein Versionsverwaltungssystem (*Version Control System*, VCS) leistet mehrere Dinge auf einmal:
 
-- **Zeitmaschine:** Jeder festgehaltene Stand („Version“) lässt sich wiederherstellen. Wenn die JSON-Speicherung seit Dienstag kaputt ist, kann man den Stand von Montag ansehen und vergleichen.
+- **Zeitmaschine:** Jeder festgehaltene Stand („Version“) lässt sich wiederherstellen. Wenn die Flächenberechnung im `Dreieck` seit Dienstag falsche Werte liefert, kann man den Stand von Montag ansehen und vergleichen.
 - **Zusammenarbeit:** Mehrere Personen ändern dasselbe Projekt, und das System führt ihre Änderungen zusammen, statt dass die letzte Person gewinnt.
 - **Sicherung:** Das Projekt liegt nicht nur auf einem Laptop, sondern auch auf einem Server und auf den Rechnern aller Beteiligten.
 - **Undo auf Projektebene:** Eine misslungene Änderung lässt sich rückgängig machen, auch wenn sie zehn Dateien betrifft.
@@ -23,7 +23,7 @@ Ein Versionsverwaltungssystem (*Version Control System*, VCS) leistet mehrere Di
 
 ## Textdateien und Binärdateien
 
-Versionsverwaltung funktioniert am besten mit **Textdateien**: `.cs`, `.razor`, `.csproj`, `.json`, `.md`. Für Text kann Git zwei Versionen zeilenweise vergleichen und beim Speichern nur die Unterschiede (*Deltas*) komprimieren. Bei Binärdateien – Bilder, PDFs, Word-Dokumente, vor allem aber kompilierte `.dll`- und `.exe`-Dateien – geht das nicht: Jede Änderung bedeutet eine komplette neue Kopie, und das Repository wächst mit jeder Version. Daraus folgt die wichtigste Spielregel: Ins Repository gehören Quelltexte und Projektdateien, nicht die Build-Ausgaben in `bin/` und `obj/`. Wie man Git das beibringt, sehen wir in [Erste Schritte mit Git](/modules/git_erste_schritte/git_erste_schritte.md).
+Versionsverwaltung funktioniert am besten mit **Textdateien**: `.cs`, `.csproj`, `.json`, `.md`. Für Text kann Git zwei Versionen zeilenweise vergleichen und beim Speichern nur die Unterschiede (*Deltas*) komprimieren. Bei Binärdateien – Bilder, PDFs, Word-Dokumente, vor allem aber kompilierte `.dll`- und `.exe`-Dateien – geht das nicht: Jede Änderung bedeutet eine komplette neue Kopie, und das Repository wächst mit jeder Version. Daraus folgt die wichtigste Spielregel: Ins Repository gehören Quelltexte und Projektdateien, nicht die Build-Ausgaben in `bin/` und `obj/`. Wie man Git das beibringt, sehen wir in [Erste Schritte mit Git](/modules/git_erste_schritte/git_erste_schritte.md).
 
 ## Zentral oder dezentral?
 
@@ -37,25 +37,26 @@ Versionsverwaltung funktioniert am besten mit **Textdateien**: `.cs`, `.razor`, 
 | **Arbeitskopie** (*Working Tree*) | Die normalen Dateien im Projektordner, die du im Editor siehst und bearbeitest |
 | **Staging-Bereich** (*Index*) | Zwischenablage: Änderungen, die in die nächste Version aufgenommen werden sollen |
 | **Commit** | Eine festgehaltene Version: Momentaufnahme aller Dateien plus Autor, Zeit, Nachricht und Vorgänger |
-| **Branch** | Ein benannter Zweig der Historie, z. B. `main` oder `feature/json-speicher` |
+| **Branch** | Ein benannter Zweig der Historie, z. B. `main` oder `feature/ellipse` |
 | **Remote** | Ein anderes Repository, meist auf einem Server, mit dem man Commits austauscht |
 
-Der Staging-Bereich irritiert Einsteiger am meisten: Warum nicht einfach alles direkt festhalten? Weil man oft an mehreren Dingen gleichzeitig gearbeitet hat – ein Bugfix in `Kreis.cs` und ein halbfertiges Feature in `Home.razor` – und nur den Bugfix als eigenständige Version festhalten möchte. Der Staging-Bereich erlaubt es, den nächsten Commit gezielt zusammenzustellen.
+Der Staging-Bereich irritiert Einsteiger am meisten: Warum nicht einfach alles direkt festhalten? Weil man oft an mehreren Dingen gleichzeitig gearbeitet hat – ein Bugfix in `Kreis.cs` und ein halbfertiges Feature in `FigurenVerwaltung.cs` – und nur den Bugfix als eigenständige Version festhalten möchte. Der Staging-Bereich erlaubt es, den nächsten Commit gezielt zusammenzustellen.
 
 ## Die Objektdatenbank
 
 Im Ordner `.git/` speichert Git alles in einer einfachen Objektdatenbank mit drei Objektarten. Ein **Blob** ist der Inhalt einer Datei, ohne Namen. Ein **Tree** ist ein Verzeichnis: eine Liste von Namen, die auf Blobs (Dateien) oder weitere Trees (Unterordner) zeigen. Ein **Commit** zeigt auf genau einen Tree – den Wurzelordner des Projekts zu diesem Zeitpunkt – und zusätzlich auf seinen Vorgänger-Commit:
 
 ```
-commit a1f9c3e  "JsonFigurSpeicher hinzufügen"
-  parent  ──► commit 7d2b0e4  "FigurenVerwaltung mit Suchen"
+commit a1f9c3e  "Entfernen einer Figur in FigurenVerwaltung ergänzen"
+  parent  ──► commit 7d2b0e4  "Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen"
   tree    ──► tree 3c8e...
-                ├── Geometrieeditor.slnx           ──► blob 9f01...
+                ├── .gitignore                     ──► blob 9f01...
                 ├── Geometrieeditor.Fachkonzept/   ──► tree 51aa...
                 │     ├── Figur.cs                 ──► blob e7c2...
+                │     ├── Kreis.cs                 ──► blob 6a3f...
                 │     └── FigurenVerwaltung.cs     ──► blob 0b4d...
-                └── Geometrieeditor.Datenhaltung/  ──► tree 8e13...
-                      └── JsonFigurSpeicher.cs     ──► blob 44f8...
+                └── Geometrieeditor.Konsole/       ──► tree 8e13...
+                      └── Program.cs               ──► blob 44f8...
 ```
 
 Jedes Objekt wird über den **SHA-1-Hash** seines Inhalts benannt – die 40-stelligen Hexadezimalzahlen, von denen man im Alltag nur die ersten sieben Zeichen sieht. Das hat zwei Konsequenzen. Erstens ist der Name eines Objekts eine Prüfsumme: Ändert sich ein einziges Byte in `Figur.cs`, entsteht ein Blob mit einem anderen Namen, und damit auch ein neuer Tree und ein neuer Commit. Nichts in der Historie lässt sich unbemerkt manipulieren. Zweitens werden unveränderte Dateien nicht doppelt gespeichert: Zeigt der neue Commit in zwei Ordnern auf denselben Blob wie der alte, liegt der Inhalt nur einmal auf der Platte.
@@ -76,7 +77,7 @@ Weil jeder Commit auf seinen Vorgänger zeigt, bildet die Historie eine Kette �
           └── C4 ◄── C5
                      ▲
                      │
-             feature/json-speicher
+              feature/ellipse
 ```
 
 `C3` und `C4` haben denselben Elternteil `C2`. Führt man später beide Zweige zusammen, entsteht ein Commit mit **zwei** Eltern. Alles, was Git sonst noch kann – Branches, Merges, das Zurückspringen auf alte Stände –, ist nur ein Bewegen von Zeigern in diesem Graphen von Momentaufnahmen. Wer dieses Bild im Kopf hat, versteht auch die Fehlermeldungen, die Git gelegentlich ausgibt.

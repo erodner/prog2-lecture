@@ -92,9 +92,9 @@ public static bool operator ==(Bruch? a, Bruch? b) => a is null ? b is null : a.
 public static bool operator !=(Bruch? a, Bruch? b) => !(a == b);
 ```
 
-`string` macht genau das, weshalb `"abc" == "abc"` trotz Referenztyp inhaltlich vergleicht. Für eigene Klassen ist es eine Abwägung: Ein Wert wie `Bruch` profitiert davon, für einen `Geist` mit Identität wäre es irreführend. Mit `(object)a == (object)b` kann man jederzeit auf den Referenzvergleich zurückgreifen.
+`string` macht genau das, weshalb `"abc" == "abc"` trotz Referenztyp inhaltlich vergleicht. Für eigene Klassen ist es eine Abwägung: Ein Wert wie `Bruch` profitiert davon, für einen `Roboter` mit Identität wäre es irreführend. Mit `(object)a == (object)b` kann man jederzeit auf den Referenzvergleich zurückgreifen.
 
-`Equals` und `GetHashCode` gehören **immer zusammen** überschrieben. Der Vertrag lautet: Sind zwei Objekte laut `Equals` gleich, müssen sie denselben Hashcode liefern. `Dictionary` und `HashSet` verlassen sich darauf – sie suchen zuerst per Hashcode und vergleichen erst dann mit `Equals`. Wer nur `Equals` überschreibt, bekommt einen Compiler-Hinweis (CS0659) und ein `HashSet<Bruch>`, das ½ zweimal enthält. Warum genau, sehen wir in [Vorlesung 05](/modules/hashcodes_equals/hashcodes_equals.md).
+`Equals` und `GetHashCode` gehören **immer zusammen** überschrieben. Der Vertrag lautet: Sind zwei Objekte laut `Equals` gleich, müssen sie denselben Hashcode liefern. `Dictionary` und `HashSet` verlassen sich darauf – sie suchen zuerst per Hashcode und vergleichen erst dann mit `Equals`. Wer nur `Equals` überschreibt, bekommt einen Compiler-Hinweis (CS0659) und ein `HashSet<Bruch>`, das ½ zweimal enthält. Warum genau, sehen wir in [Vorlesung 06](/modules/hashcodes_equals/hashcodes_equals.md).
 {: .notice--warning}
 
 ## `MemberwiseClone` – die flache Kopie
@@ -102,28 +102,28 @@ public static bool operator !=(Bruch? a, Bruch? b) => !(a == b);
 `MemberwiseClone()` legt ein neues Objekt derselben Klasse an und kopiert alle Felder hinein. Weil die Methode `protected` ist, stellt man sie üblicherweise über eine eigene öffentliche Methode bereit:
 
 ```csharp
-class Spukhaus
+class Fabrikhalle
 {
     public string Adresse { get; set; } = "";
-    public List<Geist> Bewohner { get; set; } = new List<Geist>();
+    public List<Roboter> Maschinenpark { get; set; } = new List<Roboter>();
 
-    public Spukhaus Kopie() => (Spukhaus)MemberwiseClone();
+    public Fabrikhalle Kopie() => (Fabrikhalle)MemberwiseClone();
 }
 
-Spukhaus original = new Spukhaus { Adresse = "Gruselgasse 1" };
-original.Bewohner.Add(new Geist("Spooky"));
+Fabrikhalle original = new Fabrikhalle { Adresse = "Fabrikstraße 1" };
+original.Maschinenpark.Add(new Roboter("Robbi"));
 
-Spukhaus kopie = original.Kopie();
-kopie.Adresse = "Gruselgasse 2";
-kopie.Bewohner.Add(new Geist("Schleimi"));
+Fabrikhalle kopie = original.Kopie();
+kopie.Adresse = "Fabrikstraße 2";
+kopie.Maschinenpark.Add(new Roboter("Wischi"));
 
-Console.WriteLine(original.Adresse);          // Gruselgasse 1
-Console.WriteLine(original.Bewohner.Count);   // 2
+Console.WriteLine(original.Adresse);               // Fabrikstraße 1
+Console.WriteLine(original.Maschinenpark.Count);   // 2
 ```
 
-Die Adresse ist unabhängig, die Bewohnerliste nicht: `MemberwiseClone` kopiert bei Referenzfeldern nur die **Referenz**, nicht das Objekt dahinter. Beide Häuser teilen sich dieselbe Liste – man spricht von einer **flachen Kopie** (*shallow copy*). Wer eine echte, **tiefe Kopie** braucht, muss die enthaltenen Objekte selbst kopieren, etwa mit `Bewohner = new List<Geist>(original.Bewohner)`.
+Die Adresse ist unabhängig, der Maschinenpark nicht: `MemberwiseClone` kopiert bei Referenzfeldern nur die **Referenz**, nicht das Objekt dahinter. Beide Hallen teilen sich dieselbe Liste – man spricht von einer **flachen Kopie** (*shallow copy*). Wer eine echte, **tiefe Kopie** braucht, muss die enthaltenen Objekte selbst kopieren, etwa mit `Maschinenpark = new List<Roboter>(original.Maschinenpark)`.
 
-Übung: Überschreibe in der Klasse `Geist` die Methode `ToString()` so, dass `Console.WriteLine(g)` den Namen und den Laufzeittyp ausgibt, etwa „Schleimi (Schleimgeist)“ – ohne dass `Schleimgeist` die Methode noch einmal überschreiben muss. Welche geerbte Methode hilft dir dabei?
+Übung: Überschreibe in der Klasse `Roboter` die Methode `ToString()` so, dass `Console.WriteLine(r)` den Namen und den Laufzeittyp ausgibt, etwa „Wischi (Putzroboter)“ – ohne dass `Putzroboter` die Methode noch einmal überschreiben muss. Welche geerbte Methode hilft dir dabei?
 {: .notice--info}
 
 ## Weitere Quellen

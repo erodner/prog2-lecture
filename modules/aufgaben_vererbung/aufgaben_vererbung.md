@@ -16,62 +16,62 @@ Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch
 Die CLR wählt bei jedem Methodenaufruf nach festen Regeln die Implementierung aus. Spiele diesen Algorithmus von Hand durch und sage die Ausgabe voraus – **ohne** den Code auszuführen:
 
 ```csharp
-class Geist
+class Roboter
 {
-    public virtual void Spuken() => Console.WriteLine("Geist.Spuken");
-    public void Verschwinden() => Console.WriteLine("Geist.Verschwinden");
-    public virtual void Lachen() => Console.WriteLine("Geist.Lachen");
+    public virtual void Arbeiten() => Console.WriteLine("Roboter.Arbeiten");
+    public void Abschalten() => Console.WriteLine("Roboter.Abschalten");
+    public virtual void Piepen() => Console.WriteLine("Roboter.Piepen");
 }
 
-class Schleimgeist : Geist
+class Putzroboter : Roboter
 {
-    public override void Spuken() => Console.WriteLine("Schleimgeist.Spuken");
-    public new void Verschwinden() => Console.WriteLine("Schleimgeist.Verschwinden");
-    public new virtual void Lachen() => Console.WriteLine("Schleimgeist.Lachen");
+    public override void Arbeiten() => Console.WriteLine("Putzroboter.Arbeiten");
+    public new void Abschalten() => Console.WriteLine("Putzroboter.Abschalten");
+    public new virtual void Piepen() => Console.WriteLine("Putzroboter.Piepen");
 }
 
-class Schleimkoenig : Schleimgeist
+class Fensterputzroboter : Putzroboter
 {
-    public override void Spuken() { Console.WriteLine("Schleimkoenig.Spuken"); base.Spuken(); }
-    public override void Lachen() => Console.WriteLine("Schleimkoenig.Lachen");
+    public override void Arbeiten() { Console.WriteLine("Fensterputzroboter.Arbeiten"); base.Arbeiten(); }
+    public override void Piepen() => Console.WriteLine("Fensterputzroboter.Piepen");
 }
 
-Geist a = new Schleimkoenig();
-Schleimgeist b = new Schleimkoenig();
-a.Spuken(); a.Verschwinden(); a.Lachen();
-b.Spuken(); b.Verschwinden(); b.Lachen();
+Roboter a = new Fensterputzroboter();
+Putzroboter b = new Fensterputzroboter();
+a.Arbeiten(); a.Abschalten(); a.Piepen();
+b.Arbeiten(); b.Abschalten(); b.Piepen();
 ```
 
 - Welche Methoden sind `virtual`/`override` (Laufzeittyp entscheidet), welche versteckt (Kompilierzeittyp entscheidet)?
-- Was bewirkt `new virtual` in `Schleimgeist` für die Methode `Lachen` – und welche `Lachen`-Methode überschreibt `Schleimkoenig` damit eigentlich?
+- Was bewirkt `new virtual` in `Putzroboter` für die Methode `Piepen` – und welche `Piepen`-Methode überschreibt `Fensterputzroboter` damit eigentlich?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Die Ketten sortieren:** `Spuken` ist eine durchgehende `virtual`/`override`-Kette von `Geist` bis `Schleimkoenig`. `Verschwinden` ist in `Geist` nicht `virtual` und wird in `Schleimgeist` versteckt. `Lachen` ist tückisch: `Schleimgeist` versteckt die Methode von `Geist` und beginnt mit `new virtual` eine **zweite, unabhängige** Kette. Das `override` in `Schleimkoenig` überschreibt die nächstgelegene virtuelle Methode – also `Schleimgeist.Lachen`, nicht `Geist.Lachen`.
+**Schritt 1 — Die Ketten sortieren:** `Arbeiten` ist eine durchgehende `virtual`/`override`-Kette von `Roboter` bis `Fensterputzroboter`. `Abschalten` ist in `Roboter` nicht `virtual` und wird in `Putzroboter` versteckt. `Piepen` ist tückisch: `Putzroboter` versteckt die Methode von `Roboter` und beginnt mit `new virtual` eine **zweite, unabhängige** Kette. Das `override` in `Fensterputzroboter` überschreibt die nächstgelegene virtuelle Methode – also `Putzroboter.Piepen`, nicht `Roboter.Piepen`.
 
-**Schritt 2 — Aufrufe über `a` (Kompilierzeittyp `Geist`):**
-
-```
-Schleimkoenig.Spuken       // virtual: Laufzeittyp Schleimkoenig
-Schleimgeist.Spuken        // base.Spuken() aus Schleimkoenig
-Geist.Verschwinden         // nicht virtual: Kompilierzeittyp Geist
-Geist.Lachen               // Kette von Geist.Lachen hat kein override
-```
-
-**Schritt 3 — Aufrufe über `b` (Kompilierzeittyp `Schleimgeist`):**
+**Schritt 2 — Aufrufe über `a` (Kompilierzeittyp `Roboter`):**
 
 ```
-Schleimkoenig.Spuken
-Schleimgeist.Spuken
-Schleimgeist.Verschwinden  // Kompilierzeittyp ist jetzt Schleimgeist
-Schleimkoenig.Lachen       // Kette von Schleimgeist.Lachen, überschrieben
+Fensterputzroboter.Arbeiten   // virtual: Laufzeittyp Fensterputzroboter
+Putzroboter.Arbeiten          // base.Arbeiten() aus Fensterputzroboter
+Roboter.Abschalten            // nicht virtual: Kompilierzeittyp Roboter
+Roboter.Piepen                // Kette von Roboter.Piepen hat kein override
+```
+
+**Schritt 3 — Aufrufe über `b` (Kompilierzeittyp `Putzroboter`):**
+
+```
+Fensterputzroboter.Arbeiten
+Putzroboter.Arbeiten
+Putzroboter.Abschalten        // Kompilierzeittyp ist jetzt Putzroboter
+Fensterputzroboter.Piepen     // Kette von Putzroboter.Piepen, überschrieben
 ```
 
 **Zentrale Designentscheidungen:**
 
-- **Ein Objekt, zwei Verhalten:** `a` und `b` zeigen auf Objekte desselben Typs, liefern aber bei `Verschwinden` und `Lachen` unterschiedliche Ausgaben. Genau deshalb ist Verstecken in Hierarchien ein Wartungsrisiko.
-- **`new virtual` startet eine neue Kette:** Wer eine Methode versteckt und gleichzeitig `virtual` macht, koppelt die Basisklasse ab. Für Code, der nur `Geist` kennt, existiert das Überschreiben in `Schleimkoenig` nicht.
+- **Ein Objekt, zwei Verhalten:** `a` und `b` zeigen auf Objekte desselben Typs, liefern aber bei `Abschalten` und `Piepen` unterschiedliche Ausgaben. Genau deshalb ist Verstecken in Hierarchien ein Wartungsrisiko.
+- **`new virtual` startet eine neue Kette:** Wer eine Methode versteckt und gleichzeitig `virtual` macht, koppelt die Basisklasse ab. Für Code, der nur `Roboter` kennt, existiert das Überschreiben in `Fensterputzroboter` nicht.
 - **Regel für die Praxis:** Willst du Polymorphie, brauchst du eine ununterbrochene `virtual`/`override`-Kette bis zur Basisklasse.
 
 </details>

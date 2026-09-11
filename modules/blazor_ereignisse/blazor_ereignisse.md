@@ -159,7 +159,7 @@ Die Idee ist dieselbe: Eine Methode wird bei einem Steuerelement für ein Ereign
 Übung: Erweitere die Figurenliste so, dass ein Doppelklick (`@ondblclick`) die Figur um 10 nach rechts verschiebt, während ein einfacher Klick sie weiterhin nur auswählt. Ergänze dann im Dialog ein `@onkeydown` auf dem Namensfeld, sodass Enter dieselbe Wirkung wie der OK-Button hat und Escape wie Abbrechen. Welche Signatur braucht der Handler dafür?
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository unter `examples/03_blazor/Geometrieeditor`.
+Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`.
 
 ## Weitere Quellen
 

@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Stell dir vor, du hast keine Zeit, selbst Blumen zu besorgen. Ein Butler wäre jetzt praktisch: Du sagst ihm nur „Geh und hole Blumen für maximal 25 Euro“, und er übernimmt. Wichtig ist dabei: Du beschreibst die *Aufgabe* – was hineingeht (ein Budget) und was herauskommt (Blumen). *Wer* die Aufgabe am Ende erledigt, ist austauschbar. Genau dieses Prinzip bringt der **Delegat** (*delegate*) nach C#: ein Typ, der nicht Daten beschreibt, sondern eine Methodensignatur. Eine Variable dieses Typs zeigt auf eine Methode – und kann wie eine Methode aufgerufen werden.
+Stell dir vor, du hast keine Zeit, selbst einkaufen zu gehen. Du gibst deshalb einem Boten einen Auftrag mit fester Form: „Kauf für höchstens 25 Euro ein.“ Wichtig ist dabei: Du beschreibst den *Auftrag* – was hineingeht (ein Budget) und was herauskommt (ein Einkauf). *Wer* den Auftrag am Ende ausführt, ist egal – Hauptsache, die Form passt. Genau dieses Prinzip bringt der **Delegat** (*delegate*) nach C#: ein Typ, der nicht Daten beschreibt, sondern eine Methodensignatur. Eine Variable dieses Typs zeigt auf eine Methode – und kann wie eine Methode aufgerufen werden.
 
 Warum ist das wichtig? Bisher konnten wir Methoden nur Werte übergeben: Zahlen, Strings, Objekte. Mit Delegaten können wir einer Methode **Verhalten** übergeben – eine Rechenvorschrift, eine Bedingung, eine Reaktion. Das ist die Grundlage für alles, was in dieser Vorlesung folgt: `Func` und `Action`, Lambda-Ausdrücke, die LINQ-Methodensyntax und Ereignisse.
 
@@ -18,31 +18,41 @@ Warum ist das wichtig? Bisher konnten wir Methoden nur Werte übergeben: Zahlen,
 Eine gewöhnliche Variable besteht aus einem Datentyp und einem passenden Wert. Bei einem Delegaten ist der Datentyp die **Signatur** einer Methode (Rückgabetyp und Parameterliste), der Wert ein **Verweis auf eine Methode**, die diese Signatur erfüllt. Deklariert wird ein Delegattyp mit dem Schlüsselwort `delegate`:
 
 ```csharp
-delegate Blumen BlumenHandler(double maxGeld);
+delegate Einkauf EinkaufHandler(double maxGeld);
 ```
 
-Das liest sich wie ein Methodenkopf ohne Rumpf: `BlumenHandler` ist der Name des neuen Typs, `Blumen` der geforderte Rückgabetyp, `double maxGeld` der geforderte Parameter. Jede Methode, die einen `double` nimmt und `Blumen` zurückgibt, kann diesem Butler als Aufgabe zugewiesen werden – egal wie die Methode heißt und wo sie steht:
+Das liest sich wie ein Methodenkopf ohne Rumpf: `EinkaufHandler` ist der Name des neuen Typs, `Einkauf` der geforderte Rückgabetyp, `double maxGeld` der geforderte Parameter. Jede Methode, die einen `double` nimmt und einen `Einkauf` zurückgibt, kann diesem Boten als Auftrag zugewiesen werden – egal wie die Methode heißt und wo sie steht:
 
 ```csharp
-record Blumen(string Sorte, double Preis);
-
-static Blumen GeheUndHoleBlumen(double maxGeld)
+class Einkauf
 {
-    return new Blumen("Tulpen", Math.Min(maxGeld, 12.50));
+    public string Ware { get; }
+    public double Preis { get; }
+
+    public Einkauf(string ware, double preis)
+    {
+        Ware = ware;
+        Preis = preis;
+    }
 }
 
-BlumenHandler meinButler = GeheUndHoleBlumen;   // Methode zuweisen – ohne Klammern!
-Blumen strauss = meinButler(25.0);              // aufrufen wie eine Methode
+static Einkauf GeheEinkaufen(double maxGeld)
+{
+    return new Einkauf("Brot und Kaese", Math.Min(maxGeld, 12.50));
+}
+
+EinkaufHandler meinBote = GeheEinkaufen;   // Methode zuweisen – ohne Klammern!
+Einkauf einkauf = meinBote(25.0);          // aufrufen wie eine Methode
 ```
 
-Zwei Dinge fallen auf. Erstens steht bei der Zuweisung `GeheUndHoleBlumen` **ohne runde Klammern**: Klammern würden die Methode *aufrufen* und ihr Ergebnis zuweisen – wir wollen aber die Methode *selbst* in die Variable legen. Zweitens sieht der Aufruf `meinButler(25.0)` genauso aus wie ein normaler Methodenaufruf. Tatsächlich wird die dahinterliegende Methode `GeheUndHoleBlumen` ausgeführt.
+Zwei Dinge fallen auf. Erstens steht bei der Zuweisung `GeheEinkaufen` **ohne runde Klammern**: Klammern würden die Methode *aufrufen* und ihr Ergebnis zuweisen – wir wollen aber die Methode *selbst* in die Variable legen. Zweitens sieht der Aufruf `meinBote(25.0)` genauso aus wie ein normaler Methodenaufruf. Tatsächlich wird die dahinterliegende Methode `GeheEinkaufen` ausgeführt.
 
 Für die Namen von Delegattypen hat sich das Suffix `Handler` eingebürgert – so wie Exception-Klassen auf `Exception` enden. Das ist eine Konvention, keine Regel: Die vordefinierten Delegaten `Func`, `Action` oder `Predicate` halten sich nicht daran.
 {: .notice--primary}
 
 ## Ein Delegat für die Grundrechenarten
 
-Im echten Leben erledigt ein Butler viele verschiedene Aufgaben. In C# braucht man pro Aufgabenart einen eigenen Delegattyp, dessen Signatur genau festgelegt ist. Für Rechenoperationen mit zwei ganzen Zahlen sieht das so aus:
+Im echten Leben erledigt ein Bote viele verschiedene Aufträge. In C# braucht man pro Auftragsart einen eigenen Delegattyp, dessen Signatur genau festgelegt ist. Für Rechenoperationen mit zwei ganzen Zahlen sieht das so aus:
 
 ```csharp
 delegate int RechenHandler(int a, int b);
@@ -51,7 +61,7 @@ static int Addiere(int x, int y) => x + y;
 static int Subtrahiere(int x, int y) => x - y;
 ```
 
-Die Parameternamen in der Delegatdeklaration (`a`, `b`) müssen nicht mit denen der Methoden (`x`, `y`) übereinstimmen – nur Typen und Reihenfolge zählen. Der eigentliche Nutzen zeigt sich, wenn wir den Delegaten als **Parameter** einer Methode verwenden. Die Methode `FuehreAus` weiß nicht, welche Rechnung sie ausführt – sie ruft einfach den Butler auf:
+Die Parameternamen in der Delegatdeklaration (`a`, `b`) müssen nicht mit denen der Methoden (`x`, `y`) übereinstimmen – nur Typen und Reihenfolge zählen. Der eigentliche Nutzen zeigt sich, wenn wir den Delegaten als **Parameter** einer Methode verwenden. Die Methode `FuehreAus` weiß nicht, welche Rechnung sie ausführt – sie ruft einfach den Boten auf:
 
 ```csharp
 static void FuehreAus(RechenHandler rechnung)

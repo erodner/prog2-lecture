@@ -18,11 +18,11 @@ Gegeben ist der folgende Ausschnitt aus `git log --oneline --graph --all` im Rep
 ```
 * 9e1c4b7 (feature/sortieren) Figuren nach Fläche sortieren
 * 2a7d0f3 IComparable<Figur> in Figur implementieren
-| * c4e88a1 (HEAD -> main) README: Bauanleitung mit dotnet test ergänzen
+| * c4e88a1 (HEAD -> main) README: Bauanleitung mit dotnet build ergänzen
 | * 71b2d9e Kreis: Umfang mit 2·π·r berechnen
 |/
 * a1f9c3e Entfernen einer Figur in FigurenVerwaltung ergänzen
-* 7d2b0e4 Geometrieeditor als Solution mit vier Projekten anlegen
+* 7d2b0e4 Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen
 ```
 
 Beantworte ohne Terminal:
@@ -51,7 +51,7 @@ Ein Fast-Forward ist nur möglich, wenn der Zielbranch ein Vorfahr des hereinkom
 |\
 | * 9e1c4b7 (feature/sortieren) Figuren nach Fläche sortieren
 | * 2a7d0f3 IComparable<Figur> in Figur implementieren
-* | c4e88a1 README: Bauanleitung mit dotnet test ergänzen
+* | c4e88a1 README: Bauanleitung mit dotnet build ergänzen
 * | 71b2d9e Kreis: Umfang mit 2·π·r berechnen
 |/
 * a1f9c3e Entfernen einer Figur in FigurenVerwaltung ergänzen
@@ -71,7 +71,7 @@ Ein Konflikt entsteht nur, wenn **beide** Seiten dieselben Zeilen einer Datei ge
 
 ## Aufgabe 2 — Zerlegung
 
-Du sollst im Geometrieeditor das Feature „Figuren nach Fläche sortieren“ umsetzen: In der GUI soll ein Button *Nach Fläche sortieren* die Liste aufsteigend sortiert anzeigen. Betroffen sind das Fachkonzept (`Figur`, `FigurenVerwaltung`), die GUI (`Components/Pages/Home.razor`) und die Tests (`FigurenVerwaltungTests`).
+Du sollst im Geometrieeditor das Feature „Figuren nach Fläche sortieren“ umsetzen: Das Konsolenprogramm soll alle Figuren aufsteigend nach Fläche ausgeben. Betroffen sind die Klassenbibliothek (`Figur`, `FigurenVerwaltung`) und das Konsolenprogramm (`Geometrieeditor.Konsole/Program.cs`).
 
 Zerlege das Feature in eine Folge von Commits auf einem Branch `feature/sortieren`:
 - Wie viele Commits sind sinnvoll, und was enthält jeder?
@@ -84,7 +84,7 @@ Zerlege das Feature in eine Folge von Commits auf einem Branch `feature/sortiere
 
 **Schritt 1 — Regeln für den Schnitt:**
 
-Ein Commit soll eine zusammengehörige Änderung enthalten, und jeder Commit soll für sich bauen (und idealerweise die Tests bestehen). Das zweite Kriterium bestimmt die Reihenfolge: Die GUI darf erst eine Methode aufrufen, die es schon gibt; ein Test darf erst geschrieben werden, wenn der Typ, den er testet, existiert – oder er wird bewusst zusammen mit der Implementierung committet.
+Ein Commit soll eine zusammengehörige Änderung enthalten, und jeder Commit soll für sich bauen. Das zweite Kriterium bestimmt die Reihenfolge: `FigurenVerwaltung` darf erst sortieren, wenn `Figur` vergleichbar ist, und das Konsolenprogramm darf erst eine Methode aufrufen, die es schon gibt.
 
 **Schritt 2 — Die Commit-Folge:**
 
@@ -95,18 +95,16 @@ git switch -c feature/sortieren
 #   Figur.cs: IComparable<Figur> implementieren, CompareTo vergleicht Flaeche
 git commit -m "Figur: IComparable<Figur> über die Fläche implementieren"
 
-# Commit 2: Sortierte Sicht in der Verwaltung + Test
+# Commit 2: Sortierte Sicht in der Verwaltung
 #   FigurenVerwaltung.cs: IReadOnlyList<Figur> NachFlaecheSortiert()
-#   FigurenVerwaltungTests.cs: Test mit Rechteck (6), Kreis (~3.14), Dreieck (2)
 git commit -m "FigurenVerwaltung: nach Fläche sortierte Liste bereitstellen"
 
-# Commit 3: Bedienoberfläche
-#   Home.razor: Button "Nach Fläche sortieren"
-#   Home.razor: @onclick-Handler ruft NachFlaecheSortiert() auf, die Liste rendert sich neu
-git commit -m "GUI: Button zum Sortieren der Figurenliste nach Fläche"
+# Commit 3: Ausgabe im Konsolenprogramm
+#   Program.cs: NachFlaecheSortiert() aufrufen und jede Figur mit Beschreibung() ausgeben
+git commit -m "Konsole: Figuren nach Fläche sortiert ausgeben"
 ```
 
-Commit 1 ist in sich abgeschlossen – die Solution baut, alle bestehenden Tests laufen weiter. Commit 2 bringt die Logik und den Test zusammen, weil der Test ohne die Methode nicht kompiliert. Commit 3 hängt nur noch die GUI an. Wer will, splittet Commit 2 in Methode und Test, wenn beide separat kompilieren; und wer testgetrieben arbeitet, committet den Test **vor** der Implementierung – dann ist ein Commit mit rotem Test auf dem Feature-Branch akzeptabel, solange er vor dem Merge grün wird.
+Commit 1 ist in sich abgeschlossen – beide Projekte bauen, denn noch ruft niemand `CompareTo` auf. Commit 2 nutzt die Vergleichbarkeit für die sortierte Liste, Commit 3 hängt nur noch die Ausgabe an. Sobald der Geometrieeditor Unit-Tests hat (dazu mehr in [Vorlesung 12](/lectures/12/12.md)), gehört zu Commit 2 auch ein Test für `NachFlaecheSortiert()` mit Rechteck (6), Kreis (~3.14) und Dreieck (2) – wer testgetrieben arbeitet, committet ihn sogar **vor** der Implementierung; dann ist ein Commit mit rotem Test auf dem Feature-Branch akzeptabel, solange er vor dem Merge grün wird.
 
 **Schritt 3 — Was nicht allein auf `main` darf:**
 
@@ -114,9 +112,9 @@ Commit 3 allein würde `main` brechen, weil `NachFlaecheSortiert()` dort nicht e
 
 **Zentrale Designentscheidungen:**
 
-- **Von innen nach außen committen:** Erst Fachkonzept, dann Verwaltung, dann GUI – dieselbe Richtung wie die Abhängigkeiten der Schichten aus [Vorlesung 03](/lectures/03/03.md).
+- **Von innen nach außen committen:** Erst `Figur`, dann `FigurenVerwaltung`, dann das Programm, das beide benutzt – in Richtung der Abhängigkeiten. Wenn ab [Vorlesung 04](/lectures/04/04.md) eine Oberfläche als eigene Schicht dazukommt, bleibt die Regel dieselbe.
 - **Jeder Commit baut:** Wer später mit `git log` oder `git blame` sucht, kann jeden Stand ausprobieren.
-- **Imperativ und Kontext in der Nachricht:** „Figur: …“, „GUI: …“ nennt den Bereich, das Verb sagt, was passiert.
+- **Imperativ und Kontext in der Nachricht:** „Figur: …“, „Konsole: …“ nennt den Bereich, das Verb sagt, was passiert.
 
 </details>
 
@@ -182,13 +180,13 @@ git status                                   # zeigt "both modified: ...FigurenV
 # Datei im Editor wie oben bearbeiten, alle Marker entfernen
 grep -rn "<<<<<<<\|>>>>>>>" --include=*.cs .  # keine Marker mehr übrig?
 dotnet build                                 # kompiliert?
-dotnet test                                  # Tests grün? (Test für doppelte Namen prüfen!)
+dotnet run --project Geometrieeditor.Konsole  # verhält sich Hinzufuegen wie erwartet?
 git add Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
 git commit                                   # vorgeschlagene Nachricht "Merge branch ..." übernehmen
 git log --oneline --graph -5                 # Merge-Commit mit zwei Eltern sichtbar
 ```
 
-Ein Test, der prüft, dass `"kreis1"` und `"Kreis1"` als Duplikat erkannt werden, wäre der beste Nachweis, dass die Auflösung die Änderung von `main` bewahrt hat – falls er noch fehlt, ist jetzt der Moment, ihn zu schreiben.
+Der beste Nachweis, dass die Auflösung die Änderung von `main` bewahrt hat, ist ein kurzer Versuch im Konsolenprogramm: `"kreis1"` und `"Kreis1"` müssen als Duplikat abgelehnt werden, `null` mit einer `ArgumentNullException`. Sobald der Geometrieeditor Unit-Tests hat ([Vorlesung 12](/lectures/12/12.md)), wird aus diesem Versuch ein Test, der bei jedem Merge automatisch läuft.
 
 **Schritt 4 — Rückzug:**
 
@@ -202,29 +200,29 @@ stellt den Zustand vor dem `git merge` wieder her; beide Branches bleiben unver�
 
 - **Reihenfolge ist Semantik:** Die `null`-Prüfung zuerst, sonst wirft die Namensprüfung eine `NullReferenceException`.
 - **Keine Seite darf stillschweigend verlieren:** Beide Änderungen hatten einen Grund; beim Auflösen wird zusammengeführt, nicht ausgewählt.
-- **Bauen und testen gehören zum Auflösen** – der Merge ist erst fertig, wenn `dotnet test` grün ist.
+- **Bauen und Ausprobieren gehören zum Auflösen** – der Merge ist erst fertig, wenn `dotnet build` durchläuft und das Verhalten beider Seiten geprüft ist.
 
 </details>
 
 ## Aufgabe 4 — Fehler finden
 
-Eine Gruppe hat ihren Geometrieeditor auf das GitLab gepusht. Ein Blick ins Repository zeigt:
+Eine Gruppe hat ihren Geometrieeditor – die Klassenbibliothek und ein Konsolenprogramm, das Figuren an einen Webdienst schickt – auf das GitLab gepusht. Ein Blick ins Repository zeigt:
 
 ```
 $ git ls-files | head
-Geometrieeditor.Datenhaltung/bin/Debug/net10.0/Geometrieeditor.Datenhaltung.dll
-Geometrieeditor.Datenhaltung/bin/Debug/net10.0/Geometrieeditor.Fachkonzept.dll
-Geometrieeditor.Datenhaltung/obj/project.assets.json
-Geometrieeditor.Web/appsettings.json
-Geometrieeditor.Web/Components/Pages/Home.razor
+Geometrieeditor.Fachkonzept/bin/Debug/net10.0/Geometrieeditor.Fachkonzept.dll
+Geometrieeditor.Fachkonzept/obj/project.assets.json
+Geometrieeditor.Konsole/bin/Debug/net10.0/Geometrieeditor.Konsole.dll
+Geometrieeditor.Konsole/einstellungen.json
+Geometrieeditor.Konsole/Program.cs
 ...
-$ cat Geometrieeditor.Web/appsettings.json
+$ cat Geometrieeditor.Konsole/einstellungen.json
 { "FigurenDienst": { "Url": "https://api.example.org/figuren", "ApiKey": "sk-live-7f3a…" } }
 $ ls -a | grep gitignore
 $
 ```
 
-Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, und in `appsettings.json` liegt ein API-Schlüssel – seit drei Commits, das Repository ist für alle Studierenden des Kurses sichtbar.
+Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, und in `einstellungen.json` liegt ein API-Schlüssel – seit drei Commits, das Repository ist für alle Studierenden des Kurses sichtbar.
 
 - Welche drei Probleme siehst du, und welches ist das dringendste?
 - Welche Befehle bringen das Repository in Ordnung? Reicht es, die Dateien zu löschen und zu committen?
@@ -242,18 +240,18 @@ Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, und in `appsetting
 
 **Schritt 2 — Das Secret behandeln:**
 
-Zuerst den Schlüssel beim Dienst **zurückziehen** und einen neuen erzeugen. Alles andere ist zweitrangig, denn: Git ist ein Graph von Momentaufnahmen. Ein neuer Commit, der den Schlüssel aus `appsettings.json` löscht, ändert nichts an den drei alten Commits – `git show HEAD~2:Geometrieeditor.Web/appsettings.json` zeigt ihn weiterhin, und jeder Klon enthält die gesamte Historie. Man kann die Historie mit Spezialwerkzeugen umschreiben (`git filter-repo`) und dann per Force-Push ersetzen, aber Klone, die bereits existieren, erreicht man damit nicht. Deshalb gilt die Regel: **Ein einmal gepushtes Secret ist kompromittiert, Punkt.** Das Umschreiben der Historie ist Aufräumen, kein Ersatz für das Zurückziehen.
+Zuerst den Schlüssel beim Dienst **zurückziehen** und einen neuen erzeugen. Alles andere ist zweitrangig, denn: Git ist ein Graph von Momentaufnahmen. Ein neuer Commit, der den Schlüssel aus `einstellungen.json` löscht, ändert nichts an den drei alten Commits – `git show HEAD~2:Geometrieeditor.Konsole/einstellungen.json` zeigt ihn weiterhin, und jeder Klon enthält die gesamte Historie. Man kann die Historie mit Spezialwerkzeugen umschreiben (`git filter-repo`) und dann per Force-Push ersetzen, aber Klone, die bereits existieren, erreicht man damit nicht. Deshalb gilt die Regel: **Ein einmal gepushtes Secret ist kompromittiert, Punkt.** Das Umschreiben der Historie ist Aufräumen, kein Ersatz für das Zurückziehen.
 
 **Schritt 3 — Repository bereinigen:**
 
 ```bash
 dotnet new gitignore                          # Vorlage für .NET anlegen
 git rm -r --cached '**/bin' '**/obj'          # aus dem Index entfernen, Dateien auf der Platte bleiben
-git rm --cached Geometrieeditor.Web/appsettings.json
-echo "appsettings.json" >> .gitignore         # oder nur appsettings.*.json mit Secrets
+git rm --cached Geometrieeditor.Konsole/einstellungen.json
+echo "einstellungen.json" >> .gitignore       # die Datei mit dem Secret nie wieder stagen
 git status                                    # bin/, obj/ erscheinen jetzt als gelöscht, .gitignore als neu
 git add .gitignore
-git commit -m "Build-Ausgaben und appsettings.json aus dem Repository entfernen, .gitignore ergänzen"
+git commit -m "Build-Ausgaben und einstellungen.json aus dem Repository entfernen, .gitignore ergänzen"
 git push
 ```
 
@@ -261,7 +259,7 @@ git push
 
 **Schritt 4 — Wie es von Anfang an hätte laufen sollen:**
 
-Der Schlüssel gehört nicht in eine committete Datei. Übliche Wege: eine Datei `appsettings.Development.json`, die in der `.gitignore` steht, während eine committete `appsettings.json` nur Platzhalter enthält; oder eine Umgebungsvariable, die das Programm mit `Environment.GetEnvironmentVariable("FIGURENDIENST_APIKEY")` liest; für .NET-Projekte zusätzlich `dotnet user-secrets` in der Entwicklung. In jedem Fall beschreibt die `README.md`, welche Werte man lokal setzen muss. Und die Reihenfolge beim Anlegen eines Repositorys lautet immer: `dotnet new gitignore`, **dann** `git add .`, und vor dem ersten Push einmal `git status` und `git diff --staged` lesen.
+Der Schlüssel gehört nicht in eine committete Datei. Übliche Wege: eine Datei `einstellungen.lokal.json`, die in der `.gitignore` steht, während eine committete `einstellungen.json` nur Platzhalter enthält; oder eine Umgebungsvariable, die das Programm mit `Environment.GetEnvironmentVariable("FIGURENDIENST_APIKEY")` liest; für .NET-Projekte zusätzlich `dotnet user-secrets` in der Entwicklung. In jedem Fall beschreibt die `README.md`, welche Werte man lokal setzen muss. Und die Reihenfolge beim Anlegen eines Repositorys lautet immer: `dotnet new gitignore`, **dann** `git add .`, und vor dem ersten Push einmal `git status` und `git diff --staged` lesen.
 
 **Zentrale Designentscheidungen:**
 

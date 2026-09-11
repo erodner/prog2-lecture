@@ -129,7 +129,7 @@ Komponenten machen sich als Tags nur bemerkbar, wenn ihr Namespace bekannt ist. 
 Übung: Baue eine Komponente `FigurKarte.razor` mit einem Parameter `public Figur Figur { get; set; }`, die Name, Position und Fläche als kleine Karte anzeigt. Ersetze dann in der Figurenliste den Text `@figur.Name` durch `<FigurKarte Figur="figur" />`. Was muss sich am `@onclick` ändern, damit die Auswahl weiterhin funktioniert?
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository unter `examples/03_blazor/Geometrieeditor`.
+Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`.
 
 ## Weitere Quellen
 

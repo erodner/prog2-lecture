@@ -90,7 +90,7 @@ Nach dem Bearbeiten teilst du Git mit `git add` mit, dass der Konflikt in dieser
 
 ```bash
 dotnet build                                    # kompiliert es wieder?
-dotnet test                                     # laufen die Tests?
+dotnet test                                     # laufen die Tests? (sobald es welche gibt – Vorlesung 12)
 git add Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
 git commit
 # [main 6d0f9a2] Merge branch 'feature/figur-validierung'
@@ -111,7 +111,7 @@ Konflikte lassen sich nicht ganz verhindern, aber selten und klein halten:
 
 - **Klein committen, oft pushen:** Ein Branch, der drei Tage alt ist, kollidiert eher als einer, der drei Stunden alt ist.
 - **Oft pullen bzw. `main` in den Feature-Branch mergen:** Wer regelmäßig `git merge main` im Feature-Branch ausführt, löst kleine Konflikte sofort statt eines großen am Ende.
-- **Absprachen im Team:** Wenn zwei Personen gleichzeitig `Home.razor` umbauen wollen, hilft ein kurzes Gespräch mehr als jedes Werkzeug. Die Schichten-Architektur aus [Vorlesung 03](/lectures/03/03.md) zahlt sich hier aus: Wer am Fachkonzept arbeitet, kommt der GUI nicht in die Quere.
+- **Absprachen im Team:** Wenn zwei Personen gleichzeitig `FigurenVerwaltung.cs` umbauen wollen, hilft ein kurzes Gespräch mehr als jedes Werkzeug. Eine saubere Aufteilung in Klassen und Dateien hilft ebenfalls: Wer an `Kreis.cs` arbeitet, kommt niemandem in `Dreieck.cs` in die Quere – und sobald Oberfläche und Fachkonzept ab [Vorlesung 04](/lectures/04/04.md) in getrennten Projekten liegen, gilt das erst recht.
 - **Keine kosmetischen Massenänderungen:** Ein Commit, der alle Dateien neu formatiert, kollidiert mit jedem offenen Branch. Formatierung nur in abgesprochenen, eigenen Commits ändern.
 
 Übung: Erzeuge in deinem Repository absichtlich einen Konflikt: Ändere in `main` die Nachricht der `ArgumentException` in `Hinzufuegen`, lege dann einen Branch vom vorigen Commit an (`git switch -c test HEAD~1`) und ändere dort dieselbe Zeile anders. Merge den Branch in `main`, sieh dir die Marker an, löse den Konflikt auf und prüfe mit `git log --oneline --graph`, dass ein Merge-Commit mit zwei Eltern entstanden ist.

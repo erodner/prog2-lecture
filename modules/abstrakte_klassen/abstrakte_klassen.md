@@ -71,7 +71,7 @@ public abstract class Figur
 
 Zwei Dinge fallen auf. Erstens stehen hinter `Flaeche` und `Umfang` keine Berechnungen, nur ein `{ get; }` – die Basisklasse verspricht, dass es diese Properties gibt, überlässt die Berechnung aber den Unterklassen. Zweitens ist der Konstruktor `protected`: Er wird nur von abgeleiteten Klassen über `base(...)` aufgerufen, denn von außen kann ohnehin niemand eine `Figur` erzeugen. Das ist die Datei `Figur.cs` aus dem Geometrieeditor, hier nur um ein paar Zeilen gekürzt, die wir uns im nächsten Modul ansehen.
 
-Das vollständige Projekt findest du im Repository unter `examples/03_blazor/Geometrieeditor`. In der Originaldatei stehen über der Klasse zusätzlich einige `[JsonPolymorphic]`- und `[JsonDerivedType]`-Attribute – die brauchen wir erst in Vorlesung 08, wenn wir Figuren als JSON speichern, und lassen sie bis dahin weg.
+Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`. In der Originaldatei stehen über der Klasse zusätzlich einige `[JsonPolymorphic]`- und `[JsonDerivedType]`-Attribute – die brauchen wir erst in Vorlesung 09, wenn wir Figuren als JSON speichern, und lassen sie bis dahin weg.
 {: .notice--primary}
 
 ## Keine Objekte aus abstrakten Klassen

@@ -135,7 +135,7 @@ void  zaehler_freigeben(void* z);      // gibt den Speicher mit free zurück
 Entwirf eine C#-Klasse `NativerZaehler`, die diese vier Funktionen kapselt, sodass der Rest des Programms weder `IntPtr` noch `[LibraryImport]` zu sehen bekommt. Zerlege das Problem:
 - Wo lebt der Zeiger, wer ruft `zaehler_erzeugen`, wer `zaehler_freigeben`?
 - Was passiert, wenn jemand `zaehler_freigeben` vergisst – und was, wenn es zweimal aufgerufen wird?
-- Welches Muster aus Vorlesung 08 passt hier?
+- Welches Muster aus Vorlesung 09 passt hier?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -219,7 +219,7 @@ Der Geometrieeditor soll Berechnungen künftig wahlweise mit einer nativen Bibli
 Entwirf ein Interface `IMatheBibliothek` mit den Operationen `Addiere` und `Vektorlaenge` und zwei Implementierungen. Überlege:
 - Wer entscheidet, welche Implementierung benutzt wird – und wann?
 - Wie erfährt das Programm, dass die native Bibliothek fehlt, ohne dass die Entscheidung in jeder Berechnung neu getroffen wird?
-- Welches Entwurfsmuster aus Vorlesung 07 beschreibt die native Implementierung?
+- Welches Entwurfsmuster aus Vorlesung 08 beschreibt die native Implementierung?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>

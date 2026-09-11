@@ -86,17 +86,17 @@ Diesmal fehlt die 6: `ToList()` hat die Abfrage in der Definitionszeile ausgefü
 Weil ein `IEnumerable<T>` bei jedem Durchlauf neu ausgeführt wird, kostet jedes `foreach`, jedes `Count()` und jedes `Any()` einen vollständigen Durchlauf. Bei einer teuren Abfrage – über eine große Liste, mit aufwendiger Berechnung oder gar mit einer Datenbank als Quelle – ist das ein leicht zu übersehendes Leistungsproblem:
 
 ```csharp
-IEnumerable<Speise> diaet =
-    from s in speisen
-    where s.Kilokalorien <= 300
-    select s;
+IEnumerable<Gericht> leichteGerichte =
+    from g in gerichte
+    where g.Kilokalorien <= 300
+    select g;
 
-if (diaet.Any())                                 // 1. Durchlauf
+if (leichteGerichte.Any())                                 // 1. Durchlauf
 {
-    Console.WriteLine($"{diaet.Count()} Treffer"); // 2. Durchlauf
-    foreach (Speise s in diaet)                    // 3. Durchlauf
+    Console.WriteLine($"{leichteGerichte.Count()} Treffer"); // 2. Durchlauf
+    foreach (Gericht g in leichteGerichte)                    // 3. Durchlauf
     {
-        Console.WriteLine(s.Name);
+        Console.WriteLine(g.Name);
     }
 }
 ```

@@ -28,7 +28,7 @@ Ein Interface dagegen vererbt nur eine Schnittstelle, deshalb **Schnittstellenve
 | Nachträglich erweitern | neue `virtual`-Methode bricht nichts | neues Mitglied bricht alle Implementierungen (außer mit Default) |
 | Beziehung | „ist ein“ | „kann das“ |
 
-Die letzte Zeile ist die wichtigste. `Rechteck : Figur` sagt: Ein Rechteck *ist eine* Figur, in jeder Hinsicht. `Kaffee : IHatKoffein` sagt: Kaffee *kann* koffeinhaltig sein – neben vielen anderen Dingen, die er auch ist.
+Die letzte Zeile ist die wichtigste. `Rechteck : Figur` sagt: Ein Rechteck *ist eine* Figur, in jeder Hinsicht. `Smartphone : IFunkfaehig` sagt: Ein Smartphone *kann* funken – neben vielen anderen Dingen, die es auch kann.
 
 ## Entscheidungshilfe
 
@@ -36,7 +36,7 @@ Die Frage „abstrakte Klasse oder Interface?“ lässt sich meist mit drei Gege
 
 **Gibt es gemeinsamen Code oder gemeinsamen Zustand?** `Figur` hat `Name`, `X`, `Y`, einen Konstruktor, `Verschieben` und `Beschreibung()` – das ist eine Menge Substanz, die alle Figuren teilen. Ein Interface könnte das alles nur fordern, nicht liefern; jede Figur müsste `Verschieben` selbst schreiben. Hier ist die abstrakte Klasse richtig.
 
-**Beschreibst du eine Fähigkeit, die quer durch eine Hierarchie auftaucht?** Vergleichbarkeit, Speicherbarkeit, Koffeingehalt – solche Eigenschaften haben Objekte, die sonst nichts miteinander zu tun haben. Ein `Kaffee` und eine `Cola`, eine `Figur` und ein `Bankkonto`. Dafür kann es keine gemeinsame Basisklasse geben, also Interface.
+**Beschreibst du eine Fähigkeit, die quer durch eine Hierarchie auftaucht?** Vergleichbarkeit, Speicherbarkeit, Funkfähigkeit – solche Eigenschaften haben Objekte, die sonst nichts miteinander zu tun haben. Ein `Smartphone` und ein `Funkgeraet`, eine `Figur` und ein `Bankkonto`. Dafür kann es keine gemeinsame Basisklasse geben, also Interface.
 
 **Brauchen die Nutzer der Abstraktion die Implementierung überhaupt?** `FigurenVerwaltung` will nur speichern und laden. Was der Speicher intern tut, ist ihr egal – und es soll ihr egal sein, damit man ihn austauschen kann. `IFigurSpeicher` als Interface hält die Verwaltung frei von jedem Wissen über Dateien. Eine abstrakte Klasse `FigurSpeicher` hätte nichts Gemeinsames zu bieten und würde jeder Implementierung ihre einzige Basisklasse wegnehmen.
 
@@ -78,30 +78,30 @@ Der Rest des Programms arbeitet mit `IFigur` und merkt nicht, welche Objekte üb
 
 ## Komposition statt Vererbung
 
-Eine dritte Möglichkeit wird gern vergessen: gar nicht erben, sondern **enthalten**. Wenn ein `Kaffee` eine Temperatur verwalten soll, muss er dafür nicht von einer Klasse `Heissgetraenk` erben – er kann ein Objekt `Waermespeicher` als Feld halten und die Arbeit delegieren:
+Eine dritte Möglichkeit wird gern vergessen: gar nicht erben, sondern **enthalten**. Wenn ein `Smartphone` seinen Akkustand verwalten soll, muss es dafür nicht von einer Klasse `AufladbaresGeraet` erben – es kann ein Objekt `Akku` als Feld halten und die Arbeit delegieren:
 
 ```csharp
-class Waermespeicher
+class Akku
 {
-    public int Temperatur { get; set; }
-    public void Abkuehlen(int grad) => Temperatur -= grad;
+    public int Ladestand { get; set; }
+    public void Laden() => Ladestand = 100;
 }
 
-class Kaffee : IHeissgetraenk
+class Smartphone : IAufladbar
 {
-    private readonly Waermespeicher waerme = new();
+    private readonly Akku akku = new();
 
-    public int Temperatur
+    public int Akkustand
     {
-        get => waerme.Temperatur;
-        set => waerme.Temperatur = value;
+        get => akku.Ladestand;
+        set => akku.Ladestand = value;
     }
 
-    public void Abkuehlen(int grad) => waerme.Abkuehlen(grad);
+    public void Aufladen() => akku.Laden();
 }
 ```
 
-Nach außen erfüllt `Kaffee` das Interface, innen nutzt er fertige Logik – ohne seine einzige Basisklasse zu verbrauchen. Dieses Prinzip „Komposition vor Vererbung“ bevorzugen viele Entwickler, weil eine Vererbungsbeziehung schwer zu ändern ist, ein Feld dagegen jederzeit gegen ein anderes Objekt getauscht werden kann. Genau so arbeitet auch `FigurenVerwaltung`: Sie *hat* einen `IFigurSpeicher`, statt einer zu sein. In Vorlesung 07 begegnen uns mit Adapter und Composite Entwurfsmuster, die ganz auf Komposition beruhen.
+Nach außen erfüllt `Smartphone` das Interface, innen nutzt es fertige Logik – ohne seine einzige Basisklasse zu verbrauchen. Derselbe `Akku` kann später auch in der `Taschenlampe` stecken. Dieses Prinzip „Komposition vor Vererbung“ bevorzugen viele Entwickler, weil eine Vererbungsbeziehung schwer zu ändern ist, ein Feld dagegen jederzeit gegen ein anderes Objekt getauscht werden kann. Genau so arbeitet auch `FigurenVerwaltung`: Sie *hat* einen `IFigurSpeicher`, statt einer zu sein. In Vorlesung 08 begegnen uns mit Adapter und Composite Entwurfsmuster, die ganz auf Komposition beruhen.
 
 Übung: Entscheide für jede Situation, ob abstrakte Klasse, Interface oder Komposition passt, und begründe: (a) Fahrzeuge `Pkw`, `Lkw`, `Motorrad` mit Kennzeichen, Kilometerstand und einer je nach Typ verschiedenen Mautberechnung; (b) Objekte, die sich als Text protokollieren lassen – Figuren, Konten, Benutzer; (c) ein `Roboter`, der mit verschiedenen Greifern ausgestattet werden kann; (d) Sensoren `Temperatursensor` und `Drucksensor`, die alle einen Messwert liefern, einen Namen haben und im Fehlerfall gleich reagieren sollen.
 {: .notice--info}
