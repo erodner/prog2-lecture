@@ -15,7 +15,7 @@ Niemand baut ein Haus, indem er zuerst Ziegel brennt. Genauso schreibt niemand e
 
 Ein NuGet-Paket ist eine ZIP-Datei mit der Endung `.nupkg`. Darin liegen die kompilierten Bibliotheken (`.dll`) – oft mehrfach, für verschiedene Zielframeworks wie `netstandard2.0` oder `net8.0` – und eine Beschreibungsdatei `.nuspec` mit den **Metadaten**: Name, Version, Autor, Lizenz, Beschreibung und die Liste der Pakete, von denen dieses Paket selbst abhängt. Ein Paket ist also mehr als eine `.dll`, die man irgendwo herunterlädt: Es ist eine **versionierte Bibliothek mit Beipackzettel**.
 
-Genau dieser Beipackzettel macht den Unterschied zum manuellen Kopieren einer `.dll`. NuGet weiß, welche Version ihr benutzt, kann prüfen, ob es eine neuere gibt, und lädt die Abhängigkeiten gleich mit. Wenn du das Testprojekt des Geometrieeditors gebaut hast, hast du genau das erlebt: fünf Zeilen in der `.csproj`, und beim ersten Bauen kamen über zwanzig Pakete von selbst. Blazor dagegen ist nie als Paket gekommen – es gehört zu ASP.NET Core, das mit dem SDK installiert wird.
+Genau dieser Beipackzettel macht den Unterschied zum manuellen Kopieren einer `.dll`. NuGet weiß, welche Version ihr benutzt, kann prüfen, ob es eine neuere gibt, und lädt die Abhängigkeiten gleich mit. Wenn du das Testprojekt `Adventure.Tests` unseres Spiels gebaut hast, hast du genau das erlebt: fünf Zeilen in der `.csproj`, und beim ersten Bauen kamen über zwanzig Pakete von selbst. Blazor dagegen ist nie als Paket gekommen, obwohl `Adventure.Web` damit gebaut ist – es gehört zu ASP.NET Core, das mit dem SDK installiert wird.
 
 ## Woher kommen die Pakete?
 
@@ -46,7 +46,7 @@ Ein Anhang wie `7.0.0-beta.2` markiert eine **Vorabversion**, die vor der stabil
 
 ## Transitive Abhängigkeiten
 
-Ein Paket hängt oft von weiteren Paketen ab, und diese wieder von anderen. Alles, was nicht direkt in eurer `.csproj` steht, aber trotzdem mitgeladen wird, heißt **transitive Abhängigkeit**. Beim Testprojekt des Geometrieeditors sieht das so aus:
+Ein Paket hängt oft von weiteren Paketen ab, und diese wieder von anderen. Alles, was nicht direkt in eurer `.csproj` steht, aber trotzdem mitgeladen wird, heißt **transitive Abhängigkeit**. Beim Testprojekt `Adventure.Tests` sieht das so aus:
 
 ```bash
 dotnet list package --include-transitive
@@ -65,7 +65,7 @@ dotnet list package --include-transitive
 # ...                              (insgesamt über 25 Pakete)
 ```
 
-Drei Zeilen in der `.csproj` ziehen also einen ganzen Baum nach sich – darunter `SkiaSharp`, das die eigentliche Zeichenarbeit erledigt, und dessen native Bibliotheken für jedes Betriebssystem. Genau die Art von nativer Bibliothek, die wir in der [Vorlesung 10](/lectures/10/10.md) noch von Hand eingebunden haben, kommt hier fertig verpackt mit. NuGet löst dabei auch Konflikte: Verlangen zwei Pakete unterschiedliche Versionen derselben Abhängigkeit, wählt es die kleinste Version, die beide Anforderungen erfüllt.
+Fünf Zeilen in der `.csproj` ziehen also einen ganzen Baum nach sich – die Testplattform, die die Tests startet, deren JSON-Bibliothek und mehr. Noch deutlicher wird es bei Paketen wie `SkiaSharp` oder `SQLitePCLRaw`: Die bringen für jedes Betriebssystem gleich die passende native Bibliothek mit. Genau die Art von nativer Bibliothek, die wir in der [Vorlesung 10](/lectures/10/10.md) noch von Hand eingebunden haben, kommt hier also fertig verpackt. NuGet löst dabei auch Konflikte: Verlangen zwei Pakete unterschiedliche Versionen derselben Abhängigkeit, wählt es die kleinste Version, die beide Anforderungen erfüllt.
 
 Transitive Abhängigkeiten sind auch der Grund, warum eine Sicherheitslücke in einem winzigen Hilfspaket Tausende Anwendungen treffen kann, deren Entwickler das Paket nie bewusst ausgewählt haben. `dotnet list package --vulnerable` prüft eure Abhängigkeiten gegen eine Datenbank bekannter Schwachstellen – ein Befehl, der in jede Build-Pipeline gehört.
 {: .notice--warning}

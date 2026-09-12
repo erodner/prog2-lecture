@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-In [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) haben wir gesehen, dass ein Repository ein Graph von Momentaufnahmen ist. In diesem Modul legen wir ein solches Repository für den Geometrieeditor an und halten die ersten Versionen fest – ausschließlich auf der Kommandozeile. Das ist kein Selbstzweck: Die IDE-Schaltflächen, die wir in [Git in der IDE](/modules/git_in_der_ide/git_in_der_ide.md) kennenlernen, rufen genau diese Befehle auf, und wenn etwas schiefgeht, zeigen sie meist nur deren Fehlermeldung an. Wer die Befehle kennt, kann sie lesen.
+In [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) haben wir gesehen, dass ein Repository ein Graph von Momentaufnahmen ist. In diesem Modul legen wir ein solches Repository für unser Adventure an und halten die ersten Versionen fest – ausschließlich auf der Kommandozeile. Das ist kein Selbstzweck: Die IDE-Schaltflächen, die wir in [Git in der IDE](/modules/git_in_der_ide/git_in_der_ide.md) kennenlernen, rufen genau diese Befehle auf, und wenn etwas schiefgeht, zeigen sie meist nur deren Fehlermeldung an. Wer die Befehle kennt, kann sie lesen.
 
 ## Installation und Konfiguration
 
@@ -29,18 +29,18 @@ git config --global user.email "vorname.nachname@student.htw-berlin.de"
 
 ## Ein Repository anlegen
 
-Wir wechseln in den Ordner `Geometrieeditor`, der die Klassenbibliothek `Geometrieeditor.Fachkonzept` aus der letzten Vorlesung und ein kleines Konsolenprojekt `Geometrieeditor.Konsole` zum Ausprobieren enthält, und machen daraus ein Repository. Die Oberfläche und die Tests kommen in späteren Vorlesungen als weitere Projekte daneben – für Git ändert das nichts. `git init` legt dabei nur den versteckten Ordner `.git/` an – die Dateien selbst bleiben unberührt und sind Git noch unbekannt:
+Wir wechseln in den Ordner `Adventure`, der die Klassenbibliothek `Adventure.Kern` aus der letzten Vorlesung und das Konsolenprojekt `Adventure.Konsole` zum Spielen enthält, und machen daraus ein Repository. Die Weboberfläche, die Datenhaltung und die Tests kommen in späteren Vorlesungen als weitere Projekte daneben – für Git ändert das nichts. `git init` legt dabei nur den versteckten Ordner `.git/` an – die Dateien selbst bleiben unberührt und sind Git noch unbekannt:
 
 ```bash
-cd Geometrieeditor
+cd Adventure
 git init
-# Initialized empty Git repository in /Users/.../Geometrieeditor/.git/
+# Initialized empty Git repository in /Users/.../Adventure/.git/
 git status
 # On branch main
 # No commits yet
 # Untracked files:
-#   Geometrieeditor.Fachkonzept/
-#   Geometrieeditor.Konsole/
+#   Adventure.Kern/
+#   Adventure.Konsole/
 ```
 
 `git status` ist der Befehl, den du am häufigsten tippen wirst. Er zeigt, in welchem Branch du bist, welche Dateien Git nicht kennt (*untracked*), welche geändert sind und welche im Staging-Bereich liegen. Bevor wir etwas hinzufügen, müssen wir aber eine Falle entschärfen.
@@ -77,14 +77,14 @@ git status
 # On branch main
 # Changes to be committed:
 #   new file:   .gitignore
-#   new file:   Geometrieeditor.Fachkonzept/Dreieck.cs
-#   new file:   Geometrieeditor.Fachkonzept/Figur.cs
-#   new file:   Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
+#   new file:   Adventure.Kern/Position.cs
+#   new file:   Adventure.Kern/Spielfeld.cs
+#   new file:   Adventure.Kern/Spielobjekt.cs
 #   ...
-#   new file:   Geometrieeditor.Konsole/Program.cs
-git commit -m "Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen"
-# [main (root-commit) 7d2b0e4] Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen
-#  11 files changed, 689 insertions(+)
+#   new file:   Adventure.Konsole/Program.cs
+git commit -m "Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen"
+# [main (root-commit) 7d2b0e4] Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen
+#  13 files changed, 743 insertions(+)
 ```
 
 Die Ausgabe nennt den Branch, die ersten sieben Zeichen des Commit-Hashs und die Anzahl geänderter Dateien. Ab jetzt ist dieser Stand unveränderlich gespeichert. Zwei Dateien gehören in praktisch jedes Repository und sollten früh committet werden: eine `README.md`, die erklärt, was das Projekt ist und wie man es baut (`dotnet build`), und eine `LICENSE`, die festlegt, was andere mit dem Code tun dürfen – ohne Lizenz ist Code trotz Veröffentlichung nicht frei nutzbar. GitLab und GitHub bieten beim Anlegen eines Projekts Vorlagen für beides an.
@@ -104,22 +104,22 @@ Jede Datei in einem Repository befindet sich in einem von drei Zuständen, und d
         │◄──────────────── git switch / neuer Stand ─────────┘
 ```
 
-Wir ändern jetzt eine Datei – etwa eine neue Methode in `FigurenVerwaltung.cs` – und sehen uns den Weg einmal komplett an:
+Wir ändern jetzt eine Datei – etwa eine neue Methode in `Spielfeld.cs`, mit der man ein eingesammeltes Objekt wieder vom Feld nehmen kann – und sehen uns den Weg einmal komplett an:
 
 ```bash
 git status
 # Changes not staged for commit:
-#   modified:   Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
+#   modified:   Adventure.Kern/Spielfeld.cs
 git diff
-# -    public bool Entfernen(Figur figur)
-# +    public bool Entfernen(Figur figur)
+# +    public void Entfernen(Spielobjekt objekt)
 # +    {
-# +        return figuren.Remove(figur);
+# +        if (objekt is StatischesObjekt s) statische.Remove(s.Position);
+# +        if (objekt is Gegner g) gegner.Remove(g);
 # +    }
-git add Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
+git add Adventure.Kern/Spielfeld.cs
 git diff --staged
 # (zeigt jetzt dieselbe Änderung – sie liegt im Staging-Bereich)
-git commit -m "Entfernen einer Figur in FigurenVerwaltung ergänzen"
+git commit -m "Spielfeld: Objekte wieder vom Feld entfernen können"
 ```
 
 `git diff` ohne Argument vergleicht die Arbeitskopie mit dem Staging-Bereich, `git diff --staged` den Staging-Bereich mit dem letzten Commit. Vor jedem Commit lohnt sich ein Blick auf `git diff --staged`: Es zeigt genau das, was gleich in die Historie wandert – und verrät vergessene `Console.WriteLine`-Debugausgaben.
@@ -130,25 +130,58 @@ git commit -m "Entfernen einer Figur in FigurenVerwaltung ergänzen"
 
 ```bash
 git log --oneline
-# a1f9c3e Entfernen einer Figur in FigurenVerwaltung ergänzen
-# 7d2b0e4 Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen
+# a1f9c3e Spielfeld: Objekte wieder vom Feld entfernen können
+# 7d2b0e4 Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen
 ```
 
 Manchmal will man eine Änderung nicht behalten. `git restore Datei` setzt die Arbeitskopie auf den Stand des Staging-Bereichs bzw. des letzten Commits zurück; `git restore --staged Datei` nimmt eine Datei nur aus dem Staging-Bereich heraus, lässt die Änderung in der Arbeitskopie aber stehen:
 
 ```bash
-git restore --staged Geometrieeditor.Fachkonzept/Kreis.cs   # doch nicht in diesen Commit
-git restore Geometrieeditor.Fachkonzept/Kreis.cs            # Änderung komplett verwerfen
+git restore --staged Adventure.Kern/Gegner.cs   # doch nicht in diesen Commit
+git restore Adventure.Kern/Gegner.cs            # Änderung komplett verwerfen
 ```
 
 `git restore` ohne `--staged` löscht deine ungespeicherten Änderungen unwiderruflich – Git hat davon keine Kopie, weil sie nie committet wurden. Im Zweifel erst committen, dann aufräumen: Ein überflüssiger Commit ist harmlos, verlorene Arbeit nicht.
 {: .notice--warning}
 
+## Stände benennen: Tags
+
+Ein Hash wie `a1f9c3e` ist eindeutig, aber nichts, was man sich merkt. Deshalb kann man einzelne Commits mit einem **Tag** benennen – einem festen Namen für genau diese Momentaufnahme. Anders als ein Branch wandert ein Tag nie weiter; er markiert dauerhaft einen Stand, typischerweise eine veröffentlichte Version. Das vollständige Adventure findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure), und dort ist jeder Vorlesungsstand getaggt. Wenn du es dir mit `git clone https://github.com/erodner/prog2-adventure.git` holst (mehr dazu in [Remote-Repositorys](/modules/git_remote/git_remote.md)), findest du fünf Tags und pro Vorlesung einen Commit:
+
+```bash
+git log --oneline
+# e784378 Vorlesung 12: NUnit-Tests für Spielfeld, Datenhaltung und Inventar
+# 6cdc213 Vorlesung 09: Level aus Textdateien, Spielstände als JSON, Level per HTTP
+# f15b001 Vorlesung 04: Blazor-Oberfläche und Schichten (Web → Kern ← Daten)
+# a3ff341 Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen
+# b946807 Vorlesung 01: Spielobjekt, Wand und Spieler – ein Raum in der Konsole
+git tag
+# v01-vererbung
+# v02-interfaces
+# v04-blazor
+# v09-daten
+# v12-tests
+```
+
+Mit `git checkout <tag>` legt Git die Arbeitskopie auf diesen Stand zurück – alle Dateien im Ordner sehen aus wie damals. Das ist genau der Weg, um den Code einer älteren Vorlesung nachzulesen:
+
+```bash
+git checkout v01-vererbung
+# Note: switching to 'v01-vererbung'.
+# You are in 'detached HEAD' state. ...
+ls Adventure.Kern
+# Position.cs  Richtung.cs  Spieler.cs  Spielfeld.cs  Spielobjekt.cs  Wand.cs
+git switch -                              # zurück zum vorherigen Branch
+# Switched to branch 'main'
+```
+
+Der Hinweis *detached HEAD* bedeutet nur: Du stehst auf einem Commit, nicht auf einem Branch. Zum Ansehen ist das völlig in Ordnung; wer von hier aus weiterarbeiten will, legt mit `git switch -c name` erst einen Branch an. Einen eigenen Tag setzt man mit `git tag -a v1.0 -m "Erste spielbare Version"`, und weil `git push` Tags nicht automatisch mitnimmt, braucht es dafür ein `git push --tags`.
+
 ## Gute Commits
 
-Ein Commit sollte **eine** zusammengehörige Änderung enthalten: ein Bugfix, ein kleines Feature, eine Umbenennung. Wer „Kreis-Bug gefixt, Sortieren angefangen, Beschreibung umformuliert“ in einen Commit packt, kann später nichts davon einzeln ansehen oder rückgängig machen. Die Nachricht beschreibt im **Imperativ**, was der Commit tut, wie eine Anweisung an das Projekt: „Fläche von Dreieck mit Heron-Formel berechnen“, nicht „habe was am Dreieck gemacht“. Die erste Zeile bleibt unter 70 Zeichen; braucht man mehr, folgt nach einer Leerzeile ein Absatz mit dem *Warum*.
+Ein Commit sollte **eine** zusammengehörige Änderung enthalten: ein Bugfix, ein kleines Feature, eine Umbenennung. Wer „Wachen-Bug gefixt, Fallen angefangen, Beschreibung umformuliert“ in einen Commit packt, kann später nichts davon einzeln ansehen oder rückgängig machen. Die Nachricht beschreibt im **Imperativ**, was der Commit tut, wie eine Anweisung an das Projekt: „Wache beim Anstoßen umdrehen lassen“, nicht „habe was an der Wache gemacht“. Die erste Zeile bleibt unter 70 Zeichen; braucht man mehr, folgt nach einer Leerzeile ein Absatz mit dem *Warum*.
 
-Übung: Lege ein Repository für ein kleines Konsolenprojekt an (`dotnet new console`, `dotnet new gitignore`, `git init`). Baue das Projekt, prüfe mit `git status`, dass `bin/` und `obj/` nicht auftauchen, und mache drei Commits mit sinnvollen Nachrichten. Sieh dir mit `git log --oneline` und `git diff HEAD~1` an, was du festgehalten hast.
+Übung: Lege ein Repository für dein eigenes Adventure an (`dotnet new gitignore`, `git init` im Projektordner). Baue die Solution, prüfe mit `git status`, dass `bin/` und `obj/` nicht auftauchen, und mache drei Commits mit sinnvollen Nachrichten – zum Beispiel eine neue Gegenstandsart, ein weiteres Level und eine Korrektur an der Konsolenausgabe. Sieh dir mit `git log --oneline` und `git diff HEAD~1` an, was du festgehalten hast.
 {: .notice--info}
 
 ## Weitere Quellen

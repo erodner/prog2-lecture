@@ -9,140 +9,153 @@ toc: false
 classes: wide
 ---
 
-Ein Kochrezept ist kein Essen. Wer ein Rezept aufschreibt, hat noch nichts gekocht – erst wenn jemand es Schritt für Schritt ausführt, entsteht das Gericht, und zwar aus den Zutaten, die *in diesem Moment* im Kühlschrank liegen. Eine LINQ-Abfrage verhält sich genauso: Die Zeile `from s in speisen where … select s` kocht nichts, sie beschreibt nur, was zu tun wäre. Das nennt man **verzögerte Ausführung** (*deferred execution*), und wer es nicht kennt, erlebt Ergebnisse, die sich scheinbar von allein ändern, oder Programme, die eine teure Abfrage unbemerkt zehnmal ausführen. In diesem Modul schauen wir, wann eine Abfrage tatsächlich läuft und welche Fallen sich daraus ergeben.
+Ein Kochrezept ist kein Essen. Wer ein Rezept aufschreibt, hat noch nichts gekocht – erst wenn jemand es Schritt für Schritt ausführt, entsteht das Gericht, und zwar aus den Zutaten, die *in diesem Moment* im Kühlschrank liegen. Eine LINQ-Abfrage verhält sich genauso: Die Zeile `from g in feld.Gegner where … select g` sucht keinen einzigen Gegner, sie beschreibt nur, wonach zu suchen wäre. Das nennt man **verzögerte Ausführung** (*deferred execution*). Für unser Spiel ist das ein Geschenk: Wir definieren die Abfrage „Gegner in Sichtweite“ ein einziges Mal beim Start und geben sie nach jeder Runde neu aus – sie liefert immer die aktuelle Lage, ohne dass wir sie anfassen. Wer das Prinzip nicht kennt, erlebt allerdings Ergebnisse, die sich scheinbar von allein ändern, oder Programme, die eine teure Abfrage unbemerkt zehnmal ausführen.
 
 ## Eine Abfrage ist ein Plan, keine Liste
 
-Im Modul zur [Query-Syntax](/modules/linq_query_syntax/linq_query_syntax.md) haben wir gesehen, dass eine Abfrage ein `IEnumerable<T>` liefert. Dieses Objekt enthält keine Daten, sondern die Anweisung, wie Daten zu erzeugen sind. Ausgeführt wird sie erst, wenn jemand über das Ergebnis iteriert – meist per `foreach`. Das lässt sich beobachten, indem wir die Datenquelle **nach** der Definition der Abfrage verändern:
+Im Modul zur [Query-Syntax](/modules/linq_query_syntax/linq_query_syntax.md) haben wir gesehen, dass eine Abfrage ein `IEnumerable<T>` liefert. Dieses Objekt enthält keine Daten, sondern die Anweisung, wie Daten zu erzeugen sind. Ausgeführt wird sie erst, wenn jemand über das Ergebnis iteriert – meist per `foreach`. Nehmen wir dasselbe Spielfeld wie im vorigen Modul: Der Held startet auf `(5, 3)`, eine Wache steht auf `(7, 3)`, ein Verfolger auf `(8, 2)`, eine zweite Wache patrouilliert bei `(1, 5)`.
 
 ```csharp
-List<int> zahlen = [1, 2, 3, 4, 5];
+IEnumerable<Gegner> inSichtweite =
+    from g in feld.Gegner
+    where g.Position.Entfernung(feld.Spieler.Position) <= 5
+    orderby g.Position.Entfernung(feld.Spieler.Position)
+    select g;
 
-IEnumerable<int> gerade =
-    from z in zahlen
-    where z % 2 == 0
-    select z;
-
-zahlen.Add(6);
-zahlen.Add(8);
-
-Console.WriteLine(string.Join(", ", gerade)); // 2, 4, 6, 8
+static void Melden(string runde, IEnumerable<Gegner> gegner, Spielfeld feld)
+{
+    Console.WriteLine(runde);
+    foreach (Gegner g in gegner)
+    {
+        Console.WriteLine($"  {g.Name} bei {g.Position}: " +
+                          $"{g.Position.Entfernung(feld.Spieler.Position)} Schritte");
+    }
+}
 ```
 
-Obwohl `gerade` definiert wurde, als die Liste nur bis 5 ging, enthält das Ergebnis die 6 und die 8. Die Abfrage wurde erst in der `WriteLine`-Zeile ausgeführt – `string.Join` iteriert über `gerade`, und in diesem Moment hatte die Liste sieben Elemente. Die Abfrage hält nur eine Referenz auf `zahlen`, nicht eine Kopie.
-
-Dass die Abfrage bei jeder Iteration neu läuft, kann man sichtbar machen, indem man in der `where`-Klausel eine Ausgabe einbaut:
+Beachte, dass in der Abfrage `feld.Spieler.Position` steht und nicht eine vorher berechnete Kopie. Damit fragt der Filter bei jeder Ausführung nach der **aktuellen** Heldenposition. Jetzt spielen wir zwei Runden und geben dazwischen jeweils dieselbe Variable `inSichtweite` aus:
 
 ```csharp
-static bool IstGerade(int z)
+Melden("Vor der ersten Runde:", inSichtweite, feld);
+feld.SpielerZieht(Richtung.Links);
+feld.SpielerZieht(Richtung.Links);
+Melden("Nach zwei Runden:", inSichtweite, feld);
+
+// Vor der ersten Runde:
+//   Wache bei (7, 3): 2 Schritte
+//   Verfolger bei (8, 2): 4 Schritte
+// Nach zwei Runden:
+//   Wache bei (3, 5): 2 Schritte
+//   Verfolger bei (6, 2): 4 Schritte
+```
+
+Die zweite Ausgabe zeigt völlig andere Gegner als die erste – und das, obwohl die Abfrage zwischen beiden Aufrufen nicht angefasst wurde. In den zwei Runden ist der Held nach links gelaufen, die erste Wache ist stur weiter nach rechts marschiert und aus dem Radius gefallen, der Verfolger hat die Jagd aufgenommen, und die zweite Wache ist von links herangerückt. `inSichtweite` ist eben keine Liste mit zwei Gegnern, sondern ein **Plan**, der bei jedem `foreach` neu abgearbeitet wird. Genau das wollen wir hier: Die Statusanzeige wird einmal formuliert und ist danach für immer aktuell.
+
+Dass die Abfrage bei jeder Iteration neu läuft, kann man sichtbar machen, indem man die Bedingung in eine Methode mit Ausgabe auslagert:
+
+```csharp
+static bool IstNah(Gegner g, Spielfeld feld)
 {
-    Console.WriteLine($"  pruefe {z}");
-    return z % 2 == 0;
+    Console.WriteLine($"  pruefe {g.Name} bei {g.Position}");
+    return g.Position.Entfernung(feld.Spieler.Position) <= 5;
 }
 
-IEnumerable<int> gerade2 =
-    from z in zahlen
-    where IstGerade(z)
-    select z;
+IEnumerable<Gegner> nah =
+    from g in feld.Gegner
+    where IstNah(g, feld)
+    select g;
 
 Console.WriteLine("Abfrage definiert – noch nichts passiert.");
-foreach (int z in gerade2)
+foreach (Gegner g in nah)
 {
-    Console.WriteLine(z);
+    Console.WriteLine(g.Name);
 }
-// Abfrage definiert – noch nichts passiert.
-//   pruefe 1
-//   pruefe 2
-// 2
-//   pruefe 3
-//   pruefe 4
-// 4
-//   ...
 ```
 
-Zwei Dinge fallen auf: Zwischen der Definition und der Schleife wird nichts geprüft. Und die Abfrage arbeitet **elementweise** – sie filtert nicht erst alle Zahlen und liefert dann das Ergebnis, sondern reicht jede passende Zahl sofort an die Schleife weiter. Bei einem `break` nach dem ersten Treffer wären die restlichen Zahlen nie geprüft worden.
+Zwei Dinge fallen auf: Zwischen der Definition und der Schleife wird kein einziger Gegner geprüft. Und die Abfrage arbeitet **elementweise** – sie filtert nicht erst alle Gegner und liefert dann das Ergebnis, sondern reicht jeden passenden Gegner sofort an die Schleife weiter. Bei einem `break` nach dem ersten Treffer wären die restlichen nie geprüft worden. (Mit `orderby` ist das anders: Zum Sortieren muss LINQ zwangsläufig erst alle Elemente einsammeln.)
 
 ## Ausführung erzwingen: `ToList()` und `ToArray()`
 
-Manchmal will man das Ergebnis *jetzt* haben – etwa weil die Quelle sich gleich ändert, das Ergebnis mehrfach gebraucht wird oder eine Methode eine `List<T>` verlangt. Die Methoden `ToList()` und `ToArray()` führen die Abfrage sofort aus und kopieren das Ergebnis in eine echte Collection:
+Manchmal will man das Ergebnis *jetzt* haben – etwa weil sich das Spielfeld gleich ändert, das Ergebnis mehrfach gebraucht wird oder eine Methode eine `List<T>` verlangt. Die Methoden `ToList()` und `ToArray()` führen die Abfrage sofort aus und kopieren das Ergebnis in eine echte Collection:
 
 ```csharp
-List<int> zahlen2 = [1, 2, 3, 4, 5];
+List<Gegner> zeugenDerRunde =
+    (from g in feld.Gegner
+     where g.Position.Entfernung(feld.Spieler.Position) <= 5
+     select g).ToList();
 
-List<int> geradeFest =
-    (from z in zahlen2
-     where z % 2 == 0
-     select z).ToList();
+feld.SpielerZieht(Richtung.Links);
+feld.SpielerZieht(Richtung.Links);
 
-zahlen2.Add(6);
-
-Console.WriteLine(string.Join(", ", geradeFest)); // 2, 4
+Console.WriteLine(zeugenDerRunde.Count);        // 2 – die Gegner von vorhin, unverändert
+Console.WriteLine(zeugenDerRunde[0].Position);  // (8, 3) – aber ihre Positionen sind aktuell!
 ```
 
-Diesmal fehlt die 6: `ToList()` hat die Abfrage in der Definitionszeile ausgeführt, und die Liste `geradeFest` ist seitdem von `zahlen2` entkoppelt. Dasselbe gilt für alle Methoden, die ein einzelnes Ergebnis brauchen und deshalb die ganze Quelle lesen müssen – `Count()`, `Max()`, `First()`. Man spricht dann von **sofortiger Ausführung** (*immediate execution*).
+Die Liste selbst ist eingefroren: Sie enthält genau die zwei Gegner, die zum Zeitpunkt der Auswertung nah waren, und behält sie, auch wenn sie längst davongelaufen sind. Eingefroren ist aber nur die **Auswahl**, nicht der Zustand der Objekte – die Liste speichert Referenzen, und ein Gegner, der sich bewegt, bewegt sich auch in dieser Liste. Dasselbe sofortige Ausführen passiert bei allen Methoden, die ein einzelnes Ergebnis brauchen und deshalb die ganze Quelle lesen müssen: `Count()`, `Max()`, `First()`. Man spricht dann von **sofortiger Ausführung** (*immediate execution*).
 
 ## Falle 1: mehrfache Enumeration
 
-Weil ein `IEnumerable<T>` bei jedem Durchlauf neu ausgeführt wird, kostet jedes `foreach`, jedes `Count()` und jedes `Any()` einen vollständigen Durchlauf. Bei einer teuren Abfrage – über eine große Liste, mit aufwendiger Berechnung oder gar mit einer Datenbank als Quelle – ist das ein leicht zu übersehendes Leistungsproblem:
+Weil ein `IEnumerable<T>` bei jedem Durchlauf neu ausgeführt wird, kostet jedes `foreach`, jedes `Count()` und jedes `Any()` einen vollständigen Durchlauf. Bei einer teuren Abfrage – über viele Objekte, mit aufwendiger Berechnung wie `HatSichtlinie` oder gar mit einer Datei als Quelle – ist das ein leicht zu übersehendes Leistungsproblem:
 
 ```csharp
-IEnumerable<Gericht> leichteGerichte =
-    from g in gerichte
-    where g.Kilokalorien <= 300
+IEnumerable<Gegner> gefaehrlich =
+    from g in feld.Gegner
+    where feld.HatSichtlinie(g.Position, feld.Spieler.Position)
     select g;
 
-if (leichteGerichte.Any())                                 // 1. Durchlauf
+if (gefaehrlich.Any())                                  // 1. Durchlauf
 {
-    Console.WriteLine($"{leichteGerichte.Count()} Treffer"); // 2. Durchlauf
-    foreach (Gericht g in leichteGerichte)                    // 3. Durchlauf
+    Console.WriteLine($"{gefaehrlich.Count()} sehen dich"); // 2. Durchlauf
+    foreach (Gegner g in gefaehrlich)                       // 3. Durchlauf
     {
         Console.WriteLine(g.Name);
     }
 }
 ```
 
-Drei Zeilen, drei komplette Filterläufe. Die IDE warnt bei solchen Mustern mit dem Hinweis „mögliche mehrfache Enumeration“. Die Lösung ist ein einziges `ToList()` nach der Definition – dann wird einmal gefiltert und die Liste danach dreimal gelesen.
+Drei Zeilen, drei komplette Sichtlinienberechnungen für jeden Gegner. Die IDE warnt bei solchen Mustern mit dem Hinweis „mögliche mehrfache Enumeration“. Die Lösung ist ein einziges `ToList()` nach der Definition – dann wird einmal gefiltert und die Liste danach dreimal gelesen.
 
-Faustregel: Wird das Ergebnis genau einmal durchlaufen, ist `IEnumerable<T>` richtig – sparsam und ohne Kopie. Wird es mehrfach gebraucht oder darf es sich nicht mehr ändern, sofort `ToList()`. Und wer eine Abfrage aus einer Methode zurückgibt, sollte im Namen oder in der Dokumentation klarmachen, ob der Aufrufer einen Plan oder eine Liste bekommt.
+Faustregel: Wird das Ergebnis genau einmal durchlaufen und soll es den aktuellen Stand zeigen, ist `IEnumerable<T>` richtig – sparsam und ohne Kopie. Wird es mehrfach gebraucht oder darf sich die Auswahl nicht mehr ändern, sofort `ToList()`. Und wer eine Abfrage aus einer Methode zurückgibt, sollte im Namen oder in der Dokumentation klarmachen, ob der Aufrufer einen Plan oder eine Liste bekommt.
 {: .notice--primary}
 
-## Falle 2: Quelle während der Iteration ändern
+## Falle 2: die Quelle während der Iteration ändern
 
-Die zweite Falle betrifft nicht nur LINQ, sondern jedes `foreach` über eine `List<T>` – mit LINQ ist sie aber leichter zu übersehen, weil zwischen Quelle und Schleife eine Abfrage steht. Wer während des Durchlaufs die zugrunde liegende Liste verändert, bekommt eine Exception:
+Die zweite Falle betrifft nicht nur LINQ, sondern jedes `foreach` über eine `List<T>` – mit LINQ ist sie aber leichter zu übersehen, weil zwischen Quelle und Schleife eine Abfrage steht. Angenommen, ein Zauberspruch vertreibt alle Gegner, die direkt neben dem Helden stehen:
 
 ```csharp
-List<string> namen = ["Anna", "Bela", "Zoe"];
+IEnumerable<Gegner> daneben =
+    from g in feld.Gegner
+    where g.Position.Entfernung(feld.Spieler.Position) <= 1
+    select g;
 
-IEnumerable<string> kurze =
-    from n in namen
-    where n.Length <= 4
-    select n;
-
-foreach (string n in kurze)
+foreach (Gegner g in daneben)
 {
-    namen.Remove(n); // InvalidOperationException: Collection was modified
+    feld.Entfernen(g); // InvalidOperationException: Collection was modified
 }
 ```
 
-Es sieht so aus, als würden wir über `kurze` laufen und `namen` ändern – zwei verschiedene Dinge. Tatsächlich iteriert `kurze` aber direkt über `namen`, und die Liste bemerkt beim nächsten Schritt, dass sie sich seit Beginn des Durchlaufs verändert hat. Die Lösung ist wieder `ToList()`: Dann läuft die Schleife über eine Kopie, und `namen.Remove(n)` ist erlaubt.
+Es sieht so aus, als würden wir über `daneben` laufen und das Spielfeld ändern – zwei verschiedene Dinge. Tatsächlich iteriert `daneben` aber direkt über die interne `List<Gegner>` des Spielfelds, und `Entfernen` löscht genau daraus. Die Liste bemerkt beim nächsten Schritt, dass sie sich seit Beginn des Durchlaufs verändert hat, und bricht ab. Die Lösung ist wieder `ToList()`: Dann läuft die Schleife über eine Kopie der Trefferliste, und das Entfernen aus dem Original ist erlaubt.
 
 ```csharp
-foreach (string n in kurze.ToList())
+foreach (Gegner g in daneben.ToList())
 {
-    namen.Remove(n); // funktioniert: Schleife läuft über die Kopie
+    feld.Entfernen(g); // funktioniert: die Schleife läuft über die Kopie
 }
-Console.WriteLine(string.Join(", ", namen)); // (leer – alle drei hatten <= 4 Zeichen)
 ```
+
+Dieselbe Falle lauert übrigens in `GegnerZiehen`: Dort läuft ein `foreach` über alle Gegner, und wenn dabei ein Gegner entfernt würde, gäbe es dieselbe Exception. Deshalb sammelt man in solchen Fällen erst die Kandidaten und räumt danach auf.
+{: .notice--warning}
 
 Verzögerte Ausführung ist kein Fehler, sondern der Grund, warum LINQ so leichtgewichtig ist: Man kann Abfragen definieren, weiterreichen, kombinieren und erst am Ende ausführen, ohne Zwischenlisten zu erzeugen. Wer die Regel „ein Plan wird bei jedem Durchlauf ausgeführt“ im Kopf hat, hat beide Fallen im Griff.
-{: .notice--warning}
 
 ## Ausblick
 
-Die Query-Syntax ist nur die Oberfläche. Intern übersetzt der Compiler `where z % 2 == 0` in einen Aufruf `zahlen.Where(z => z % 2 == 0)` – eine Methode, die als Parameter ein Stück Code bekommt. Solche Code-als-Parameter-Konstrukte heißen **Delegaten**, ihre Kurzschreibweise `z => z % 2 == 0` ist ein **Lambda-Ausdruck**. Beide sind das Thema der nächsten Vorlesung ([Lambda-Ausdrücke](/modules/lambda_ausdruecke/lambda_ausdruecke.md), [LINQ-Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md)) – und mit ihnen öffnet sich der Rest der LINQ-Welt: `Sum`, `Average`, `Take`, `Skip`, `Distinct` und viele mehr.
+Die Query-Syntax ist nur die Oberfläche. Intern übersetzt der Compiler `where g.Position.Entfernung(held) <= 5` in einen Aufruf `feld.Gegner.Where(g => g.Position.Entfernung(held) <= 5)` – eine Methode, die als Parameter ein Stück Code bekommt. Solche Code-als-Parameter-Konstrukte heißen **Delegaten**, ihre Kurzschreibweise `g => …` ist ein **Lambda-Ausdruck**. Beide sind das Thema der nächsten Vorlesung ([Lambda-Ausdrücke](/modules/lambda_ausdruecke/lambda_ausdruecke.md), [LINQ-Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md)) – und mit ihnen öffnet sich der Rest der LINQ-Welt: `Sum`, `Average`, `Take`, `Skip`, `Distinct` und viele mehr.
 
-Übung: Erstelle eine `List<int>` mit den Zahlen 1 bis 10 und eine Abfrage, die alle Zahlen größer als 5 liefert. Gib das Ergebnis aus, entferne dann die 10 aus der Liste, füge die 20 hinzu und gib das Ergebnis erneut aus. Sage die beiden Ausgaben voraus. Wiederhole das Experiment mit `ToArray()` hinter der Abfrage – was ändert sich, und warum?
+Übung: Definiere eine Abfrage, die alle Gegenstände liefert, die noch auf dem Boden liegen (`from o in feld.AlleObjekte where o is Gegenstand select o`). Gib das Ergebnis aus, lass den Helden dann über einen Schlüssel laufen und gib dasselbe Ergebnis erneut aus. Sage beide Ausgaben voraus – und erkläre, warum sich die zweite unterscheidet, obwohl du die Abfrage nicht verändert hast. Wiederhole das Experiment mit `ToList()` hinter der Abfrage. Was ändert sich, und warum bleibt die Anzahl der Lebenspunkte des Helden trotzdem in beiden Varianten aktuell?
 {: .notice--info}
+
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 ## Weitere Quellen
 

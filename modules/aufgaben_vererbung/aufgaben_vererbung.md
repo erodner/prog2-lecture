@@ -9,172 +9,185 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Vererbung kommt eine besondere Fähigkeit dazu: vorherzusagen, was ein Programm tut, das man nicht selbst geschrieben hat. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Vererbung kommt eine besondere Fähigkeit dazu: vorherzusagen, was ein Programm tut, das man nicht selbst geschrieben hat. Alle Aufgaben spielen im Adventure, dem durchgehenden Beispiel des Kurses – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Algorithmenentwurf
 
-Die CLR wählt bei jedem Methodenaufruf nach festen Regeln die Implementierung aus. Spiele diesen Algorithmus von Hand durch und sage die Ausgabe voraus – **ohne** den Code auszuführen:
+Die CLR wählt bei jedem Methodenaufruf nach festen Regeln die Implementierung aus. Spiele diesen Algorithmus von Hand durch und sage die Ausgabe voraus – **ohne** den Code auszuführen. (Im echten Spiel ist `Wand` versiegelt und taugt deshalb nicht für eine dreistufige Hierarchie; wir nehmen den Spieler und einen gedachten `Magier`.)
 
 ```csharp
-class Roboter
+class Spielobjekt
 {
-    public virtual void Arbeiten() => Console.WriteLine("Roboter.Arbeiten");
-    public void Abschalten() => Console.WriteLine("Roboter.Abschalten");
-    public virtual void Piepen() => Console.WriteLine("Roboter.Piepen");
+    public virtual void Beschreiben() => Console.WriteLine("Spielobjekt.Beschreiben");
+    public void Betreten() => Console.WriteLine("Spielobjekt.Betreten");
+    public virtual void Melden() => Console.WriteLine("Spielobjekt.Melden");
 }
 
-class Putzroboter : Roboter
+class Spieler : Spielobjekt
 {
-    public override void Arbeiten() => Console.WriteLine("Putzroboter.Arbeiten");
-    public new void Abschalten() => Console.WriteLine("Putzroboter.Abschalten");
-    public new virtual void Piepen() => Console.WriteLine("Putzroboter.Piepen");
+    public override void Beschreiben() => Console.WriteLine("Spieler.Beschreiben");
+    public new void Betreten() => Console.WriteLine("Spieler.Betreten");
+    public new virtual void Melden() => Console.WriteLine("Spieler.Melden");
 }
 
-class Fensterputzroboter : Putzroboter
+class Magier : Spieler
 {
-    public override void Arbeiten() { Console.WriteLine("Fensterputzroboter.Arbeiten"); base.Arbeiten(); }
-    public override void Piepen() => Console.WriteLine("Fensterputzroboter.Piepen");
+    public override void Beschreiben() { Console.WriteLine("Magier.Beschreiben"); base.Beschreiben(); }
+    public override void Melden() => Console.WriteLine("Magier.Melden");
 }
 
-Roboter a = new Fensterputzroboter();
-Putzroboter b = new Fensterputzroboter();
-a.Arbeiten(); a.Abschalten(); a.Piepen();
-b.Arbeiten(); b.Abschalten(); b.Piepen();
+Spielobjekt a = new Magier();
+Spieler b = new Magier();
+a.Beschreiben(); a.Betreten(); a.Melden();
+b.Beschreiben(); b.Betreten(); b.Melden();
 ```
 
-- Welche Methoden sind `virtual`/`override` (Laufzeittyp entscheidet), welche versteckt (Kompilierzeittyp entscheidet)?
-- Was bewirkt `new virtual` in `Putzroboter` für die Methode `Piepen` – und welche `Piepen`-Methode überschreibt `Fensterputzroboter` damit eigentlich?
+- Welche Mitglieder sind `virtual`/`override` (Laufzeittyp entscheidet), welche versteckt (Kompilierzeittyp entscheidet)?
+- Was bewirkt `new virtual` in `Spieler` für die Methode `Melden` – und welche `Melden`-Methode überschreibt `Magier` damit eigentlich?
+- Was bedeutet das für eine Schleife über die `List<Spielobjekt>` des Spielfelds?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Die Ketten sortieren:** `Arbeiten` ist eine durchgehende `virtual`/`override`-Kette von `Roboter` bis `Fensterputzroboter`. `Abschalten` ist in `Roboter` nicht `virtual` und wird in `Putzroboter` versteckt. `Piepen` ist tückisch: `Putzroboter` versteckt die Methode von `Roboter` und beginnt mit `new virtual` eine **zweite, unabhängige** Kette. Das `override` in `Fensterputzroboter` überschreibt die nächstgelegene virtuelle Methode – also `Putzroboter.Piepen`, nicht `Roboter.Piepen`.
+**Schritt 1 — Die Ketten sortieren:** `Beschreiben` ist eine durchgehende `virtual`/`override`-Kette von `Spielobjekt` bis `Magier`. `Betreten` ist in `Spielobjekt` nicht `virtual` und wird in `Spieler` versteckt. `Melden` ist tückisch: `Spieler` versteckt die Methode von `Spielobjekt` und beginnt mit `new virtual` eine **zweite, unabhängige** Kette. Das `override` in `Magier` überschreibt die nächstgelegene virtuelle Methode – also `Spieler.Melden`, nicht `Spielobjekt.Melden`.
 
-**Schritt 2 — Aufrufe über `a` (Kompilierzeittyp `Roboter`):**
-
-```
-Fensterputzroboter.Arbeiten   // virtual: Laufzeittyp Fensterputzroboter
-Putzroboter.Arbeiten          // base.Arbeiten() aus Fensterputzroboter
-Roboter.Abschalten            // nicht virtual: Kompilierzeittyp Roboter
-Roboter.Piepen                // Kette von Roboter.Piepen hat kein override
-```
-
-**Schritt 3 — Aufrufe über `b` (Kompilierzeittyp `Putzroboter`):**
+**Schritt 2 — Aufrufe über `a` (Kompilierzeittyp `Spielobjekt`):**
 
 ```
-Fensterputzroboter.Arbeiten
-Putzroboter.Arbeiten
-Putzroboter.Abschalten        // Kompilierzeittyp ist jetzt Putzroboter
-Fensterputzroboter.Piepen     // Kette von Putzroboter.Piepen, überschrieben
+Magier.Beschreiben        // virtual: Laufzeittyp Magier
+Spieler.Beschreiben       // base.Beschreiben() aus Magier
+Spielobjekt.Betreten      // nicht virtual: Kompilierzeittyp Spielobjekt
+Spielobjekt.Melden        // Kette von Spielobjekt.Melden hat kein override
+```
+
+**Schritt 3 — Aufrufe über `b` (Kompilierzeittyp `Spieler`):**
+
+```
+Magier.Beschreiben
+Spieler.Beschreiben
+Spieler.Betreten          // Kompilierzeittyp ist jetzt Spieler
+Magier.Melden             // Kette von Spieler.Melden, überschrieben
 ```
 
 **Zentrale Designentscheidungen:**
 
-- **Ein Objekt, zwei Verhalten:** `a` und `b` zeigen auf Objekte desselben Typs, liefern aber bei `Abschalten` und `Piepen` unterschiedliche Ausgaben. Genau deshalb ist Verstecken in Hierarchien ein Wartungsrisiko.
-- **`new virtual` startet eine neue Kette:** Wer eine Methode versteckt und gleichzeitig `virtual` macht, koppelt die Basisklasse ab. Für Code, der nur `Roboter` kennt, existiert das Überschreiben in `Fensterputzroboter` nicht.
-- **Regel für die Praxis:** Willst du Polymorphie, brauchst du eine ununterbrochene `virtual`/`override`-Kette bis zur Basisklasse.
+- **Ein Objekt, zwei Verhalten:** `a` und `b` zeigen auf Objekte desselben Typs, liefern aber bei `Betreten` und `Melden` unterschiedliche Ausgaben. Genau deshalb ist Verstecken in Hierarchien ein Wartungsrisiko.
+- **`new virtual` startet eine neue Kette:** Wer ein Mitglied versteckt und gleichzeitig `virtual` macht, koppelt die Basisklasse ab. Für das Spielfeld, das nur `Spielobjekt` kennt, existiert das Überschreiben in `Magier` nicht – in einer `List<Spielobjekt>` käme immer nur `Spielobjekt.Melden` heraus.
+- **Regel für die Praxis:** Willst du Polymorphie, brauchst du eine ununterbrochene `virtual`/`override`-Kette bis zur Basisklasse. Genau deshalb sind `Symbol`, `IstPassierbar` und `Beschreibung()` im Spiel sauber durchgängig `virtual`.
 
 </details>
 
 ## Aufgabe 2 — Abstraktion
 
-Eine Firma verwaltet **Mitarbeiter**, **Manager** und **Praktikanten**. Alle haben Namen und Personalnummer. Ein Mitarbeiter bekommt ein festes Monatsgehalt. Ein Manager bekommt zusätzlich einen Bonus von 5 % pro geführter Person. Ein Praktikant bekommt eine Pauschale pro Monat, die aber gesetzlich mindestens 600 € betragen muss. Die Buchhaltung braucht die monatliche Lohnsumme über *alle* Beschäftigten.
+Das Spielfeld soll um **Gegenstände** erweitert werden. Ein **Schlüssel** (`k`) wird eingesammelt und später gebraucht, um eine Tür zu öffnen. Ein **Trank** (`!`) heilt beim Einsammeln zwei Lebenspunkte, aber höchstens bis zum Maximum von fünf. Ein **Schatz** (`$`) bringt Punkte. Alle drei liegen auf einem Feld, tragen einen Namen, werden gezeichnet, dürfen vom Helden **betreten** werden und verschwinden beim Einsammeln vom Spielfeld.
 
 - Welche Klasse ist die Basis, was ist gemeinsam, was ist speziell?
-- Welche Methode muss `virtual` sein, damit die Lohnsumme mit einer einzigen Schleife berechnet werden kann?
-- Ist ein Praktikant ein Mitarbeiter, obwohl er ein anderes Gehaltsmodell hat? Wo landet die 600-€-Regel?
+- Welches Mitglied muss `virtual` sein, damit das Einsammeln mit einer einzigen Codestelle im Spielfeld funktioniert?
+- Wohin gehört die Regel „höchstens fünf Lebenspunkte“ – in den Trank, in den Spieler oder ins Spielfeld?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Gemeinsames abstrahieren:** Name, Personalnummer und die Fähigkeit, ein Monatsgehalt zu liefern, haben alle drei. Das ist die Basisklasse `Mitarbeiter`. Manager und Praktikant *sind* Mitarbeiter – die Buchhaltung behandelt sie identisch, nur die Berechnung unterscheidet sich. Also ist `Monatsgehalt()` die `virtual`-Methode.
+**Schritt 1 — Gemeinsames abstrahieren:** Name, Position, Symbol und Beschreibung haben alle Spielobjekte – die stecken schon in `Spielobjekt`. Neu und allen drei Gegenständen gemeinsam sind zwei Dinge: Sie sind passierbar, und sie *tun etwas*, wenn der Held sie aufnimmt. Das rechtfertigt eine Zwischenklasse `Gegenstand` zwischen `Spielobjekt` und den konkreten Typen. Die Wirkung ist das, was variiert – also wird `Einsammeln` die `virtual`-Methode.
 
 **Schritt 2 — Die Hierarchie:**
 
 ```csharp
-class Mitarbeiter
+class Gegenstand : Spielobjekt
 {
-    public string Name { get; }
-    public int Personalnummer { get; }
-    protected decimal Grundgehalt { get; }
+    public int Punktwert { get; }
 
-    public Mitarbeiter(string name, int personalnummer, decimal grundgehalt)
+    protected Gegenstand(string name, Position position, int punktwert)
+        : base(name, position)
     {
-        Name = name;
-        Personalnummer = personalnummer;
-        Grundgehalt = grundgehalt;
+        Punktwert = punktwert;
     }
 
-    public virtual decimal Monatsgehalt() => Grundgehalt;
+    public override bool IstPassierbar => true;
 
-    public override string ToString() => $"{Name} ({GetType().Name}): {Monatsgehalt():F2} EUR";
+    public virtual void Einsammeln(Spieler spieler)
+    {
+        spieler.PunkteGutschreiben(Punktwert);
+    }
+
+    public override string Beschreibung() => base.Beschreibung() + " – kann aufgenommen werden";
 }
 
-class Manager : Mitarbeiter
+sealed class Schluessel : Gegenstand
 {
-    public List<Mitarbeiter> Team { get; } = new List<Mitarbeiter>();
+    public Schluessel(Position position) : base("Schlüssel", position, 0) { }
 
-    public Manager(string name, int personalnummer, decimal grundgehalt)
-        : base(name, personalnummer, grundgehalt) { }
-
-    public override decimal Monatsgehalt() => base.Monatsgehalt() * (1 + 0.05m * Team.Count);
+    public override char Symbol => 'k';
 }
 
-class Praktikant : Mitarbeiter
+sealed class Schatz : Gegenstand
 {
-    public Praktikant(string name, int personalnummer, decimal pauschale)
-        : base(name, personalnummer, Math.Max(pauschale, 600m)) { }
+    public Schatz(Position position, int punktwert) : base("Schatz", position, punktwert) { }
+
+    public override char Symbol => '$';
+}
+
+sealed class Trank : Gegenstand
+{
+    public Trank(Position position) : base("Trank", position, 0) { }
+
+    public override char Symbol => '!';
+
+    public override void Einsammeln(Spieler spieler)
+    {
+        base.Einsammeln(spieler);
+        spieler.Heilen(2);
+    }
 }
 ```
 
-**Schritt 3 — Die Lohnsumme:**
+**Schritt 3 — Eine Codestelle im Spielfeld:**
 
 ```csharp
-List<Mitarbeiter> belegschaft = new List<Mitarbeiter>
+public void SpielerZieht(Richtung richtung)
 {
-    new Mitarbeiter("Anna", 1, 3500m),
-    new Manager("Ben", 2, 5000m),
-    new Praktikant("Cem", 3, 450m)
-};
-decimal summe = 0;
-foreach (Mitarbeiter m in belegschaft)
-{
-    summe += m.Monatsgehalt();
+    if (!Spieler.Bewegen(richtung, this)) return;
+
+    if (ObjektAn(Spieler.Position) is Gegenstand g)
+    {
+        g.Einsammeln(Spieler);
+        Entfernen(g);
+    }
 }
-Console.WriteLine(summe);   // 9100.00 – Ben hat noch kein Team, Cem bekommt 600
 ```
 
 **Zentrale Designentscheidungen:**
 
-- **Die 600-€-Regel im Konstruktor von `Praktikant`:** Sie ist eine Eigenschaft des Praktikantenvertrags, nicht der Gehaltsberechnung. `Praktikant` braucht dadurch kein `override` – die geerbte Methode reicht.
-- **`Manager` ruft `base.Monatsgehalt()`:** Ändert sich später die Grundberechnung (etwa um Zulagen), profitiert der Manager automatisch.
-- **`ToString` in der Basisklasse mit `GetType().Name`:** Eine einzige Implementierung liefert für alle Erben die richtige Typbezeichnung – kein Kopieren in jede Klasse.
-- **`Grundgehalt` ist `protected`:** Erben dürfen es lesen, die Buchhaltung sieht nur `Monatsgehalt()`.
+- **`IstPassierbar => true` steht einmal in `Gegenstand`:** Kein konkreter Gegenstand muss daran denken. Ein vergessenes `override` hätte sonst einen Schlüssel zur Folge, der wie eine Wand blockiert.
+- **Die 5-Lebenspunkte-Grenze gehört in `Spieler.Heilen`:** Sie ist eine Eigenschaft des Helden, nicht des Tranks. Sonst müsste jeder heilende Gegenstand die Regel kennen und kopieren – und beim Einführen eines zweiten Trankes stünde sie zweimal im Code.
+- **`Trank` ruft `base.Einsammeln(spieler)`:** Kommen später Punkte für jedes aufgenommene Objekt hinzu, profitiert der Trank automatisch davon.
+- **`protected` beim Konstruktor von `Gegenstand`:** Ein „Gegenstand“ ohne nähere Bestimmung soll gar nicht erzeugbar sein. In [Vorlesung 02](/lectures/02/02.md) wird daraus eine `abstract class` – und aus dem Einsammeln ein Interface `ISammelbar`, damit auch Dinge einsammelbar sein können, die keine Gegenstände sind.
+- **Genau eine `is`-Abfrage:** `is Gegenstand g` fragt nach der *Kategorie*, nicht nach dem konkreten Typ. Drei Abfragen (`is Schluessel`, `is Trank`, `is Schatz`) wären das Anzeichen für eine fehlende `virtual`-Methode.
 
 </details>
 
 ## Aufgabe 3 — Zerlegung
 
-Gegeben ist `class Punkt { public int X { get; set; } public int Y { get; set; } }`. Ein Programm legt Punkte in ein `HashSet<Punkt>` und stellt fest: `set.Contains(new Punkt { X = 1, Y = 2 })` liefert `false`, obwohl genau dieser Punkt eingefügt wurde.
+Das Spiel soll sich merken, welche Felder der Held schon gesehen hat, damit die Karte nach und nach aufgedeckt wird. Ein Kollege schreibt dafür `class Feld { public int X { get; set; } public int Y { get; set; } }` und legt die besuchten Felder in ein `HashSet<Feld>`. Beim Testen stellt er fest: `besucht.Contains(new Feld { X = 1, Y = 2 })` liefert `false`, obwohl der Held genau dort war. Mit dem `readonly record struct Position` aus dem Spiel funktioniert dasselbe Programm sofort.
 
-- Zerlege, was `HashSet<Punkt>.Contains` intern in welcher Reihenfolge tut. An welchem Schritt scheitert es?
+- Zerlege, was `HashSet<Feld>.Contains` intern in welcher Reihenfolge tut. An welchem Schritt scheitert es?
 - Implementiere `Equals` und `GetHashCode` korrekt. Reicht es, nur eine der beiden zu überschreiben?
-- Der Punkt hat `set`-Properties. Was passiert, wenn man `X` ändert, *nachdem* der Punkt im Set liegt?
+- `Feld` hat `set`-Properties. Was passiert, wenn man `X` ändert, *nachdem* das Feld im Set liegt?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — `Contains` zerlegen:** (1) `GetHashCode()` des gesuchten Punkts berechnen, (2) den Bucket mit diesem Hashcode auswählen, (3) nur die Objekte in diesem Bucket mit `Equals` vergleichen. Die Standardimplementierung von `GetHashCode` liefert für zwei verschiedene Objekte fast sicher verschiedene Werte – der gesuchte Punkt landet in einem anderen Bucket, und `Equals` wird nie aufgerufen. Selbst wenn es aufgerufen würde, vergleicht das Standard-`Equals` nur Referenzen.
+**Schritt 1 — `Contains` zerlegen:** (1) `GetHashCode()` des gesuchten Felds berechnen, (2) den Bucket mit diesem Hashcode auswählen, (3) nur die Objekte in diesem Bucket mit `Equals` vergleichen. Die von `object` geerbte `GetHashCode`-Implementierung liefert für zwei verschiedene Objekte fast sicher verschiedene Werte – das gesuchte Feld landet in einem anderen Bucket, und `Equals` wird nie aufgerufen. Selbst wenn es aufgerufen würde, vergleicht das Standard-`Equals` nur Referenzen.
 
 **Schritt 2 — Beide Methoden überschreiben:**
 
 ```csharp
-class Punkt
+class Feld
 {
     public int X { get; }
     public int Y { get; }
 
-    public Punkt(int x, int y)
+    public Feld(int x, int y)
     {
         X = x;
         Y = y;
@@ -182,107 +195,138 @@ class Punkt
 
     public override bool Equals(object? obj)
     {
-        return obj is Punkt p && p.GetType() == GetType() && X == p.X && Y == p.Y;
+        return obj is Feld f && f.GetType() == GetType() && X == f.X && Y == f.Y;
     }
 
     public override int GetHashCode() => HashCode.Combine(X, Y);
     public override string ToString() => $"({X}, {Y})";
 }
 
-HashSet<Punkt> set = new HashSet<Punkt> { new Punkt(1, 2) };
-Console.WriteLine(set.Contains(new Punkt(1, 2)));   // True
+HashSet<Feld> besucht = new HashSet<Feld> { new Feld(1, 2) };
+Console.WriteLine(besucht.Contains(new Feld(1, 2)));   // True
 ```
 
 **Schritt 3 — Nur eine der beiden reicht nicht:** Nur `Equals`: falscher Bucket, `Contains` bleibt `false`. Nur `GetHashCode`: richtiger Bucket, aber der Referenzvergleich schlägt fehl. Der Vertrag lautet: `Equals` gleich ⇒ Hashcode gleich.
 
-**Schritt 4 — Veränderlichkeit:** Wird `X` nach dem Einfügen geändert, liegt der Punkt in einem Bucket, der zu seinem alten Hashcode gehört. Er ist danach weder mit dem alten noch mit dem neuen Wert auffindbar – er ist im Set „verloren“. Deshalb sind in der Lösung die Properties nur lesbar.
+**Schritt 4 — Veränderlichkeit:** Wird `X` nach dem Einfügen geändert, liegt das Feld in einem Bucket, der zu seinem alten Hashcode gehört. Es ist danach weder mit den alten noch mit den neuen Koordinaten auffindbar – es ist im Set „verloren“. Deshalb sind in der Lösung die Properties nur lesbar.
 
 **Zentrale Designentscheidungen:**
 
-- **`p.GetType() == GetType()`:** Ohne diese Prüfung wäre ein `Punkt3D : Punkt` mit gleichem X und Y „gleich“ einem `Punkt` – aber `punkt3D.Equals(punkt)` könnte anders entscheiden als `punkt.Equals(punkt3D)`. Gleichheit muss symmetrisch sein.
-- **Unveränderlichkeit:** Objekte, die als Schlüssel dienen, sollten sich nach der Erzeugung nicht mehr ändern. Ein Punkt mit anderen Koordinaten ist ein *neuer* Punkt.
-- **`HashCode.Combine` statt `X ^ Y`:** Bei `X ^ Y` hätten (1, 2) und (2, 1) denselben Hashcode – erlaubt, aber unnötig viele Kollisionen.
+- **`readonly record struct` statt Handarbeit:** Genau diese vier Methoden (`Equals`, `GetHashCode`, `==`, `!=`) erzeugt der Compiler für `Position` automatisch. Deshalb funktioniert `o.Position == position` im Spielfeld, und deshalb kann `Position` später ohne weiteres Schlüssel eines `Dictionary` werden.
+- **`f.GetType() == GetType()`:** Ohne diese Prüfung wäre ein `Feld3D : Feld` mit gleichem X und Y „gleich“ einem `Feld` – aber `feld3D.Equals(feld)` könnte anders entscheiden als `feld.Equals(feld3D)`. Gleichheit muss symmetrisch sein.
+- **Unveränderlichkeit:** Objekte, die als Schlüssel dienen, sollten sich nach der Erzeugung nicht mehr ändern. Ein Feld mit anderen Koordinaten ist ein *neues* Feld – genau das drückt `Position.Verschoben` aus, das eine neue Position zurückgibt, statt die alte zu verändern.
+- **`HashCode.Combine` statt `X ^ Y`:** Bei `X ^ Y` hätten (1, 2) und (2, 1) denselben Hashcode – erlaubt, aber auf einem quadratischen Spielfeld unnötig viele Kollisionen.
 
 </details>
 
 ## Aufgabe 4 — Mustererkennung
 
-Ein Kollege hat für einen Ticketshop drei Klassen geschrieben – per Copy&Paste. `Sitzplatz` hat `Veranstaltung`, `Preis` (mit Prüfung auf positiv), `Reihe`, `Nummer` und `Endpreis()` (Preis plus 10 % Gebühr). `Stehplatz` hat `Veranstaltung`, `Preis` (gleiche Prüfung), `Block` und dasselbe `Endpreis()`. `Logenplatz` hat alles von `Sitzplatz` plus `MitCatering` und ein `Endpreis()`, das zusätzlich 25 € Pauschale aufschlägt. Jede Preisprüfung steht dreimal im Code, `Endpreis()` ebenfalls.
+Ein Kollege hat die ersten beiden Objektarten des Spiels per Copy&Paste geschrieben, bevor er von Vererbung wusste:
+
+```csharp
+class Wand
+{
+    public string Name = "Wand";
+    public int X;
+    public int Y;
+    public char Symbol = '#';
+    public bool IstPassierbar = false;
+
+    public string Beschreibung() => $"{Name} bei ({X}, {Y})";
+    public int Entfernung(int x, int y) => Math.Abs(X - x) + Math.Abs(Y - y);
+}
+
+class Tuer
+{
+    public string Name = "Tür";
+    public int X;
+    public int Y;
+    public char Symbol = 'D';
+    public bool IstOffen = false;
+
+    public string Beschreibung() => $"{Name} bei ({X}, {Y})" + (IstOffen ? " (offen)" : " (verschlossen)");
+    public int Entfernung(int x, int y) => Math.Abs(X - x) + Math.Abs(Y - y);
+}
+```
+
+Das Spielfeld hält zwei Listen, `List<Wand>` und `List<Tuer>`, und zeichnet die Karte mit zwei fast identischen Schleifen. Für Truhen soll jetzt eine dritte Liste dazukommen.
 
 - Welche Mitglieder wiederholen sich exakt, welche variieren nach einem Muster, welche sind einzigartig?
-- Skizziere die Hierarchie. Ist `Logenplatz` ein `Sitzplatz` oder nur ein Platz mit zufällig gleichen Feldern?
-- Wie sorgst du dafür, dass die 10-%-Regel nur an einer Stelle steht, obwohl `Logenplatz` sie erweitert?
+- Skizziere die Hierarchie. Was passiert mit `X`, `Y` und `Entfernung`?
+- Wie wird aus den zwei Listen und zwei Schleifen genau eine – und wie sorgst du dafür, dass die Tür ihre Sonderregel behält, ohne dass `IstOffen` in die Basisklasse wandert?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Muster erkennen:** Exakt gleich: `Veranstaltung`, `Preis` mit Prüfung, die Gebührenregel. Nach Muster variierend: `Endpreis()` – die Grundregel bleibt, `Logenplatz` ergänzt sie. Einzigartig: `Reihe`/`Nummer` (Sitzplatz), `Block` (Stehplatz), `MitCatering` (Logenplatz).
+**Schritt 1 — Muster erkennen:** Exakt gleich: `Name`, `X`, `Y`, `Entfernung` und das Grundgerüst von `Beschreibung`. Nach Muster variierend: `Symbol` (`#` gegen `D`), `IstPassierbar` (fest `false` gegen „nur wenn offen“) und `Beschreibung` (die Tür hängt einen Zusatz an). Einzigartig: `IstOffen` und das Öffnen der Tür.
 
-**Schritt 2 — Hierarchie:** `Platz` als Basis mit den gemeinsamen Teilen. `Sitzplatz : Platz`, `Stehplatz : Platz`. `Logenplatz : Sitzplatz`, weil ein Logenplatz fachlich ein Sitzplatz mit Reihe und Nummer *ist* – überall, wo ein Sitzplatz gebucht wird, darf eine Loge stehen.
+**Schritt 2 — Zwei Abstraktionen, nicht eine:** `X` und `Y` treten immer paarweise auf, und `Entfernung` rechnet nur mit ihnen – das ist gar kein Spielobjekt-Thema, sondern ein eigener **Wert**. Er wird zur `Position`, und `Entfernung` wandert dorthin. Der Rest wird zur Basisklasse `Spielobjekt`. Aus Feldern werden dabei Properties: `Name` ist nach der Erzeugung fest, `Position` darf nur das Objekt selbst ändern.
 
 ```csharp
-class Platz
+public readonly record struct Position(int X, int Y)
 {
-    private decimal preis;
-    public string Veranstaltung { get; }
-    public decimal Preis
-    {
-        get => preis;
-        set => preis = value > 0 ? value : throw new ArgumentException("Preis muss positiv sein.");
-    }
-
-    public Platz(string veranstaltung, decimal preis)
-    {
-        Veranstaltung = veranstaltung;
-        Preis = preis;
-    }
-
-    public virtual decimal Endpreis() => Preis * 1.10m;
+    public int Entfernung(Position andere) => Math.Abs(X - andere.X) + Math.Abs(Y - andere.Y);
+    public override string ToString() => $"({X}, {Y})";
 }
 
-class Sitzplatz : Platz
+public class Spielobjekt
 {
-    public int Reihe { get; }
-    public int Nummer { get; }
+    public string Name { get; }
+    public Position Position { get; protected set; }
 
-    public Sitzplatz(string veranstaltung, decimal preis, int reihe, int nummer)
-        : base(veranstaltung, preis)
+    public Spielobjekt(string name, Position position)
     {
-        Reihe = reihe;
-        Nummer = nummer;
+        Name = name;
+        Position = position;
     }
+
+    public virtual char Symbol => '?';
+    public virtual bool IstPassierbar => false;
+    public virtual string Beschreibung() => $"{Name} bei {Position}";
 }
 
-class Stehplatz : Platz
+public sealed class Wand : Spielobjekt
 {
-    public string Block { get; }
+    public Wand(Position position) : base("Wand", position) { }
 
-    public Stehplatz(string veranstaltung, decimal preis, string block)
-        : base(veranstaltung, preis)
-    {
-        Block = block;
-    }
+    public override char Symbol => '#';
 }
 
-class Logenplatz : Sitzplatz
+public class Tuer : Spielobjekt
 {
-    public bool MitCatering { get; }
+    public bool IstOffen { get; private set; }
 
-    public Logenplatz(string veranstaltung, decimal preis, int reihe, int nummer, bool mitCatering)
-        : base(veranstaltung, preis, reihe, nummer)
-    {
-        MitCatering = mitCatering;
-    }
+    public Tuer(Position position) : base("Tür", position) { }
 
-    public override decimal Endpreis() => base.Endpreis() + 25m;
+    public override char Symbol => 'D';
+    public override bool IstPassierbar => IstOffen;
+
+    public void Oeffnen() => IstOffen = true;
+
+    public override string Beschreibung()
+        => base.Beschreibung() + (IstOffen ? " (offen)" : " (verschlossen)");
+}
+```
+
+**Schritt 3 — Eine Liste, eine Schleife:**
+
+```csharp
+private readonly List<Spielobjekt> objekte = new();
+
+public void Hinzufuegen(Spielobjekt objekt) => objekte.Add(objekt);
+
+public bool IstFrei(Position p)
+{
+    Spielobjekt? o = ObjektAn(p);
+    return o is null || o.IstPassierbar;
 }
 ```
 
 **Zentrale Designentscheidungen:**
 
-- **Die Prüfung steht einmal in `Platz.Preis`:** Der Konstruktor setzt über die Property, damit auch die Erzeugung geprüft wird. Alle Erben bekommen die Regel geschenkt.
-- **`Endpreis()` ist `virtual`, aber nur `Logenplatz` überschreibt:** `Sitzplatz` und `Stehplatz` brauchen kein `override` – die Basisimplementierung passt. `Logenplatz` erweitert mit `base.Endpreis()` statt die 10 % abzuschreiben.
-- **Drei Ebenen statt zwei:** `Logenplatz` erbt von `Sitzplatz`, nicht von `Platz`, weil `Reihe` und `Nummer` sonst erneut kopiert werden müssten – dasselbe Copy&Paste-Problem eine Ebene tiefer.
-- **Prüfstein:** Ändert sich die Gebühr auf 12 %, ist genau eine Zeile betroffen. Das war das Ziel des Refactorings.
+- **`IstOffen` bleibt in `Tuer`:** Eine Wand hat keinen Öffnungszustand. In die Basisklasse gehört nur, was *jedes* Spielobjekt hat – sonst bekommt man eine aufgeblähte Basisklasse voller Felder, die die meisten Erben ignorieren.
+- **Aus einem Feld wird eine `virtual`-Property:** `bool IstPassierbar = false` lässt sich nicht überschreiben, `public virtual bool IstPassierbar => false` schon. Erst dadurch kann die Tür ihre Durchlässigkeit *berechnen*, statt sie zu speichern – und `IstFrei` muss nie wissen, worum es sich handelt.
+- **`Position` als eigener Typ:** Zwei zusammengehörige `int`-Felder, die überall zusammen weitergereicht werden, sind fast immer ein verstecktes Konzept. Der `record struct` liefert obendrein `==` und `GetHashCode` gratis (siehe [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md)).
+- **Prüfstein:** Die Truhe kostet jetzt eine kleine Klasse und keine Zeile im Spielfeld. Genau das war das Ziel des Refactorings – und genau dieser Stand ist der Ausgangspunkt der nächsten Vorlesung.
 
 </details>

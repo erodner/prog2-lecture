@@ -9,116 +9,153 @@ toc: false
 classes: wide
 ---
 
-Eine abstrakte Klasse ist kein leeres Gerüst. Sie ist eher wie eine Rezeptvorlage, in der die meisten Schritte schon ausformuliert sind – nur an einzelnen Stellen steht „hier die Hauptzutat einsetzen“. Die Vorlage kann den ganzen Ablauf beschreiben, obwohl sie die Zutat nicht kennt, weil sie sich darauf verlässt, dass jedes konkrete Rezept sie liefert. In diesem Modul schauen wir uns an, was in einer abstrakten Klasse alles abstrakt sein darf, wie konkreter Code in der Basisklasse abstrakte Mitglieder nutzen kann und wann `virtual` statt `abstract` die bessere Wahl ist.
+Eine abstrakte Klasse ist kein leeres Gerüst. Sie ist eher wie eine Rezeptvorlage, in der die meisten Schritte schon ausformuliert sind – nur an einzelnen Stellen steht „hier die Hauptzutat einsetzen“. Die Vorlage kann den ganzen Ablauf beschreiben, obwohl sie die Zutat nicht kennt, weil sie sich darauf verlässt, dass jedes konkrete Rezept sie liefert. In diesem Modul schauen wir uns an, was in einer abstrakten Klasse alles abstrakt sein darf, wie fertiger Code in der Basisklasse abstrakte Mitglieder benutzt und wann `virtual` statt `abstract` die bessere Wahl ist.
 
 ## Nicht nur Methoden: abstrakte Properties
 
-Im [vorigen Modul](/modules/abstrakte_klassen/abstrakte_klassen.md) haben wir es schon benutzt, ohne groß darüber zu reden: `Flaeche` und `Umfang` in `Figur` sind keine Methoden, sondern **abstrakte Properties**. Alles, was in einer Klasse überschreibbar sein kann, darf auch abstrakt sein – Methoden, Properties, Indexer und Ereignisse.
+Im [vorigen Modul](/modules/abstrakte_klassen/abstrakte_klassen.md) haben wir es schon benutzt, ohne groß darüber zu reden: `Symbol` in `Spielobjekt` ist keine Methode, sondern ein **abstraktes Property**. Alles, was in einer Klasse überschreibbar sein kann, darf auch abstrakt sein – Methoden, Properties, Indexer und Ereignisse.
 
 ```csharp
-public abstract class Figur
+public abstract class Spielobjekt
 {
     // ...
-    public abstract double Flaeche { get; }
-    public abstract double Umfang { get; }
+    public abstract char Symbol { get; }
 }
 ```
 
-Das `{ get; }` legt fest, dass die Unterklasse einen Getter liefern muss – und nur einen Getter. Eine berechnete Fläche kann man schließlich nicht setzen. Im `Dreieck` des Geometrieeditors sieht die Implementierung so aus:
+Das `{ get; }` legt fest, dass die Unterklasse einen Getter liefern muss – und nur einen Getter. Ein Symbol von außen zu setzen, wäre auch sinnlos: Eine Wand ist ein `#`, Punkt. Wie die Unterklasse den Getter schreibt, bleibt ihr überlassen. `Wand` antwortet mit einer Konstanten, `Tuer` rechnet:
 
 ```csharp
-public class Dreieck : Figur
+public sealed class Tuer : StatischesObjekt, IInteragierbar
 {
-    public double SeiteA { get; set; }
-    public double SeiteB { get; set; }
-    public double SeiteC { get; set; }
+    public bool IstOffen { get; private set; }
 
-    // Konstruktor mit base(name, x, y) und Prüfung der Dreiecksungleichung ...
-
-    public override double Umfang => SeiteA + SeiteB + SeiteC;
-
-    // Satz des Heron
-    public override double Flaeche
-    {
-        get
-        {
-            double s = Umfang / 2;
-            return Math.Sqrt(s * (s - SeiteA) * (s - SeiteB) * (s - SeiteC));
-        }
-    }
+    public override char Symbol => IstOffen ? '/' : 'D';
+    public override bool IstPassierbar => IstOffen;
+    // ...
 }
 ```
 
-Ob die Unterklasse einen Ausdrucksrumpf (`=>`) oder einen vollständigen Getter-Block verwendet, ist ihr überlassen – die Basisklasse schreibt nur die Signatur vor. Interessant ist, dass `Flaeche` hier selbst auf `Umfang` zugreift: Innerhalb der Klasse sind beide ganz normale Properties.
+Beide Properties der Tür hängen vom selben Feld ab – eine offene Tür sieht anders aus *und* verhält sich anders. Für die Basisklasse ist das völlig unsichtbar: Sie hat nur die Signatur `char Symbol { get; }` gefordert.
 
 ## Abstrakt und konkret gemischt
 
-Der eigentliche Reiz abstrakter Klassen liegt darin, dass sie beides enthalten können: Versprechen *und* fertigen Code. `Verschieben` ist so ein Fall – die Verschiebung funktioniert für alle Figuren gleich, also steht sie fertig in der Basisklasse. Noch interessanter ist `Beschreibung()`:
+Der eigentliche Reiz abstrakter Klassen liegt darin, dass sie beides enthalten können: Versprechen *und* fertigen Code. Der schönste Fall in unserem Spiel ist `BeweglichesObjekt.Bewegen` – eine vollständig implementierte Methode, die über Umwege von einem abstrakten Mitglied abhängt.
 
 ```csharp
-public abstract class Figur
+public abstract class BeweglichesObjekt : Spielobjekt
 {
-    // ...
-    public void Verschieben(double dx, double dy)
+    public bool Bewegen(Richtung richtung, Spielfeld feld)
     {
-        X += dx;
-        Y += dy;
+        Position ziel = Position.Verschoben(richtung);
+        if (!feld.IstFrei(ziel)) return false;
+        Position = ziel;
+        return true;
     }
-
-    public virtual string Beschreibung()
-    {
-        return $"{Name} bei ({X}, {Y}) mit Fläche {Flaeche:F2}";
-    }
-
-    public override string ToString() => Beschreibung();
 }
 ```
 
-`Beschreibung()` verwendet `Flaeche` – ein Property, das in `Figur` keinen Rumpf hat. Wie kann das funktionieren? Die Antwort liegt im Laufzeittyp: `Beschreibung()` wird nie auf einer „reinen“ `Figur` aufgerufen, denn die kann es nicht geben. Zur Laufzeit steckt immer ein `Rechteck`, ein `Kreis` oder ein `Dreieck` dahinter, und dessen `Flaeche` wird verwendet.
+`Bewegen` fragt das Spielfeld, ob das Zielfeld frei ist. Und `IstFrei` beantwortet das, indem es das dort liegende Objekt nach `IstPassierbar` fragt:
 
 ```csharp
-Figur f = new Kreis("K1", 2, 3, 1);
-Console.WriteLine(f.Beschreibung());
-// K1 bei (2, 3) mit Fläche 3,14 (r = 1)
+public bool IstFrei(Position p)
+{
+    if (!IstInnerhalb(p)) return false;
+    StatischesObjekt? s = StatischesObjektAn(p);
+    if (s is not null && !s.IstPassierbar) return false;
+    if (p == Spieler.Position) return false;
+    return gegner.All(g => g.Position != p);
+}
 ```
 
-Die Ausgabe enthält am Ende `(r = 1)`, weil `Kreis` die Methode überschreibt und `base.Beschreibung()` um den Radius ergänzt. Das Grundgerüst der Beschreibung liegt in der Basisklasse, die variablen Teile liefern die Unterklassen. Dieses Muster – die Basisklasse definiert den Ablauf, die Unterklassen füllen einzelne Schritte – begegnet uns in Vorlesung 08 unter dem Namen *Template Method* wieder.
+Damit ist die Wirkungskette komplett: Ein Gegner ruft eine geerbte Methode auf, die eine Regel des Spielfelds nutzt, die wiederum das überschriebene Property des Objekts befragt, das zufällig im Weg liegt. Eine verschlossene Tür blockiert, eine offene nicht, ein Trank nie – ohne dass `Bewegen` eine dieser Objektarten kennt. Genau das ist Polymorphie im Alltag.
 
-Eine abstrakte Klasse darf abstrakte Mitglieder in ihrem eigenen Code aufrufen, weil zum Zeitpunkt des Aufrufs garantiert ein konkretes Objekt existiert, das sie überschrieben hat. Der Compiler prüft das: Eine nicht-abstrakte Unterklasse ohne vollständige `override`s kompiliert nicht.
+Eine abstrakte Klasse darf abstrakte Mitglieder in ihrem eigenen Code aufrufen, weil zum Zeitpunkt des Aufrufs garantiert ein konkretes Objekt existiert, das sie überschrieben hat. Der Compiler stellt das sicher: Eine nicht-abstrakte Unterklasse ohne vollständige `override`s kompiliert nicht.
 {: .notice--primary}
 
-## Konkrete Methoden mit `Figur` als Parameter
+## Die Basisklasse gibt den Ablauf vor
 
-Da `Figur` ein ganz normaler Typ ist, kann die Basisklasse auch Methoden anbieten, die andere Figuren entgegennehmen. Als Beispiel ergänzen wir eine einfache Kollisionsprüfung. Dafür braucht die Basisklasse eine Ausdehnung jeder Figur – die kennt sie nicht, also fordert sie diese abstrakt ein:
+Noch deutlicher wird das Muster bei den Gegnern. Alle Gegner haben gemeinsam, dass sie einmal pro Runde ziehen – *wohin*, entscheidet jede Art anders. Also steht der gemeinsame Teil in einer abstrakten Klasse, der variable Teil ist ein abstraktes Mitglied:
 
 ```csharp
-public abstract class Figur
+/// <summary>Alle Gegner bewegen sich einmal pro Runde – wie, entscheidet jede Art selbst.</summary>
+public abstract class Gegner : BeweglichesObjekt
 {
-    // ...
-    public abstract double Ausdehnung { get; }   // Kantenlänge des umschließenden Quadrats
+    protected Gegner(string name, Position position) : base(name, position) { }
 
-    public bool KollidiertMit(Figur andere)
+    /// <summary>Liefert die Richtung für diese Runde oder null, wenn der Gegner stehen bleibt.</summary>
+    public abstract Richtung? NaechsterZug(Spielfeld feld);
+}
+```
+
+Die `Wache` läuft stur geradeaus und dreht um, wenn sie anstößt. Sie braucht dafür einen eigenen Zustand – ihre aktuelle Laufrichtung:
+
+```csharp
+public sealed class Wache : Gegner
+{
+    public Richtung Laufrichtung { get; private set; }
+
+    public override char Symbol => 'W';
+
+    public override Richtung? NaechsterZug(Spielfeld feld)
     {
-        double abstandX = Math.Abs(X - andere.X);
-        double abstandY = Math.Abs(Y - andere.Y);
-        double grenze = (Ausdehnung + andere.Ausdehnung) / 2;
-        return abstandX < grenze && abstandY < grenze;
+        if (!feld.IstFrei(Position.Verschoben(Laufrichtung)))
+        {
+            Laufrichtung = Umkehren(Laufrichtung);
+        }
+        return feld.IstFrei(Position.Verschoben(Laufrichtung)) ? Laufrichtung : null;
     }
 }
-
-// in Rechteck:  public override double Ausdehnung => Math.Max(Breite, Hoehe);
-// in Kreis:     public override double Ausdehnung => 2 * Radius;
 ```
 
-`KollidiertMit` ist vollständig implementiert und funktioniert für jede Kombination von Figuren: Rechteck gegen Kreis, Kreis gegen Dreieck. Die Methode weiß nur, dass beide Beteiligten eine `Ausdehnung` haben – woher die kommt, entscheidet der jeweilige Laufzeittyp. Diese Erweiterung ist nicht Teil des Geometrieeditors im Repository, sondern zeigt das Prinzip.
+Der `Verfolger` beantwortet dieselbe Frage völlig anders: Er prüft erst, ob der Spieler nah genug und in Sichtlinie ist, und läuft dann auf ihn zu.
 
 ```csharp
-Figur r = new Rechteck("R1", 0, 0, 4, 2);
-Figur k = new Kreis("K1", 3, 1, 1);
-Console.WriteLine(r.KollidiertMit(k)); // True
-k.Verschieben(5, 0);
-Console.WriteLine(r.KollidiertMit(k)); // False
+public sealed class Verfolger : Gegner
+{
+    public int Sichtweite { get; }
+
+    public override char Symbol => 'V';
+
+    public override Richtung? NaechsterZug(Spielfeld feld)
+    {
+        Position ziel = feld.Spieler.Position;
+        if (Position.Entfernung(ziel) > Sichtweite || !feld.HatSichtlinie(Position, ziel))
+        {
+            return null;   // noch nicht entdeckt – stehen bleiben
+        }
+        // ... Richtung zum Spieler bestimmen
+    }
+}
 ```
+
+Das Spielfeld interessiert sich für keinen dieser Unterschiede. Es kennt nur den Vertrag aus `Gegner` und arbeitet ihn für alle Gegner der Reihe nach ab:
+
+```csharp
+private void GegnerZiehen(StringBuilder meldung)
+{
+    foreach (Gegner g in gegner)
+    {
+        Richtung? zug = g.NaechsterZug(this);
+        if (zug is Richtung r)
+        {
+            Position ziel = g.Position.Verschoben(r);
+            if (ziel == Spieler.Position)
+            {
+                Spieler.SchadenNehmen();
+                meldung.Append($" {g.Name} erwischt dich!");
+            }
+            else
+            {
+                g.Bewegen(r, this);
+            }
+        }
+    }
+    // ...
+}
+```
+
+Die Regel „wer auf das Feld des Spielers ziehen würde, greift ihn stattdessen an“ steht damit **einmal** im Code und gilt für jede Gegnerart – auch für die, die wir noch gar nicht geschrieben haben. Dieses Muster – die Basisklasse (oder eine aufrufende Klasse) definiert den Ablauf, die Unterklassen füllen einzelne Schritte – begegnet uns in Vorlesung 08 unter dem Namen *Template Method* wieder.
 
 ## `virtual` oder `abstract`?
 
@@ -131,12 +168,22 @@ Beide Schlüsselwörter erlauben `override` in Unterklassen, und beide führen z
 | Erlaubt in normalen Klassen | ja | nein, nur in `abstract class` |
 | `base.Methode()` aus dem `override` aufrufbar | ja | nein, es gibt keinen Rumpf |
 
-Im Geometrieeditor ist `Beschreibung()` `virtual`, weil eine allgemeine Beschreibung mit Name, Position und Fläche für alle Figuren brauchbar ist – `Dreieck` überschreibt sie gar nicht. `Flaeche` dagegen ist `abstract`, weil es keine Standardformel gibt, die für irgendeine Figur richtig wäre. Eine Faustregel: Wenn dir für die Basisklasse nur ein Rumpf wie `return 0;` oder `throw new NotImplementedException()` einfällt, ist das Mitglied in Wahrheit abstrakt.
+In `Spielobjekt` sind alle drei Varianten vertreten, und jede Entscheidung hat einen Grund. `Symbol` ist `abstract`, weil es kein Zeichen gibt, das für irgendein Objekt richtig wäre. `IstPassierbar` ist `virtual` mit der Standardantwort `false`, weil die meisten Objekte blockieren – nur `Ausgang`, `Gegenstand` und die offene `Tuer` überschreiben es. `Beschreibung()` ist ebenfalls `virtual`, und der `Spieler` nutzt die Freiheit, sie zu erweitern:
 
-Ein häufiger Fehler ist, ein Mitglied `virtual` mit einem sinnlosen Rumpf zu machen, um die Basisklasse „instanziierbar“ zu halten. Dann kompiliert zwar `new Figur(...)`, aber jedes vergessene `override` in einer Unterklasse fällt erst zur Laufzeit als falsches Ergebnis auf – statt sofort als Compilerfehler.
+```csharp
+public override string Beschreibung()
+{
+    return $"{Name} bei {Position}, {Lebenspunkte}/{MaxLebenspunkte} Lebenspunkte, " +
+           $"{Punkte} Punkte, Inventar: {Inventar}";
+}
+```
+
+Eine Faustregel für die Wahl: Wenn dir für die Basisklasse nur ein Rumpf wie `return 0;`, `=> '?'` oder `throw new NotImplementedException()` einfällt, ist das Mitglied in Wahrheit abstrakt. Genau das war der Fehler in der Version aus Vorlesung 01.
+
+Ein häufiger Fehler ist, ein Mitglied `virtual` mit einem sinnlosen Rumpf zu machen, um die Basisklasse „instanziierbar“ zu halten. Dann kompiliert zwar `new Spielobjekt(...)`, aber jedes vergessene `override` in einer Unterklasse fällt erst zur Laufzeit als falsches Ergebnis auf – statt sofort als Compilerfehler.
 {: .notice--warning}
 
-Übung: Verschiebe `Beschreibung()` gedanklich von `virtual` nach `abstract`. Welche Klassen müssten sich ändern, und was ginge mit `base.Beschreibung()` in `Rechteck` und `Kreis` verloren? Implementiere anschließend ein `abstract void Zeichnen()` in `Figur` und eine konkrete Methode `ZeichneVor(Figur andere)`, die zuerst `andere.Zeichnen()` und dann `Zeichnen()` aufruft – welche Methoden laufen bei `kreis.ZeichneVor(rechteck)`?
+Übung: Schreibe eine dritte Gegnerart `Schleicher : Gegner`, die sich nur in jeder zweiten Runde bewegt und sonst `null` zurückgibt (ein `private int runden`-Zähler reicht). Muss `Spielfeld.GegnerZiehen` dafür geändert werden? Überlege anschließend, was passieren würde, wenn `NaechsterZug` statt `abstract` ein `virtual` mit dem Rumpf `return null;` wäre – welcher Fehler fiele dann nicht mehr auf?
 {: .notice--info}
 
 ## Weitere Quellen

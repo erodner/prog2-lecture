@@ -30,6 +30,7 @@ Die folgende Tabelle ordnet jedem Kommandozeilenbefehl aus den vorigen Modulen d
 | `git restore Datei` | Rechtsklick → *Rückgängig machen* | Rechtsklick → *Rollback* | Pfeil-Symbol *Discard Changes* |
 | `git stash` | *Git-Änderungen* → *Stash* | *Git → Uncommitted Changes → Stash* | Kommandopalette → *Git: Stash* |
 | Konflikt lösen | *Git-Änderungen* → *Nicht gemergte Änderungen* → Merge-Editor | *Resolve Conflicts* → Drei-Wege-Dialog | Datei öffnen → *Resolve in Merge Editor* |
+| `git tag` / `git checkout <tag>` | Branch-Auswahl → Abschnitt *Tags* | Branch-Auswahl → *Tags* → *Checkout* | Branch-Name in der Statusleiste → Abschnitt *Tags* |
 | `git blame Datei` | Rechtsklick im Editor → *Git → Blame (Anmerkungen)* | Rechtsklick auf den Zeilenrand → *Annotate with Git Blame* | GitLens: Anmerkung am Zeilenende (optional) |
 
 Die Namen unterscheiden sich, das Modell dahinter nicht: Es gibt immer eine Liste ungestagter Änderungen, eine Liste gestagter Änderungen, ein Feld für die Nachricht und einen Commit-Knopf.
@@ -44,27 +45,42 @@ Beim **Branch-Wechsel** über die Statusleiste verhält sich die IDE wie `git sw
 
 Bei einem **Konflikt** nach Merge oder Pull erscheint die betroffene Datei in einem eigenen Abschnitt. Der Merge-Editor zeigt die drei Versionen aus [Merge-Konflikte lösen](/modules/git_merge_konflikte/git_merge_konflikte.md) nebeneinander: links den aktuellen Branch, rechts den hereinkommenden, unten das Ergebnis. Für jeden Konfliktblock gibt es Häkchen, um die linke, die rechte oder beide Seiten zu übernehmen – und das Ergebnisfenster ist ein normaler Editor, in dem du die Reihenfolge anpassen kannst. *Merge akzeptieren* entspricht `git add`; der Commit folgt danach wie gewohnt.
 
+Was die IDE dagegen **nicht** für dich übernimmt, ist das Nachdenken über die `.gitignore`: Alle drei bieten zwar einen Kontextmenüeintrag *Add to .gitignore*, aber die Vorlage aus `dotnet new gitignore` legst du weiterhin selbst an – und zwar vor dem ersten Commit.
+
 Die IDE zeigt oft nur eine Kurzfassung der Git-Ausgabe. Schlägt eine Aktion fehl, lohnt sich ein Blick ins Ausgabefenster (Visual Studio: *Ausgabe → Quelle: Git*; Rider und VS Code: *Git*-Ausgabe) – dort steht die vollständige Meldung, meist inklusive `hint:`-Zeilen mit dem Lösungsvorschlag.
 {: .notice--primary}
 
+## Ein fremdes Repository in der IDE öffnen
+
+Der schnellste Weg, das alles auszuprobieren, ist ein Repository, das es schon gibt. Alle drei IDEs bieten im Startfenster einen Klon-Dialog: Du fügst die URL `https://github.com/erodner/prog2-adventure.git` ein, wählst einen Zielordner, und die IDE ruft im Hintergrund `git clone` auf und öffnet anschließend die Solution. Das ist derselbe Vorgang wie in [Remote-Repositorys](/modules/git_remote/git_remote.md), nur mit Formularfeldern statt Argumenten.
+
+Interessant wird danach die Branch-Auswahl in der Statusleiste: Sie listet nicht nur Branches, sondern in einem eigenen Abschnitt auch die **Tags** – hier also `v01-vererbung` bis `v12-tests`. Ein Klick auf `v02-interfaces` entspricht `git checkout v02-interfaces` und legt die Arbeitskopie auf den Stand nach Vorlesung 02; die IDE weist dabei wie die Kommandozeile darauf hin, dass du dich nicht mehr auf einem Branch befindest. Über dieselbe Auswahl kommst du mit einem Klick auf `main` zurück.
+
+Das Verlaufsfenster (*Git-Repository* in Visual Studio, *Git → Log* in Rider) zeigt denselben Graphen wie `git log --oneline --graph --all`, nur klickbar: Links stehen die Commits, rechts die geänderten Dateien, und ein Doppelklick auf eine Datei öffnet den Diff dieses Commits. Für das Nachlesen einer fremden Codebasis ist das oft der bequemste Einstieg – man sieht, welche Dateien zusammen entstanden sind.
+
 ## Nachvollziehen mit Blame
 
-Irgendwann fragt man sich: Warum steht in `Hinzufuegen` diese Prüfung, und seit wann? `git blame` beantwortet das Zeile für Zeile – jede Zeile wird mit dem Commit, dem Autor und dem Datum ihrer letzten Änderung annotiert:
+Irgendwann fragt man sich: Warum verbraucht das Aufschließen einer Tür den Schlüssel, und seit wann? `git blame` beantwortet das Zeile für Zeile – jede Zeile wird mit dem Commit, dem Autor und dem Datum ihrer letzten Änderung annotiert:
 
 ```bash
-git blame -s Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs | sed -n '18,24p'
-# 6d0f9a2 18)     public void Hinzufuegen(Figur figur)
-# 6d0f9a2 19)     {
-# 5c21a8f 20)         ArgumentNullException.ThrowIfNull(figur);
-# 3e7f0c2 21)         if (string.IsNullOrWhiteSpace(figur.Name))
+git blame -s Adventure.Kern/Tuer.cs | sed -n '15,26p'
+# 6d0f9a2 15)     public string Interagieren(Spieler spieler)
+# 6d0f9a2 16)     {
+# 5c21a8f 17)         if (IstOffen)
+# 5c21a8f 18)         {
+# 5c21a8f 19)             return "Die Tür ist schon offen.";
+# 5c21a8f 20)         }
+# 3e7f0c2 21)         if (!spieler.Inventar.Enthaelt<Schluessel>())
 # 3e7f0c2 22)         {
-# 3e7f0c2 23)             throw new ArgumentException("Eine Figur braucht einen Namen.");
+# 3e7f0c2 23)             return "Die Tür ist verschlossen. Du brauchst einen Schlüssel.";
 # 3e7f0c2 24)         }
+# 3e7f0c2 25)         spieler.Inventar.Entfernen<Schluessel>();
+# 3e7f0c2 26)         IstOffen = true;
 ```
 
 Mit `git show 3e7f0c2` sieht man dann die vollständige Commit-Nachricht und den gesamten Diff – gute Commit-Nachrichten zahlen sich genau hier aus. In den IDEs heißt dieselbe Funktion *Annotate* (Rider) oder *Blame* (Visual Studio, GitLens) und blendet die Informationen direkt neben dem Code ein. Blame ist kein Werkzeug, um Schuldige zu finden, sondern um den Kontext einer Zeile zu verstehen – deshalb sind die Commit-Nachrichten wichtiger als die Namen.
 
-Übung: Öffne den Geometrieeditor in deiner IDE und führe den kompletten Ablauf einmal ohne Terminal durch: neuen Branch anlegen, eine Änderung in zwei getrennten Commits stagen und committen, pushen, zu `main` wechseln, mergen. Prüfe danach im Terminal mit `git log --oneline --graph --all`, dass der Graph so aussieht, wie du ihn erwartet hast.
+Übung: Klone zuerst `https://github.com/erodner/prog2-adventure.git` über den Klon-Dialog deiner IDE statt über das Terminal – so siehst du, welche Felder dort dem Befehl entsprechen. Öffne danach dein eigenes Adventure und führe den kompletten Ablauf einmal ohne Terminal durch: neuen Branch anlegen, eine Änderung in zwei getrennten Commits stagen und committen, pushen, zu `main` wechseln, mergen. Prüfe danach im Terminal mit `git log --oneline --graph --all`, dass der Graph so aussieht, wie du ihn erwartet hast.
 {: .notice--info}
 
 ## Weitere Quellen

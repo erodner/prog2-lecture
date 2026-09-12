@@ -31,8 +31,8 @@ Lectures are the "table of contents"; modules contain the actual teaching conten
 
 **Course progression:**
 - Lecture 00: Einstieg – Rückblick auf Programmierung 1 (links to the Prog-1 site), .NET SDK, IDE, dotnet-CLI
-- Lecture 01: Vererbung (virtual/override, sealed, Laufzeittyp, object, Garbage Collection)
-- Lecture 02: Abstrakte Klassen und Interfaces
+- Lecture 01: Vererbung (virtual/override, sealed, Laufzeittyp, object, Garbage Collection) – Adventure is born: `Spielobjekt`, `Wand`, `Spieler`
+- Lecture 02: Abstrakte Klassen und Interfaces – abstract `Spielobjekt`/`StatischesObjekt`/`BeweglichesObjekt`, `IInteragierbar`, `ISammelbar`, playable console game
 - Lecture 03: Git (CLI first, IDE integration second, HTW GitLab)
 - Lecture 04: GUI mit Blazor + Schichten-Architekturen (replaces the former Windows-Forms lecture)
 - Lecture 05: Generizität
@@ -51,22 +51,19 @@ Lectures are the "table of contents"; modules contain the actual teaching conten
 
 **Links to Programmierung 1:** `https://www.erodner.de/prog-lecture/modules/<name>/<name>/` (module names as in `../prog-lecture/modules/`), lectures `https://www.erodner.de/prog-lecture/lectures/NN/NN/`.
 
-## examples/ – runnable projects
+## Running example: Adventure (separate repository)
 
-`examples/` is excluded from the Jekyll build but committed. It holds runnable .NET projects for everything that does not fit into a single snippet. `examples/Directory.Build.props` sets `net10.0`, `Nullable`, `ImplicitUsings`. Everything must build with `dotnet build` and tests must pass with `dotnet test` (see `examples/README.md`).
+The running example of the course is **Adventure**, a turn-based 2D dungeon game: https://github.com/erodner/prog2-adventure (local clone `../prog2-adventure`). Modules quote its code, and snippets must match the files there. Git tags mark the state after a lecture: `v01-vererbung`, `v02-interfaces`, `v04-blazor`, `v09-daten`, `v12-tests` (= `main`).
 
-- `04_blazor/HalloBlazor` – minimal Blazor Web App (`dotnet new blazor --empty -int Server -ai`): input, button, output with `@bind`/`@onclick`
-- `04_blazor/Geometrieeditor` – the running example of the course, a 3-layer solution (`Geometrieeditor.slnx`, the XML solution format of .NET 10):
-  - `Geometrieeditor.Fachkonzept` (classlib): `Figur` (abstract), `Rechteck`, `Kreis`, `Dreieck`, `FigurenVerwaltung`, interface `IFigurSpeicher`
-  - `Geometrieeditor.Datenhaltung` (classlib): `ArbeitsspeicherFigurSpeicher`, `JsonFigurSpeicher` (implement `IFigurSpeicher`)
-  - `Geometrieeditor.Web` (Blazor): `Components/Pages/Home.razor`, `Components/NeueFigurDialog.razor`; `Program.cs` registers `IFigurSpeicher`/`FigurenVerwaltung` via DI (`AddScoped`), pages use `@inject`
-  - `Geometrieeditor.Tests` (NUnit)
-  - Dependency direction: Web → Fachkonzept; Datenhaltung → Fachkonzept (implements the interface the Fachkonzept defines); `Program.cs` of the Web project wires the concrete `IFigurSpeicher` into `FigurenVerwaltung`.
-- `10_pinvoke/PInvokeDemo` – DllImport/LibraryImport with libc/libm and an own C library
-- `11_nuget/NLogDemo` – console app using NLog
-- `12_unittests/Bruch` – `Bruch` classlib + `Bruch.Tests` (NUnit)
+- `Adventure.Kern` (classlib, namespace `Adventure.Kern`): `Position` (record struct, `Verschoben`, `Entfernung`), `Richtung` enum, abstract `Spielobjekt` (`Name`, `Position`, abstract `Symbol`, virtual `IstPassierbar`, virtual `Beschreibung()`), abstract `StatischesObjekt` → `Wand` (sealed), `Ausgang`, `Tuer : IInteragierbar`, `Truhe : IInteragierbar`, abstract `Gegenstand : ISammelbar` → `Schluessel`, `Trank`, `Schatz`; abstract `BeweglichesObjekt` (`Bewegen(Richtung, Spielfeld)`) → `Spieler` (`Lebenspunkte`, `Punkte`, `Inventar<Gegenstand>`, `event SchatzGefunden`) and abstract `Gegner` (`abstract Richtung? NaechsterZug(Spielfeld)`) → `Wache` (patrols, turns around), `Verfolger` (chases when in `Sichtweite` with `HatSichtlinie`); `Inventar<T> where T : ISammelbar`; `Spielfeld` (`Dictionary<Position, StatischesObjekt>`, `List<Gegner>`, `IstFrei`, `SpielerZieht(Richtung)` = one round, `Status`, `event RundeBeendet`, `AlleObjekte` via `yield`, `AlsText()`, `Erfassen`/`Wiederherstellen` for save games); `Level` record, `ILevelQuelle`, `LevelParser` (ASCII map: `# D T k ! $ E @ W V .`), `Spielstand`, `ISpielstandSpeicher`.
+- `Adventure.Daten`: `EingebauteLevelQuelle`, `TextdateiLevelQuelle` (StreamReader), `JsonSpielstandSpeicher` (System.Text.Json), `HttpLevelQuelle` (HttpClient, `index.json` + `<name>.txt`).
+- `Adventure.Konsole`: text rendering, arrow keys/WASD, F5/F9 save/load.
+- `Adventure.Web`: Blazor Web App (Interactive Server, empty template, no JS/Bootstrap): `Components/Pages/Home.razor` (CSS-grid board, `@onkeydown`, `@inject ILevelQuelle`), `Components/Statusleiste.razor` (HUD, `[Parameter]`), `Components/SpielEndeDialog.razor` (`EventCallback OnNeustart`), `Program.cs` registers `ILevelQuelle` via DI.
+- `Adventure.Tests`: NUnit (`SpielfeldTests`, `DatenTests`).
+- `levels/*.txt` + `levels/index.json`; the same files are served by this site under `assets/data/levels/` for the HttpClient example.
+- Dependency direction: Web/Konsole → Kern ← Daten (Daten implements the interfaces Kern defines).
 
-Module snippets that show the Geometrieeditor must use exactly these identifiers.
+`examples/` in this repo keeps only the small standalone demos `10_pinvoke/PInvokeDemo`, `11_nuget/NLogDemo`, `12_unittests/Bruch`; `examples/Directory.Build.props` sets `net10.0`.
 
 ## Content Conventions
 
@@ -86,7 +83,7 @@ Module snippets that show the Geometrieeditor must use exactly these identifiers
 
 - Motivating intro paragraphs that explain *why* a concept matters
 - Verbindungssätze (connecting sentences) between code examples — explain transitions
-- Real-world analogies where helpful (Bote for delegates, Ablagestapel for generics, Schließfächer for arrays, etc.)
+- Real-world analogies where helpful (Bote for delegates, Ablagestapel for generics, dungeon objects for OOP, Schließfächer for arrays, etc.)
 - Back-references to earlier modules when building on prior concepts
 - "Im Zweifel..." guidance for students (e.g., "Im Zweifel Interface statt abstrakte Klasse")
 - The user (professor) dislikes: artificial overloading examples (no `bool` flags), summaries at end of responses, overly simple exercises

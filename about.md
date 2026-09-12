@@ -24,6 +24,7 @@ Professur Informatik | HTW Berlin
 - **IDE:** [Visual Studio Community](https://visualstudio.microsoft.com/de/vs/community/) (Windows), [JetBrains Rider](https://www.jetbrains.com/rider/) (kostenlos für Studierende, alle Plattformen) oder [Visual Studio Code](https://code.visualstudio.com/) mit dem C# Dev Kit
 - **GUI-Framework:** [Blazor](https://learn.microsoft.com/de-de/aspnet/core/blazor/) – Web-Oberflächen in C# und Razor, Teil von ASP.NET Core
 - **Versionsverwaltung:** [Git](https://git-scm.com/) und der GitLab-Server der HTW Berlin
+- **Beispielspiel:** [Adventure](https://github.com/erodner/prog2-adventure) – das durchgehende Beispiel der Vorlesung
 - **Übungsabgabe:** Moodle / Virtual Programming Lab (VPL)
 
 ## Lizenz

@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-`File.ReadAllText` ist bequem, hat aber einen Haken: Es holt die gesamte Datei auf einmal in den Speicher. Bei einer Logdatei mit mehreren Gigabyte, einem Video oder Daten, die gerade erst über das Netzwerk hereintröpfeln, funktioniert das nicht. Die Lösung heißt **Stream** – ein Fließband für Bytes. Beim Schreiben legt man kleine Pakete auf das Band, beim Lesen nimmt man sie herunter, und zu keinem Zeitpunkt muss alles gleichzeitig im Speicher liegen. Das Schöne daran: Ob am anderen Ende des Bandes eine Datei, eine Netzwerkverbindung oder ein Stück Arbeitsspeicher steht, ist für den Code, der liest und schreibt, völlig egal.
+`File.ReadAllText` ist bequem, hat aber einen Haken: Es holt die gesamte Datei auf einmal in den Speicher. Bei einer Logdatei mit mehreren Gigabyte, einem Video oder Daten, die gerade erst über das Netzwerk hereintröpfeln, funktioniert das nicht. Die Lösung heißt **Stream** – ein Fließband für Bytes. Beim Schreiben legt man kleine Pakete auf das Band, beim Lesen nimmt man sie herunter, und zu keinem Zeitpunkt muss alles gleichzeitig im Speicher liegen. Das Schöne daran: Ob am anderen Ende des Bandes eine Datei, eine Netzwerkverbindung oder ein Stück Arbeitsspeicher steht, ist für den Code, der liest und schreibt, völlig egal. Genau davon lebt die `TextdateiLevelQuelle` unseres Adventures, die wir am Ende dieses Moduls fertig lesen.
 
 ## Ein Stream ist eine Abstraktion
 
@@ -32,7 +32,7 @@ Ein Stream kennt nur Bytes. Wer Text schreiben will, muss ihn zuerst in Bytes um
 
 ```csharp
 using FileStream fs = new FileStream(pfad, FileMode.Create, FileAccess.Write);
-byte[] daten = Encoding.UTF8.GetBytes("Hallo Stream!");
+byte[] daten = Encoding.UTF8.GetBytes("#####");
 fs.Write(daten, 0, daten.Length);
 ```
 
@@ -74,11 +74,11 @@ Anders als ein echtes Fließband kann man bei Dateien vor- und zurückspulen. `P
 
 ```csharp
 using FileStream fs = new FileStream(pfad, FileMode.Open, FileAccess.ReadWrite);
-Console.WriteLine(fs.Length);   // Größe in Bytes
-fs.Seek(0, SeekOrigin.End);     // ans Ende springen
-fs.Write(Encoding.UTF8.GetBytes(" Nachtrag"));
-fs.Position = 0;                // zurück zum Anfang
-Console.WriteLine(fs.ReadByte()); // 72  (das 'H' von "Hallo")
+Console.WriteLine(fs.Length);     // Größe in Bytes
+fs.Seek(0, SeekOrigin.End);       // ans Ende springen
+fs.Write(Encoding.UTF8.GetBytes("#####"));
+fs.Position = 0;                  // zurück zum Anfang
+Console.WriteLine((char)fs.ReadByte()); // #
 ```
 
 So lässt sich Text anhängen, ohne die Datei vorher komplett zu lesen – das ist genau das, was `File.AppendAllText` intern tut. Bei Netzwerkstreams ist `CanSeek` dagegen `false`, weil bereits empfangene Bytes nicht zurückgeholt werden können.
@@ -88,24 +88,38 @@ So lässt sich Text anhängen, ohne die Datei vorher komplett zu lesen – das i
 Für Textdateien ist die Hantierung mit Byte-Puffern und Kodierungen umständlich. Deshalb gibt es zwei Klassen, die sich *um* einen Stream legen und die Übersetzung zwischen Zeichen und Bytes übernehmen. `StreamWriter` bietet `Write` und `WriteLine` wie die Konsole:
 
 ```csharp
-using StreamWriter writer = new StreamWriter(pfad, append: false, Encoding.UTF8);
-writer.WriteLine("Name;Breite;Hoehe");
-writer.WriteLine("r1;4;3");
+using StreamWriter schreiber = new StreamWriter(pfad, append: false, Encoding.UTF8);
+foreach (string zeile in level.Zeilen)
+{
+    schreiber.WriteLine(zeile);
+}
 ```
 
-`StreamReader` liest Zeile für Zeile, ohne jemals die gesamte Datei im Speicher zu halten. `ReadLine` liefert `null`, wenn das Ende erreicht ist – das nutzt die Schleife als Abbruchbedingung:
+`StreamReader` ist das Gegenstück: `ReadLine` liefert die nächste Zeile ohne Zeilenumbruch und `null`, wenn das Ende erreicht ist – das nutzt die Schleife als Abbruchbedingung. Genau so liest unser Spiel ein Level aus einer Textdatei; das ist der Rest der Methode `Laden`, deren Anfang wir im Modul [Dateien und Verzeichnisse](/modules/dateien_verzeichnisse/dateien_verzeichnisse.md) gesehen haben:
 
 ```csharp
-using StreamReader reader = new StreamReader(pfad, Encoding.UTF8);
-int anzahl = 0;
-while (reader.ReadLine() is string zeile)
+public Level Laden(string name)
 {
-    if (zeile.Length > 0) anzahl++;
+    string pfad = Path.Combine(ordner, name + ".txt");
+    if (!File.Exists(pfad))
+    {
+        throw new FileNotFoundException($"Es gibt kein Level namens '{name}'.", pfad);
+    }
+
+    List<string> zeilen = new();
+    using StreamReader leser = new(pfad);
+    string? zeile;
+    while ((zeile = leser.ReadLine()) != null)
+    {
+        if (zeile.Trim().Length > 0) zeilen.Add(zeile.TrimEnd());
+    }
+    return new Level(name, zeilen);
 }
-Console.WriteLine(anzahl); // 2
 ```
 
-`File.OpenText(pfad)` und `File.CreateText(pfad)` sind Abkürzungen, die direkt einen `StreamReader` bzw. `StreamWriter` mit UTF-8 liefern. Und weil beide Klassen auf einem beliebigen `Stream` arbeiten, kann man sie genauso über einen Netzwerk- oder Speicherstream legen.
+Warum zeilenweise, wo `File.ReadAllLines` für eine Karte aus neun Zeilen genauso gereicht hätte? Weil beim Lesen bereits **entschieden** wird: Leerzeilen am Dateiende – etwa die, die viele Editoren automatisch anhängen – fallen weg, und `TrimEnd()` entfernt unsichtbare Leerzeichen am Zeilenende, die den `LevelParser` sonst als zusätzliche Spalte zählen würde. Das passiert in einem einzigen Durchlauf, ohne ein Zwischenarray mit allen Rohzeilen. Und der entscheidende Punkt: Dieselbe Schleife funktioniert unverändert, wenn die Zeilen statt aus einer Datei aus einer Netzwerkverbindung kommen – dann steckt hinter dem `StreamReader` eben ein `NetworkStream`.
+
+`File.OpenText(pfad)` und `File.CreateText(pfad)` sind Abkürzungen, die direkt einen `StreamReader` bzw. `StreamWriter` mit UTF-8 liefern. `new StreamReader(pfad)` wie oben tut dasselbe.
 
 ## `MemoryStream`: ein Stream ohne Datei
 
@@ -115,14 +129,18 @@ Manchmal möchte man Code, der einen Stream erwartet, ohne Datei testen oder Dat
 using MemoryStream speicher = new MemoryStream();
 using (StreamWriter w = new StreamWriter(speicher, leaveOpen: true))
 {
-    w.WriteLine("nur im RAM");
+    w.WriteLine("#@.E#");
 }
-Console.WriteLine(speicher.Length); // 11 (10 Zeichen + '\n' unter Linux/macOS)
+speicher.Position = 0;
+using StreamReader r = new StreamReader(speicher);
+Console.WriteLine(r.ReadLine()); // #@.E#
 ```
 
-Ohne `leaveOpen: true` würde der `StreamWriter` beim Schließen auch den darunterliegenden `MemoryStream` schließen. Beim Testen eines Wortzählers oder Parsers ist das ein praktisches Muster: Die Methode bekommt einen `Stream`, und der Test füttert sie mit einem `MemoryStream` statt mit einer Datei auf der Festplatte.
+Ohne `leaveOpen: true` würde der `StreamWriter` beim Schließen auch den darunterliegenden `MemoryStream` schließen. Für Tests ist das ein praktisches Muster: Eine Methode, die einen `Stream` oder `TextReader` entgegennimmt statt eines Pfads, lässt sich mit einem `MemoryStream` oder `StringReader` füttern – ganz ohne Dateisystem. Diesen Gedanken greifen wir in [Vorlesung 12](/lectures/12/12.md) wieder auf.
 
-Übung: Schreibe eine Methode `int ZeilenZaehlen(Stream quelle)`, die die Anzahl der Zeilen in einem beliebigen Stream bestimmt. Rufe sie einmal mit einem `FileStream` und einmal mit einem `MemoryStream` auf, den du vorher mit drei Zeilen gefüllt hast. Wo musst du `Position` zurücksetzen?
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v09-daten`).
+
+Übung: Schreibe eine Methode `Level LevelLesen(TextReader quelle, string name)`, die die Schleife aus `Laden` enthält, aber keinen Pfad mehr kennt. Rufe sie einmal mit `File.OpenText("kerker.txt")` und einmal mit `new StringReader("#####\n#@.E#\n#####")` auf. Welchen Vorteil hat diese Signatur, wenn das Level später per HTTP kommt?
 {: .notice--info}
 
 ## Weitere Quellen

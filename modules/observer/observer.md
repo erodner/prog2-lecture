@@ -13,7 +13,7 @@ Eine Zeitung weiß nicht, wer sie liest. Sie hat eine Liste von Abonnenten, und 
 
 ## Problem
 
-Ändert sich der Zustand eines Objekts, sollen andere Objekte darauf reagieren – ohne dass das erste Objekt diese anderen kennt. Der Klassiker ist ein Datenmodell mit mehreren Ansichten: Eine Messstation liefert eine neue Temperatur, und eine Digitalanzeige, ein Diagramm und ein Alarmmodul sollen sich aktualisieren. Wenn die Messstation die drei direkt aufruft, ist sie fest mit ihnen verdrahtet: Jede neue Ansicht bedeutet eine Änderung an der Messstation, und ohne die Ansichten lässt sich die Messstation nicht einmal kompilieren – geschweige denn testen. Das war das Problem des Sturzsensors aus dem Ereignisse-Modul.
+Hebt der Held im Adventure einen Schatz auf, soll die Konsole einen Ton ausgeben, die Weboberfläche ihre Punkteanzeige aktualisieren und ein Erfolgssystem mitzählen. Würde `Spieler` diese drei direkt aufrufen, wäre `Adventure.Kern` fest mit `Console` und mit Blazor verdrahtet – die Abhängigkeitsrichtung der [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md) wäre umgekehrt, jede neue Anzeige eine Änderung am Spieler, und ohne Oberfläche ließe sich der Kern nicht einmal übersetzen, geschweige denn testen. Das ist dasselbe Problem wie beim Sturzsensor aus dem Ereignisse-Modul, nur im eigenen Code.
 
 ## Lösung: Subjekt und Beobachter
 
@@ -22,139 +22,184 @@ Das Muster kehrt die Abhängigkeit um. Zwei Rollen sind beteiligt:
 - **Subjekt** (*Subject*, das Beobachtete): kennt eine Liste von Beobachtern und bietet Methoden zum **Registrieren** und **Abmelden**. Ändert sich sein Zustand, geht es die Liste durch und **benachrichtigt** jeden Beobachter.
 - **Beobachter** (*Observer*): implementiert ein Interface mit einer Methode, die das Subjekt bei jeder Änderung aufruft. Was der Beobachter damit tut, ist seine Sache.
 
-Das Subjekt kennt seine Beobachter nur über das Interface. In der klassischen Variante schreibt man dieses Interface und die Liste selbst:
+Das Subjekt kennt seine Beobachter nur über das Interface. In der klassischen Variante, wie sie die Gang of Four beschreibt, schreibt man dieses Interface und die Liste selbst:
 
 ```csharp
 public interface IBeobachter
 {
-    void Aktualisieren(double temperatur);
+    void SchatzGefunden(Spieler spieler, Schatz schatz);
 }
 
-public class Messstation
+public class Spieler : BeweglichesObjekt
 {
     private readonly List<IBeobachter> beobachter = new();
-    private double temperatur;
 
     public void Registrieren(IBeobachter b) => beobachter.Add(b);
     public void Abmelden(IBeobachter b) => beobachter.Remove(b);
 
-    public double Temperatur
+    public void SchatzEinsammeln(Schatz schatz)
     {
-        get => temperatur;
-        set
-        {
-            temperatur = value;
-            foreach (IBeobachter b in beobachter)
-                b.Aktualisieren(temperatur);
-        }
+        Punkte += schatz.Wert;
+        foreach (IBeobachter b in beobachter)      // der Rundruf
+            b.SchatzGefunden(this, schatz);
     }
 }
 ```
 
-Die Benachrichtigung steckt im Setter: Jede Zuweisung an `Temperatur` löst einen Rundruf aus. Die Beobachter sind gewöhnliche Klassen, die das Interface erfüllen:
+Die Benachrichtigung steht am Ende von `SchatzEinsammeln`, also *nachdem* die Punkte erhöht wurden: Ein Beobachter soll einen abgeschlossenen Zustand sehen. Die Beobachter selbst sind gewöhnliche Klassen, die das Interface erfüllen:
 
 ```csharp
-public class Anzeige : IBeobachter
+public class Piepser : IBeobachter
 {
-    public void Aktualisieren(double t) => Console.WriteLine($"Anzeige: {t:F1} °C");
+    public void SchatzGefunden(Spieler spieler, Schatz schatz) => Console.Beep();
 }
 
-public class Frostalarm : IBeobachter
+public class Erfolgsliste : IBeobachter
 {
-    public void Aktualisieren(double t)
-    {
-        if (t < 0) Console.WriteLine("ALARM: Frost!");
-    }
+    public List<string> Eintraege { get; } = new();
+
+    public void SchatzGefunden(Spieler spieler, Schatz schatz)
+        => Eintraege.Add($"{spieler.Name}: {schatz.Wert} Punkte, jetzt {spieler.Punkte}");
 }
 
-Messstation station = new();
-Anzeige anzeige = new();
-station.Registrieren(anzeige);
-station.Registrieren(new Frostalarm());
-
-station.Temperatur = 12.5;   // Anzeige: 12,5 °C
-station.Temperatur = -2.0;   // Anzeige: -2,0 °C
-                             // ALARM: Frost!
-station.Abmelden(anzeige);
-station.Temperatur = 3.0;    // (nichts – der Frostalarm schweigt über 0 °C)
+Piepser piepser = new();
+feld.Spieler.Registrieren(piepser);
+feld.Spieler.Registrieren(new Erfolgsliste());
+// ... spielen ...
+feld.Spieler.Abmelden(piepser);       // ab jetzt still
 ```
 
-Die Messstation enthält keine Zeile, in der `Anzeige` oder `Frostalarm` vorkommt. Ein `Diagramm` morgen ist eine neue Klasse mit `IBeobachter` und ein `Registrieren`-Aufruf – sonst nichts.
+In `Spieler` kommt weder `Piepser` noch `Erfolgsliste` vor. Ein Protokoll morgen ist eine neue Klasse mit `IBeobachter` und ein `Registrieren`-Aufruf – sonst nichts.
 
 ## In C#: `event` und Delegat
 
-Wer die Messstation mit dem Café-Beispiel aus dem Modul [Ereignisse](/modules/ereignisse/ereignisse.md) vergleicht, erkennt dieselbe Struktur. Und tatsächlich ist ein `event` nichts anderes als das Observer-Muster mit eingebauter Sprachunterstützung: Der Multicast-Delegat *ist* die Liste der Beobachter, `+=` ist `Registrieren`, `-=` ist `Abmelden`, und `?.Invoke` ist der Rundruf. Das Interface `IBeobachter` wird durch die Delegat-Signatur ersetzt – ein Beobachter muss keine Klasse mehr sein, eine passende Methode genügt:
+Genau dieses Gerüst ist in C# in die Sprache eingebaut. Ein `event` *ist* das Observer-Muster: Der Multicast-Delegat ist die Liste der Beobachter, `+=` ist `Registrieren`, `-=` ist `Abmelden`, und `?.Invoke` ist der Rundruf. Das Interface `IBeobachter` wird durch die Delegat-Signatur ersetzt – ein Beobachter muss keine Klasse mehr sein, eine passende Methode genügt. So sieht `Spieler` im Adventure tatsächlich aus:
 
 ```csharp
-public class Messstation
+public class Spieler : BeweglichesObjekt
 {
-    private double temperatur;
+    public int Punkte { get; private set; }
 
-    public event EventHandler<double>? TemperaturGeaendert;
+    /// <summary>Wird ausgelöst, wenn der Spieler einen Schatz findet – z. B. für die Anzeige.</summary>
+    public event EventHandler<SchatzEventArgs>? SchatzGefunden;
 
-    public double Temperatur
+    public void SchatzEinsammeln(Schatz schatz)
     {
-        get => temperatur;
-        set
-        {
-            temperatur = value;
-            TemperaturGeaendert?.Invoke(this, temperatur);
-        }
+        Punkte += schatz.Wert;
+        SchatzGefunden?.Invoke(this, new SchatzEventArgs(schatz, Punkte));
     }
 }
-
-Messstation station = new();
-station.TemperaturGeaendert += (s, t) => Console.WriteLine($"Anzeige: {t:F1} °C");
-station.TemperaturGeaendert += (s, t) => { if (t < 0) Console.WriteLine("ALARM: Frost!"); };
-station.Temperatur = -2.0;
-// Anzeige: -2,0 °C
-// ALARM: Frost!
 ```
 
-Die Liste, die `Registrieren`- und die `Abmelden`-Methode sind verschwunden; sie stecken im `event`. Das `event`-Schlüsselwort schützt außerdem die Liste: Von außen kann niemand alle Beobachter auf einmal löschen oder den Rundruf selbst auslösen. In C# ist die `event`-Variante immer die richtige Wahl; das handgeschriebene Interface lohnt sich nur, wenn ein Beobachter mehrere Methoden anbieten muss oder das Subjekt seine Beobachter befragen will.
+| Rolle im Muster | Klassische Variante | C# mit `event` |
+| :--- | :--- | :--- |
+| Liste der Beobachter | `List<IBeobachter>` | steckt im Multicast-Delegaten |
+| Registrieren | `Registrieren(b)` | `+=` |
+| Abmelden | `Abmelden(b)` | `-=` |
+| Beobachter-Schnittstelle | Interface `IBeobachter` | Signatur `EventHandler<SchatzEventArgs>` |
+| Benachrichtigen | `foreach`-Schleife | `?.Invoke(this, e)` |
 
-Der Vergleich mit dem Setter zeigt auch, was das Muster *nicht* regelt: In welcher Reihenfolge die Beobachter aufgerufen werden, ist offiziell undefiniert (bei Delegaten praktisch die Reihenfolge des `+=`), und wenn ein Beobachter eine Exception wirft, bekommen die nach ihm gar nichts mehr mit.
+Das `event`-Schlüsselwort schützt zusätzlich die Liste: Von außen kann niemand alle Beobachter auf einmal löschen oder den Rundruf selbst auslösen – bei der handgeschriebenen Variante müsste man dafür die Liste sorgfältig privat halten. In C# ist die `event`-Variante deshalb fast immer die richtige Wahl; das handgeschriebene Interface lohnt sich nur, wenn ein Beobachter mehrere zusammengehörige Methoden anbieten muss (`Gestartet`, `Geaendert`, `Beendet`) oder das Subjekt seine Beobachter befragen will.
+
+Was das Muster *nicht* regelt: In welcher Reihenfolge die Beobachter aufgerufen werden, ist offiziell undefiniert (bei Delegaten praktisch die Reihenfolge des `+=`), und wenn ein Beobachter eine Exception wirft, bekommen die nach ihm gar nichts mehr mit. Beobachter sollten deshalb kurz sein und nichts tun, was fehlschlagen kann.
 {: .notice--primary}
+
+## Zwei Beobachter desselben Ereignisses
+
+Der eigentliche Gewinn zeigt sich, wenn zwei völlig verschiedene Oberflächen an demselben Ereignis hängen. `Adventure.Konsole` registriert sich in einer einzigen Zeile, direkt nachdem das Spielfeld gebaut wurde:
+
+```csharp
+Spielfeld feld = LevelParser.Parsen(level);
+
+feld.Spieler.SchatzGefunden += (sender, e) => Console.Beep();
+```
+
+`Adventure.Web` reagiert auf dasselbe Ereignis ganz anders: Die Seite merkt sich eine Jubelmeldung und lässt sich neu zeichnen. Blazor rendert eine Komponente zwar nach jedem Tastendruck automatisch neu – aber nur, weil die Komponente den Tastendruck selbst behandelt hat. Kommt die Änderung aus dem Modell (später etwa durch einen Timer oder einen zweiten Spieler), muss die Komponente selbst zuhören und `StateHasChanged()` aufrufen:
+
+```razor
+@implements IDisposable
+
+<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="@jubel" />
+
+@code {
+    private Spielfeld feld = null!;
+    private string jubel = "";
+
+    private void NeuStarten()
+    {
+        if (feld is not null) feld.Spieler.SchatzGefunden -= SchatzGemeldet;
+        feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
+        feld.Spieler.SchatzGefunden += SchatzGemeldet;
+    }
+
+    private void SchatzGemeldet(object? sender, SchatzEventArgs e)
+    {
+        jubel = $"Schatz im Wert von {e.Schatz.Wert} gefunden – jetzt {e.Punkte} Punkte!";
+        StateHasChanged();               // Statusleiste wird mit neuen Parametern gerendert
+    }
+
+    public void Dispose() => feld.Spieler.SchatzGefunden -= SchatzGemeldet;
+}
+```
+
+Zwei Beobachter, ein Subjekt, und `Spieler` kennt weder `Console` noch `StateHasChanged`. Der Unterschied zur Konsole ist nur die Registrierungsform: Hier ist der Beobachter eine *benannte* Methode, und deshalb funktioniert `-=` in `Dispose` und beim Neustart. Ein Lambda wie in `Program.cs` lässt sich nicht mehr abmelden – man hat keine Referenz darauf.
+
+Nicht nur der Spieler ist ein Subjekt. Auch `Spielfeld` meldet sich, wenn eine komplette Runde vorbei ist – also nachdem der Held gezogen ist und alle Gegner nachgezogen sind:
+
+```csharp
+public event EventHandler<RundeEventArgs>? RundeBeendet;
+
+public void SpielerZieht(Richtung richtung)
+{
+    // ... Spieler zieht, Gegner ziehen, Meldung wird zusammengebaut ...
+    LetzteMeldung = meldung.ToString().Trim();
+    RundeBeendet?.Invoke(this, new RundeEventArgs(Runde, LetzteMeldung));
+}
+```
+
+Ein Subjekt kann also mehrere Ereignisse anbieten, und ein Beobachter darf sich für mehrere registrieren. Ein Rundenprotokoll hört bei beiden zu, ohne dass Kern, Konsole oder Web davon etwas erfahren:
+
+```csharp
+feld.RundeBeendet += (s, e) => protokoll.Add($"Runde {e.Runde}: {e.Meldung}");
+feld.Spieler.SchatzGefunden += (s, e) => protokoll.Add($"Schatz! {e.Punkte} Punkte");
+```
 
 ## Model und View
 
-Der wichtigste Einsatz des Musters ist die Verbindung von Datenmodell und Oberfläche. Im Geometrieeditor aus Vorlesung 04 rendert Blazor die Seite nach jedem Klick von selbst neu – aber nur, wenn die Komponente den Klick selbst behandelt hat. Ändert sich das Modell von außen, muss die Oberfläche davon erfahren. Mit Observer wird die Richtung umgedreht: Das Modell meldet, dass sich etwas geändert hat, und die Oberfläche hört zu. Desktop-Frameworks wie WPF und MAUI haben dafür ein standardisiertes Interface, `INotifyPropertyChanged`, das aus genau einem Ereignis besteht:
+Der wichtigste Einsatz des Musters ist genau diese Verbindung von Datenmodell und Oberfläche. Desktop-Frameworks wie WPF und MAUI haben dafür ein standardisiertes Interface, `INotifyPropertyChanged`, das aus einem einzigen Ereignis besteht. Eine Modellklasse implementiert es und löst es in jedem Setter aus:
 
 ```csharp
-public class FigurModell : INotifyPropertyChanged
+public event PropertyChangedEventHandler? PropertyChanged;
+
+public int Punkte
 {
-    private string name = "";
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public string Name
+    get => punkte;
+    set
     {
-        get => name;
-        set
-        {
-            name = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
-        }
+        punkte = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Punkte)));
     }
 }
 ```
 
-Jeder Setter meldet, *welche* Property sich geändert hat. Ein Textfeld in WPF kann sich für `PropertyChanged` registrieren und liest dann `Name` neu – das ist dort die technische Grundlage der Datenbindung. In Blazor sieht das Gegenstück so aus: Die Komponente registriert sich für ein Ereignis des Modells und ruft im Handler `StateHasChanged()` auf, woraufhin Blazor sie neu rendert – siehe Modul [Datenbindung in Blazor](/modules/blazor_datenbindung/blazor_datenbindung.md). Die Sammlung `ObservableCollection<T>` macht dasselbe für Listen: Ihr Ereignis `CollectionChanged` feuert bei jedem `Add` und `Remove`, und eine Komponente, die zuhört, aktualisiert sich von allein.
+Jeder Setter meldet, *welche* Property sich geändert hat; ein Textfeld, das sich registriert hat, liest daraufhin den neuen Wert – das ist dort die technische Grundlage der Datenbindung, deren Blazor-Gegenstück wir im Modul [Datenbindung in Blazor](/modules/blazor_datenbindung/blazor_datenbindung.md) gesehen haben. Die Sammlung `ObservableCollection<T>` macht dasselbe für Listen: Ihr Ereignis `CollectionChanged` feuert bei jedem `Add` und `Remove`, und eine Anzeige, die zuhört, aktualisiert sich von allein. Für ein `Inventar<T>`, das die Statusleiste von sich aus aktualisieren soll, wäre das die passende Basis.
 
 ## `IObservable<T>` und `IObserver<T>`
 
-Neben `event` gibt es in .NET noch eine zweite, dem GoF-Original näher stehende Umsetzung: das Interface-Paar `IObservable<T>` (Subjekt) und `IObserver<T>` (Beobachter). Der Beobachter hat drei Methoden – `OnNext(T wert)` für jede Änderung, `OnError(Exception)` bei einem Fehler und `OnCompleted()`, wenn keine Werte mehr kommen. Das Subjekt bietet `Subscribe(IObserver<T>)` und gibt ein `IDisposable` zurück; wer `Dispose()` darauf aufruft, ist abgemeldet. Diese Variante ist die Basis von *Reactive Extensions* (Rx) und eignet sich für Datenströme wie Sensorwerte oder Netzwerkpakete, bei denen Fehler und Ende der Übertragung eine Rolle spielen. Für gewöhnliche Benachrichtigungen bleibt `event` das Mittel der Wahl.
+Neben `event` gibt es in .NET noch eine zweite, dem GoF-Original näher stehende Umsetzung: das Interface-Paar `IObservable<T>` (Subjekt) und `IObserver<T>` (Beobachter). Der Beobachter hat drei Methoden – `OnNext(T wert)` für jede Änderung, `OnError(Exception)` bei einem Fehler und `OnCompleted()`, wenn keine Werte mehr kommen. Das Subjekt bietet `Subscribe(IObserver<T>)` und gibt ein `IDisposable` zurück; wer `Dispose()` darauf aufruft, ist abgemeldet – das Abmelden ist hier also nicht mehr vergessbar, sondern passt zum `using` aus dem Modul [`IDisposable` und `using`](/modules/idisposable_using/idisposable_using.md). Diese Variante ist die Basis von *Reactive Extensions* (Rx) und eignet sich für Datenströme wie Sensorwerte oder Netzwerkpakete, bei denen Fehler und Ende der Übertragung eine Rolle spielen. Für gewöhnliche Benachrichtigungen wie `SchatzGefunden` bleibt `event` das Mittel der Wahl.
 
 ## Vor- und Nachteile
 
-Subjekt und Beobachter sind nur über das Interface bzw. die Delegat-Signatur gekoppelt – keine Seite kennt die konkreten Klassen der anderen. Beobachter kommen und gehen zur Laufzeit, und ein Subjekt lässt sich isoliert testen, indem der Test selbst zuhört. Diese lose Kopplung ist der Grund, warum das Muster in jeder GUI-Bibliothek steckt.
+Subjekt und Beobachter sind nur über das Interface bzw. die Delegat-Signatur gekoppelt – keine Seite kennt die konkreten Klassen der anderen. Beobachter kommen und gehen zur Laufzeit, und ein Subjekt lässt sich isoliert testen, indem der Test selbst zuhört: Genau das macht `SpielfeldTests`, wenn es `f.Spieler.SchatzGefunden += (s, e) => punkte = e.Punkte;` registriert und danach prüft, ob die Truhe 100 Punkte gemeldet hat.
 
-Die Nachteile folgen aus derselben Unsichtbarkeit. Wer `station.Temperatur = 3` liest, sieht nicht, dass dahinter fünf Beobachter loslaufen – und wenn einer davon selbst wieder ein Subjekt ist, entsteht eine Kaskade von Benachrichtigungen, die schwer zu durchschauen und bei einem Zyklus endlos ist. Bei vielen Beobachtern und häufigen Änderungen kostet der Rundruf spürbar Zeit.
+Die Nachteile folgen aus derselben Unsichtbarkeit. Wer `spieler.SchatzEinsammeln(schatz)` liest, sieht nicht, dass dahinter fünf Beobachter loslaufen – und wenn einer davon selbst wieder ein Subjekt ist, entsteht eine Kaskade von Benachrichtigungen, die schwer zu durchschauen und bei einem Zyklus endlos ist. Bei vielen Beobachtern und häufigen Ereignissen kostet der Rundruf spürbar Zeit.
 
-Das Subjekt hält Referenzen auf alle registrierten Beobachter. Ein Beobachter, der sich nie mit `-=` abmeldet, wird vom [Garbage Collector](/modules/garbage_collection/garbage_collection.md) nicht freigegeben, solange das Subjekt lebt – bei einem langlebigen Subjekt (Hauptfenster, Sensor, Singleton) und vielen kurzlebigen Beobachtern (Dialoge, Listeneinträge) ist das ein klassisches Speicherleck. Deshalb: Wer sich mit einer benannten Methode registriert, kann sich abmelden. Wer sich mit einem Lambda registriert, kann es nicht.
+Das Subjekt hält Referenzen auf alle registrierten Beobachter. Ein Beobachter, der sich nie mit `-=` abmeldet, wird vom [Garbage Collector](/modules/garbage_collection/garbage_collection.md) nicht freigegeben, solange das Subjekt lebt – bei einem langlebigen Subjekt und vielen kurzlebigen Beobachtern (Dialoge, Anzeigen, Browsersitzungen) ist das ein klassisches Speicherleck. Im Adventure sieht man beide Fehler nebeneinander: `Program.cs` registriert nach `F9` einen zweiten Lambda-Beobachter am neuen Spieler, weil sich der alte weder abmelden lässt noch abgemeldet werden muss; würde dabei versehentlich derselbe Spieler zweimal abonniert, piepst die Konsole doppelt. Deshalb: Wer sich mit einer benannten Methode registriert, kann sich abmelden. Wer sich mit einem Lambda registriert, kann es nicht.
 {: .notice--warning}
 
-Übung: Die Klasse `FigurenVerwaltung` des Geometrieeditors soll ein Ereignis `FigurenGeaendert` bekommen, das bei `Hinzufuegen`, `Entfernen` und `Laden` ausgelöst wird. Passe `Home.razor` so an, dass die Komponente sich in `OnInitialized` registriert und im Handler `StateHasChanged()` aufruft. Welche Aufrufe im `@code`-Block werden dadurch überflüssig – und wo muss `-=` stehen?
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+
+Übung: Schreibe eine Klasse `Rundenprotokoll`, die sich bei `Spielfeld.RundeBeendet` *und* bei `Spieler.SchatzGefunden` registriert und beide Meldungen in einer gemeinsamen Liste sammelt. Baue sie zuerst in der klassischen Variante mit einem Interface `IBeobachter` und dann mit `event` – welche Variante braucht mehr Code, und welche kommt ohne Änderung an `Spielfeld` aus? Ergänze anschließend eine Methode `Abmelden()`, die beide Registrierungen wieder löst, und überlege, warum sie mit Lambdas nicht funktioniert.
 {: .notice--info}
 
 ## Weitere Quellen

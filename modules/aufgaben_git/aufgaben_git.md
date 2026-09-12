@@ -9,27 +9,27 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking* rund um Versionsverwaltung: einen Commit-Graphen lesen, ein Feature in Schritte zerlegen, einen Konflikt systematisch auflösen und einen kaputten Repository-Zustand reparieren. Für die meisten Aufgaben brauchst du kein Terminal, nur Papier und die Module dieser Vorlesung. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking* rund um Versionsverwaltung: einen Commit-Graphen lesen, ein Feature in Schritte zerlegen, einen Konflikt systematisch auflösen und einen kaputten Repository-Zustand reparieren. Als Material dient durchgehend unser Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`). Für die meisten Aufgaben brauchst du kein Terminal, nur Papier und die Module dieser Vorlesung. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Mustererkennung
 
-Gegeben ist der folgende Ausschnitt aus `git log --oneline --graph --all` im Repository des Geometrieeditors:
+Gegeben ist der folgende Ausschnitt aus `git log --oneline --graph --all` im Repository einer Gruppe:
 
 ```
-* 9e1c4b7 (feature/sortieren) Figuren nach Fläche sortieren
-* 2a7d0f3 IComparable<Figur> in Figur implementieren
-| * c4e88a1 (HEAD -> main) README: Bauanleitung mit dotnet build ergänzen
-| * 71b2d9e Kreis: Umfang mit 2·π·r berechnen
+* 9e1c4b7 (feature/bogenschuetze) Konsole: Legende um den Bogenschützen ergänzen
+* 2a7d0f3 Bogenschütze als Gegner mit Fernkampf ergänzen
+| * c4e88a1 (HEAD -> main) README: Steuerung und Spielregeln beschreiben
+| * 71b2d9e Wache: beim Anstoßen umdrehen statt stehen bleiben
 |/
-* a1f9c3e Entfernen einer Figur in FigurenVerwaltung ergänzen
-* 7d2b0e4 Geometrieeditor mit Fachkonzept und Konsolenprogramm anlegen
+* a1f9c3e Spielfeld: Objekte wieder vom Feld entfernen können
+* 7d2b0e4 Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen
 ```
 
 Beantworte ohne Terminal:
-- Welcher Commit ist der gemeinsame Vorfahr von `main` und `feature/sortieren`?
-- Wie viele Commits enthält `feature/sortieren`, die `main` nicht hat – und umgekehrt?
-- Was passiert bei `git switch main` gefolgt von `git merge feature/sortieren`: Fast-Forward oder Merge-Commit? Wie viele Eltern hat der neueste Commit danach?
-- Angenommen, `71b2d9e` hätte `Figur.cs` nicht angefasst, `2a7d0f3` aber schon. Kann es trotzdem einen Konflikt geben? Wo müsste er liegen?
+- Welcher Commit ist der gemeinsame Vorfahr von `main` und `feature/bogenschuetze`?
+- Wie viele Commits enthält `feature/bogenschuetze`, die `main` nicht hat – und umgekehrt?
+- Was passiert bei `git switch main` gefolgt von `git merge feature/bogenschuetze`: Fast-Forward oder Merge-Commit? Wie viele Eltern hat der neueste Commit danach?
+- `71b2d9e` ändert `Wache.NaechsterZug`, und `2a7d0f3` fügt die neue Klasse `Bogenschuetze` hinzu. Beide Klassen stehen in derselben Datei `Adventure.Kern/Gegner.cs`. Gibt es deshalb zwangsläufig einen Konflikt?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -40,40 +40,40 @@ Die Sterne sind Commits, die Linien Elternbeziehungen, oben ist das Neueste. Die
 
 **Schritt 2 — Zählen:**
 
-`feature/sortieren` hat zwei Commits, die `main` nicht kennt: `2a7d0f3` und `9e1c4b7`. `main` hat zwei Commits, die dem Feature fehlen: `71b2d9e` und `c4e88a1`. Beide Zweige sind also seit `a1f9c3e` auseinandergelaufen (*diverged*).
+`feature/bogenschuetze` hat zwei Commits, die `main` nicht kennt: `2a7d0f3` und `9e1c4b7`. `main` hat zwei Commits, die dem Feature fehlen: `71b2d9e` und `c4e88a1`. Beide Zweige sind also seit `a1f9c3e` auseinandergelaufen (*diverged*).
 
 **Schritt 3 — Merge vorhersagen:**
 
 Ein Fast-Forward ist nur möglich, wenn der Zielbranch ein Vorfahr des hereinkommenden ist. `main` steht aber auf `c4e88a1`, das nicht in der Historie von `9e1c4b7` liegt. Git muss also einen **Merge-Commit** erzeugen, dessen Eltern `c4e88a1` und `9e1c4b7` sind – zwei Eltern. Der Graph danach:
 
 ```
-*   f0a3e12 (HEAD -> main) Merge branch 'feature/sortieren'
+*   f0a3e12 (HEAD -> main) Merge branch 'feature/bogenschuetze'
 |\
-| * 9e1c4b7 (feature/sortieren) Figuren nach Fläche sortieren
-| * 2a7d0f3 IComparable<Figur> in Figur implementieren
-* | c4e88a1 README: Bauanleitung mit dotnet build ergänzen
-* | 71b2d9e Kreis: Umfang mit 2·π·r berechnen
+| * 9e1c4b7 (feature/bogenschuetze) Konsole: Legende um den Bogenschützen ergänzen
+| * 2a7d0f3 Bogenschütze als Gegner mit Fernkampf ergänzen
+* | c4e88a1 README: Steuerung und Spielregeln beschreiben
+* | 71b2d9e Wache: beim Anstoßen umdrehen statt stehen bleiben
 |/
-* a1f9c3e Entfernen einer Figur in FigurenVerwaltung ergänzen
+* a1f9c3e Spielfeld: Objekte wieder vom Feld entfernen können
 ```
 
 **Schritt 4 — Konfliktmöglichkeit:**
 
-Ein Konflikt entsteht nur, wenn **beide** Seiten dieselben Zeilen einer Datei gegenüber `a1f9c3e` geändert haben. `Figur.cs` wurde nur vom Feature geändert – kein Konflikt dort. `Kreis.cs` nur von `main` – kein Konflikt. Bleibt `FigurenVerwaltung.cs`: Wenn `9e1c4b7` dort eine Methode `NachFlaecheSortiert()` direkt unter `GesamtFlaeche()` einfügt und `main` keine der Dateien angefasst hat, gibt es keinen Konflikt. Merge-Konflikte hängen also nie davon ab, *wie viele* Commits ein Zweig hat, sondern nur davon, *welche Zeilen* die beiden Seiten seit dem gemeinsamen Vorfahren geändert haben.
+Dieselbe Datei reicht nicht: Ein Konflikt entsteht nur, wenn **beide** Seiten dieselben oder unmittelbar benachbarte Zeilen gegenüber `a1f9c3e` geändert haben. `71b2d9e` arbeitet in der Methode `NaechsterZug` der Klasse `Wache`, `2a7d0f3` hängt eine neue Klasse `Bogenschuetze` ans Dateiende – die Bereiche überlappen nicht, Git führt `Gegner.cs` automatisch zusammen und meldet nur `Auto-merging Adventure.Kern/Gegner.cs`. Anders sähe es aus, wenn der Bogenschütze eine gemeinsame Hilfsmethode direkt neben `NaechsterZug` eingefügt hätte.
 
 **Zentrale Erkenntnisse:**
 
 - **Der gemeinsame Vorfahr ist der jüngste Commit, der von beiden Branch-Zeigern aus erreichbar ist** – nicht der Wurzel-Commit.
 - **Fast-Forward oder Merge-Commit ist eine Frage der Topologie**, nicht des Inhalts: Liegt `main` auf der Linie des Features, wird vorgespult.
-- **Konflikte sind eine Frage des Inhalts**, nicht der Topologie: Ein Merge-Commit kann konfliktfrei sein, und ein einziger Commit pro Seite reicht für einen Konflikt.
+- **Konflikte sind eine Frage der Zeilen**, nicht der Dateien und nicht der Topologie: Ein Merge-Commit kann konfliktfrei sein, und ein einziger Commit pro Seite reicht für einen Konflikt.
 
 </details>
 
 ## Aufgabe 2 — Zerlegung
 
-Du sollst im Geometrieeditor das Feature „Figuren nach Fläche sortieren“ umsetzen: Das Konsolenprogramm soll alle Figuren aufsteigend nach Fläche ausgeben. Betroffen sind die Klassenbibliothek (`Figur`, `FigurenVerwaltung`) und das Konsolenprogramm (`Geometrieeditor.Konsole/Program.cs`).
+Du sollst im Adventure eine neue Gegnerart umsetzen: den **Bogenschützen**. Er bleibt stehen, wo er ist, schießt aber, sobald der Spieler in gerader Linie ohne Wände dazwischen vor ihm steht – ein Treffer kostet einen Lebenspunkt. Betroffen sind `Adventure.Kern/Gegner.cs` (die neue Klasse), `Adventure.Kern/Spielfeld.cs` (der Rundenablauf), `Adventure.Kern/LevelParser.cs` (das Kartenzeichen) und `Adventure.Konsole/Program.cs` (die Legende).
 
-Zerlege das Feature in eine Folge von Commits auf einem Branch `feature/sortieren`:
+Zerlege das Feature in eine Folge von Commits auf einem Branch `feature/bogenschuetze`:
 - Wie viele Commits sind sinnvoll, und was enthält jeder?
 - In welcher Reihenfolge – und warum ist die Reihenfolge nicht beliebig?
 - Formuliere für jeden Commit eine Nachricht nach den Regeln aus [Erste Schritte mit Git](/modules/git_erste_schritte/git_erste_schritte.md).
@@ -84,66 +84,68 @@ Zerlege das Feature in eine Folge von Commits auf einem Branch `feature/sortiere
 
 **Schritt 1 — Regeln für den Schnitt:**
 
-Ein Commit soll eine zusammengehörige Änderung enthalten, und jeder Commit soll für sich bauen. Das zweite Kriterium bestimmt die Reihenfolge: `FigurenVerwaltung` darf erst sortieren, wenn `Figur` vergleichbar ist, und das Konsolenprogramm darf erst eine Methode aufrufen, die es schon gibt.
+Ein Commit soll eine zusammengehörige Änderung enthalten, und jeder Commit soll für sich bauen. Das zweite Kriterium bestimmt die Reihenfolge: Das `Spielfeld` darf erst schießen lassen, wenn es die Klasse `Bogenschuetze` gibt, und der `LevelParser` darf erst ein `B` auf sie abbilden, wenn beides existiert. Wir committen also **in Richtung der Abhängigkeiten**, von der Spiellogik nach außen zur Konsole.
 
 **Schritt 2 — Die Commit-Folge:**
 
 ```
-git switch -c feature/sortieren
+git switch -c feature/bogenschuetze
 
-# Commit 1: Vergleichbarkeit im Fachkonzept
-#   Figur.cs: IComparable<Figur> implementieren, CompareTo vergleicht Flaeche
-git commit -m "Figur: IComparable<Figur> über die Fläche implementieren"
+# Commit 1: die neue Gegnerart selbst
+#   Gegner.cs: sealed class Bogenschuetze : Gegner, Symbol 'B',
+#   NaechsterZug gibt null zurück (er bleibt stehen),
+#   bool KannSchiessen(Spielfeld feld) nutzt HatSichtlinie und gleiche Zeile/Spalte
+git commit -m "Bogenschütze als Gegner mit Sichtprüfung ergänzen"
 
-# Commit 2: Sortierte Sicht in der Verwaltung
-#   FigurenVerwaltung.cs: IReadOnlyList<Figur> NachFlaecheSortiert()
-git commit -m "FigurenVerwaltung: nach Fläche sortierte Liste bereitstellen"
+# Commit 2: Wirkung im Rundenablauf
+#   Spielfeld.cs: in GegnerZiehen die Bogenschützen schießen lassen,
+#   Treffer über Spieler.SchadenNehmen() und Meldung anhängen
+git commit -m "Spielfeld: Bogenschützen in jeder Runde schießen lassen"
 
-# Commit 3: Ausgabe im Konsolenprogramm
-#   Program.cs: NachFlaecheSortiert() aufrufen und jede Figur mit Beschreibung() ausgeben
-git commit -m "Konsole: Figuren nach Fläche sortiert ausgeben"
+# Commit 3: Bogenschützen in Karten platzieren
+#   LevelParser.cs: 'B' => new Bogenschuetze(pos), Kommentar mit der Zeichenlegende
+git commit -m "LevelParser: Zeichen B auf den Bogenschützen abbilden"
+
+# Commit 4: Anzeige
+#   Program.cs: Legende um 'B' ergänzen
+git commit -m "Konsole: Legende um den Bogenschützen ergänzen"
 ```
 
-Commit 1 ist in sich abgeschlossen – beide Projekte bauen, denn noch ruft niemand `CompareTo` auf. Commit 2 nutzt die Vergleichbarkeit für die sortierte Liste, Commit 3 hängt nur noch die Ausgabe an. Sobald der Geometrieeditor Unit-Tests hat (dazu mehr in [Vorlesung 12](/lectures/12/12.md)), gehört zu Commit 2 auch ein Test für `NachFlaecheSortiert()` mit Rechteck (6), Kreis (~3.14) und Dreieck (2) – wer testgetrieben arbeitet, committet ihn sogar **vor** der Implementierung; dann ist ein Commit mit rotem Test auf dem Feature-Branch akzeptabel, solange er vor dem Merge grün wird.
+Commit 1 ist in sich abgeschlossen – beide Projekte bauen, denn noch erzeugt niemand einen `Bogenschuetze`. Commit 2 gibt ihm Wirkung, Commit 3 macht ihn über Leveldateien erreichbar, Commit 4 erklärt ihn den Spielenden. Sobald das Adventure Unit-Tests hat (dazu mehr in [Vorlesung 12](/lectures/12/12.md)), gehört zu Commit 1 auch ein Test für `KannSchiessen` – Spieler in derselben Zeile mit freier Bahn, derselben Zeile mit Wand dazwischen, diagonal – wer testgetrieben arbeitet, committet ihn sogar **vor** der Implementierung; dann ist ein Commit mit rotem Test auf dem Feature-Branch akzeptabel, solange er vor dem Merge grün wird.
 
 **Schritt 3 — Was nicht allein auf `main` darf:**
 
-Commit 3 allein würde `main` brechen, weil `NachFlaecheSortiert()` dort nicht existiert. Genau das ist der Grund, warum man Features auf einem Branch entwickelt und als Ganzes per Merge Request integriert: Zwischenstände dürfen im Branch unvollständig sein, `main` bekommt nur das fertige Feature.
+Die Commits 2, 3 und 4 allein würden `main` brechen, weil `Bogenschuetze` dort nicht existiert – am deutlichsten Commit 3, der den Konstruktor aufruft. Genau das ist der Grund, warum man Features auf einem Branch entwickelt und als Ganzes per Merge Request integriert: Zwischenstände dürfen im Branch unvollständig sein, `main` bekommt nur das fertige Feature.
 
 **Zentrale Designentscheidungen:**
 
-- **Von innen nach außen committen:** Erst `Figur`, dann `FigurenVerwaltung`, dann das Programm, das beide benutzt – in Richtung der Abhängigkeiten. Wenn ab [Vorlesung 04](/lectures/04/04.md) eine Oberfläche als eigene Schicht dazukommt, bleibt die Regel dieselbe.
+- **Von innen nach außen committen:** Erst die Klasse in `Adventure.Kern`, dann die Regeln, dann Parser und Konsole – in Richtung der Abhängigkeiten. Wenn ab [Vorlesung 04](/lectures/04/04.md) eine Weboberfläche als eigene Schicht dazukommt, bleibt die Regel dieselbe.
 - **Jeder Commit baut:** Wer später mit `git log` oder `git blame` sucht, kann jeden Stand ausprobieren.
-- **Imperativ und Kontext in der Nachricht:** „Figur: …“, „Konsole: …“ nennt den Bereich, das Verb sagt, was passiert.
+- **Imperativ und Kontext in der Nachricht:** „Spielfeld: …“, „Konsole: …“ nennt den Bereich, das Verb sagt, was passiert.
 
 </details>
 
 ## Aufgabe 3 — Algorithmenentwurf
 
-Beim Merge von `feature/figur-validierung` in `main` bleibt `FigurenVerwaltung.cs` im folgenden Zustand zurück:
+Zwei Personen haben am Trank gearbeitet. Auf `main` ist aufgefallen, dass die Meldung lügt, sobald der Spieler fast volle Lebenspunkte hat: `Spieler.Heilen` begrenzt die Heilung auf `MaxLebenspunkte`, die Meldung nennt aber trotzdem den vollen Wert. Im Branch `feature/staerkerer-trank` wurde die Standardheilung von 1 auf 2 erhöht und die Meldung neu formuliert. Beim Merge bleibt `Adventure.Kern/Gegenstand.cs` im folgenden Zustand zurück:
 
 ```csharp
-public void Hinzufuegen(Figur figur)
+public override string Aufheben(Spieler spieler)
 {
 <<<<<<< HEAD
-    if (figuren.Any(f => f.Name.Equals(figur.Name, StringComparison.OrdinalIgnoreCase)))
-    {
-        throw new ArgumentException($"Es gibt bereits eine Figur mit dem Namen '{figur.Name}'.");
-    }
+    int vorher = spieler.Lebenspunkte;
+    spieler.Heilen(Heilung);
+    return $"{spieler.Name} trinkt einen Trank (+{spieler.Lebenspunkte - vorher}).";
 =======
-    ArgumentNullException.ThrowIfNull(figur);
-    if (figuren.Any(f => f.Name == figur.Name))
-    {
-        throw new ArgumentException($"Name '{figur.Name}' ist bereits vergeben.");
-    }
->>>>>>> feature/figur-validierung
-    figuren.Add(figur);
+    spieler.Heilen(Heilung);
+    return $"{spieler.Name} trinkt einen Trank und fühlt sich deutlich besser.";
+>>>>>>> feature/staerkerer-trank
 }
 ```
 
-`main` hat die Namensprüfung auf Groß-/Kleinschreibung-unabhängig umgestellt, das Feature hat eine `null`-Prüfung ergänzt und die Fehlermeldung umformuliert.
+Die geänderte Voreinstellung `int heilung = 2` im Konstruktor von `Trank` hat Git dagegen ohne Nachfrage übernommen – sie steht ein paar Zeilen weiter oben.
 
-- Welche Zeilen stammen von welcher Seite, und was ist der gemeinsame Vorfahr?
+- Welche Zeilen stammen von welcher Seite, und wie sah der gemeinsame Vorfahr aus?
 - Entwirf die korrekt aufgelöste Methode. Welche Änderung beider Seiten muss erhalten bleiben, welche ist eine Geschmacksfrage?
 - Nenne die vollständige Befehlsfolge vom Auflösen bis zum abgeschlossenen Merge, inklusive der Prüfung, dass nichts kaputt ist.
 - Wie lautet der Weg zurück, falls du dich gegen den Merge entscheidest?
@@ -153,21 +155,31 @@ public void Hinzufuegen(Figur figur)
 
 **Schritt 1 — Seiten identifizieren:**
 
-Zwischen `<<<<<<< HEAD` und `=======` steht `main` (ours), zwischen `=======` und `>>>>>>>` das Feature (theirs). Der gemeinsame Vorfahr ist die ursprüngliche Methode ohne `null`-Prüfung mit `f.Name == figur.Name` und der alten Meldung – genau der Stand von `FigurenVerwaltung.cs` im Repository. Beide Seiten haben dieselbe `if`-Zeile geändert, deshalb der Konflikt.
+Zwischen `<<<<<<< HEAD` und `=======` steht `main` (ours), zwischen `=======` und `>>>>>>>` das Feature (theirs). Der gemeinsame Vorfahr ist die ursprüngliche Methode aus dem Repository:
+
+```csharp
+public override string Aufheben(Spieler spieler)
+{
+    spieler.Heilen(Heilung);
+    return $"{spieler.Name} trinkt einen Trank (+{Heilung}).";
+}
+```
+
+Beide Seiten haben genau diese zwei Zeilen angefasst – deshalb der Konflikt. Dass die Konstruktoränderung konfliktfrei durchging, zeigt noch einmal: Es zählen die Zeilen, nicht die Datei.
 
 **Schritt 2 — Aufgelöste Datei:**
 
-Die `null`-Prüfung ist fachlich notwendig und muss **vor** jedem Zugriff auf `figur.Name` stehen. Die `OrdinalIgnoreCase`-Änderung ist eine bewusste Verhaltensänderung von `main` und muss erhalten bleiben – wer sie beim Auflösen verliert, macht einen Bugfix stillschweigend rückgängig. Nur die Fehlermeldung ist Geschmackssache; hier die des Features:
+Die Messung der tatsächlich geheilten Punkte ist ein Bugfix und muss erhalten bleiben; sie wird durch die stärkere Voreinstellung sogar wichtiger, denn mit `heilung = 2` weicht die Meldung noch häufiger vom Versprochenen ab. Die Formulierung der Meldung ist Geschmackssache – hier die des Features, aber mit dem echten Wert. Die Reihenfolge ist dabei nicht verhandelbar: `vorher` muss **vor** `Heilen` gelesen werden:
 
 ```csharp
-public void Hinzufuegen(Figur figur)
+public override string Aufheben(Spieler spieler)
 {
-    ArgumentNullException.ThrowIfNull(figur);
-    if (figuren.Any(f => f.Name.Equals(figur.Name, StringComparison.OrdinalIgnoreCase)))
-    {
-        throw new ArgumentException($"Name '{figur.Name}' ist bereits vergeben.");
-    }
-    figuren.Add(figur);
+    int vorher = spieler.Lebenspunkte;
+    spieler.Heilen(Heilung);
+    int geheilt = spieler.Lebenspunkte - vorher;
+    return geheilt > 0
+        ? $"{spieler.Name} trinkt einen Trank und fühlt sich besser (+{geheilt})."
+        : $"{spieler.Name} trinkt einen Trank – aber es tut sich nichts.";
 }
 ```
 
@@ -176,17 +188,17 @@ Weder „ours übernehmen“ noch „theirs übernehmen“ hätte dieses Ergebni
 **Schritt 3 — Befehlsfolge:**
 
 ```bash
-git status                                   # zeigt "both modified: ...FigurenVerwaltung.cs"
+git status                                       # zeigt "both modified: Adventure.Kern/Gegenstand.cs"
 # Datei im Editor wie oben bearbeiten, alle Marker entfernen
-grep -rn "<<<<<<<\|>>>>>>>" --include=*.cs .  # keine Marker mehr übrig?
-dotnet build                                 # kompiliert?
-dotnet run --project Geometrieeditor.Konsole  # verhält sich Hinzufuegen wie erwartet?
-git add Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
-git commit                                   # vorgeschlagene Nachricht "Merge branch ..." übernehmen
-git log --oneline --graph -5                 # Merge-Commit mit zwei Eltern sichtbar
+grep -rn "<<<<<<<\|>>>>>>>" --include=*.cs .     # keine Marker mehr übrig?
+dotnet build                                     # kompiliert?
+dotnet run --project Adventure.Konsole           # mit vollen Lebenspunkten über einen Trank laufen
+git add Adventure.Kern/Gegenstand.cs
+git commit                                       # vorgeschlagene Nachricht "Merge branch ..." übernehmen
+git log --oneline --graph -5                     # Merge-Commit mit zwei Eltern sichtbar
 ```
 
-Der beste Nachweis, dass die Auflösung die Änderung von `main` bewahrt hat, ist ein kurzer Versuch im Konsolenprogramm: `"kreis1"` und `"Kreis1"` müssen als Duplikat abgelehnt werden, `null` mit einer `ArgumentNullException`. Sobald der Geometrieeditor Unit-Tests hat ([Vorlesung 12](/lectures/12/12.md)), wird aus diesem Versuch ein Test, der bei jedem Merge automatisch läuft.
+Der beste Nachweis, dass die Auflösung den Bugfix bewahrt hat, ist ein kurzer Versuch im Spiel: Mit 3 von 3 Lebenspunkten über einen Trank laufen – die Meldung darf kein Plus versprechen, das der Spieler nie bekommen hat. Sobald das Adventure Unit-Tests hat ([Vorlesung 12](/lectures/12/12.md)), wird aus diesem Versuch ein Test, der bei jedem Merge automatisch läuft.
 
 **Schritt 4 — Rückzug:**
 
@@ -198,7 +210,7 @@ stellt den Zustand vor dem `git merge` wieder her; beide Branches bleiben unver�
 
 **Zentrale Designentscheidungen:**
 
-- **Reihenfolge ist Semantik:** Die `null`-Prüfung zuerst, sonst wirft die Namensprüfung eine `NullReferenceException`.
+- **Reihenfolge ist Semantik:** `vorher` vor `Heilen` – danach ist die Information unwiederbringlich weg.
 - **Keine Seite darf stillschweigend verlieren:** Beide Änderungen hatten einen Grund; beim Auflösen wird zusammengeführt, nicht ausgewählt.
 - **Bauen und Ausprobieren gehören zum Auflösen** – der Merge ist erst fertig, wenn `dotnet build` durchläuft und das Verhalten beider Seiten geprüft ist.
 
@@ -206,28 +218,30 @@ stellt den Zustand vor dem `git merge` wieder her; beide Branches bleiben unver�
 
 ## Aufgabe 4 — Fehler finden
 
-Eine Gruppe hat ihren Geometrieeditor – die Klassenbibliothek und ein Konsolenprogramm, das Figuren an einen Webdienst schickt – auf das GitLab gepusht. Ein Blick ins Repository zeigt:
+Eine Gruppe hat ihr Adventure – die Klassenbibliothek und das Konsolenprogramm, das Level von einem Webdienst nachlädt – auf das GitLab gepusht. Ein Blick ins Repository zeigt:
 
 ```
 $ git ls-files | head
-Geometrieeditor.Fachkonzept/bin/Debug/net10.0/Geometrieeditor.Fachkonzept.dll
-Geometrieeditor.Fachkonzept/obj/project.assets.json
-Geometrieeditor.Konsole/bin/Debug/net10.0/Geometrieeditor.Konsole.dll
-Geometrieeditor.Konsole/einstellungen.json
-Geometrieeditor.Konsole/Program.cs
+Adventure.Kern/bin/Debug/net10.0/Adventure.Kern.dll
+Adventure.Kern/obj/project.assets.json
+Adventure.Kern/Spielfeld.cs
+Adventure.Konsole/bin/Debug/net10.0/Adventure.Konsole.dll
+Adventure.Konsole/levelserver.json
+Adventure.Konsole/Program.cs
+spielstand.json
 ...
-$ cat Geometrieeditor.Konsole/einstellungen.json
-{ "FigurenDienst": { "Url": "https://api.example.org/figuren", "ApiKey": "sk-live-7f3a…" } }
+$ cat Adventure.Konsole/levelserver.json
+{ "LevelDienst": { "Url": "https://api.example.org/levels", "ApiKey": "sk-live-7f3a…" } }
 $ ls -a | grep gitignore
 $
 ```
 
-Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, und in `einstellungen.json` liegt ein API-Schlüssel – seit drei Commits, das Repository ist für alle Studierenden des Kurses sichtbar.
+Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, die beim Spielen erzeugte Datei `spielstand.json` ebenfalls – und in `levelserver.json` liegt ein API-Schlüssel, seit drei Commits, das Repository ist für alle Studierenden des Kurses sichtbar.
 
-- Welche drei Probleme siehst du, und welches ist das dringendste?
+- Welche Probleme siehst du, und welches ist das dringendste?
+- Warum ist ein committeter Spielstand nicht nur unschön, sondern eine Konfliktquelle?
 - Welche Befehle bringen das Repository in Ordnung? Reicht es, die Dateien zu löschen und zu committen?
-- Warum gilt der API-Schlüssel als kompromittiert, obwohl man ihn aus der Datei entfernen kann?
-- Wie hätte die Gruppe die Datei mit dem Schlüssel von Anfang an behandeln sollen?
+- Warum gilt der API-Schlüssel als kompromittiert, obwohl man ihn aus der Datei entfernen kann? Wie hätte die Gruppe ihn von Anfang an behandeln sollen?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -235,35 +249,41 @@ Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, und in `einstellun
 **Schritt 1 — Priorisieren:**
 
 1. **Das Secret** – dringend, weil jede Person mit Lesezugriff es bereits kopiert haben kann.
-2. **Build-Ausgaben im Repository** – lästig: Jeder Build ändert `.dll`-Dateien, jeder Commit enthält Binärmüll, jeder Merge produziert sinnlose Konflikte in `obj/`.
+2. **Erzeugte Dateien im Repository** – lästig: Jeder Build ändert `.dll`-Dateien, und `spielstand.json` ändert sich bei *jeder gespielten Runde*. Wer spielt, hat danach eine geänderte Datei im `git status`, committet sie versehentlich mit, und beim nächsten Merge streiten sich zwei Spielstände um dieselben Zeilen – ein Konflikt, der niemanden interessiert und den man nicht sinnvoll auflösen kann. Verfolgt werden sollen nur Dateien, die Menschen schreiben.
 3. **Fehlende `.gitignore`** – die Ursache von Problem 2 und Voraussetzung dafür, dass es nicht wieder passiert.
 
 **Schritt 2 — Das Secret behandeln:**
 
-Zuerst den Schlüssel beim Dienst **zurückziehen** und einen neuen erzeugen. Alles andere ist zweitrangig, denn: Git ist ein Graph von Momentaufnahmen. Ein neuer Commit, der den Schlüssel aus `einstellungen.json` löscht, ändert nichts an den drei alten Commits – `git show HEAD~2:Geometrieeditor.Konsole/einstellungen.json` zeigt ihn weiterhin, und jeder Klon enthält die gesamte Historie. Man kann die Historie mit Spezialwerkzeugen umschreiben (`git filter-repo`) und dann per Force-Push ersetzen, aber Klone, die bereits existieren, erreicht man damit nicht. Deshalb gilt die Regel: **Ein einmal gepushtes Secret ist kompromittiert, Punkt.** Das Umschreiben der Historie ist Aufräumen, kein Ersatz für das Zurückziehen.
+Zuerst den Schlüssel beim Dienst **zurückziehen** und einen neuen erzeugen. Alles andere ist zweitrangig, denn: Git ist ein Graph von Momentaufnahmen. Ein neuer Commit, der den Schlüssel aus `levelserver.json` löscht, ändert nichts an den drei alten Commits – `git show HEAD~2:Adventure.Konsole/levelserver.json` zeigt ihn weiterhin, und jeder Klon enthält die gesamte Historie. Man kann die Historie mit Spezialwerkzeugen umschreiben (`git filter-repo`) und dann per Force-Push ersetzen, aber Klone, die bereits existieren, erreicht man damit nicht. Deshalb gilt die Regel: **Ein einmal gepushtes Secret ist kompromittiert, Punkt.** Das Umschreiben der Historie ist Aufräumen, kein Ersatz für das Zurückziehen.
 
 **Schritt 3 — Repository bereinigen:**
 
 ```bash
 dotnet new gitignore                          # Vorlage für .NET anlegen
 git rm -r --cached '**/bin' '**/obj'          # aus dem Index entfernen, Dateien auf der Platte bleiben
-git rm --cached Geometrieeditor.Konsole/einstellungen.json
-echo "einstellungen.json" >> .gitignore       # die Datei mit dem Secret nie wieder stagen
+git rm --cached Adventure.Konsole/levelserver.json spielstand.json
+printf 'levelserver.json\nspielstand*.json\n' >> .gitignore
 git status                                    # bin/, obj/ erscheinen jetzt als gelöscht, .gitignore als neu
 git add .gitignore
-git commit -m "Build-Ausgaben und einstellungen.json aus dem Repository entfernen, .gitignore ergänzen"
+git commit -m "Build-Ausgaben, Spielstand und levelserver.json aus dem Repository entfernen"
 git push
 ```
 
-`--cached` ist der entscheidende Schalter: Ohne ihn würde `git rm` die Dateien auch von der Festplatte löschen. Nach diesem Commit verfolgt Git die Ordner nicht mehr, und die `.gitignore` verhindert, dass sie beim nächsten `git add .` zurückkommen.
+`--cached` ist der entscheidende Schalter: Ohne ihn würde `git rm` die Dateien auch von der Festplatte löschen – und damit den Spielstand der Gruppe. Nach diesem Commit verfolgt Git die Ordner nicht mehr, und die `.gitignore` verhindert, dass sie beim nächsten `git add .` zurückkommen. Genau deshalb endet die `.gitignore` im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) mit zwei zusätzlichen Zeilen unter der Standardvorlage:
+
+```
+# Spielstände
+spielstand*.json
+```
 
 **Schritt 4 — Wie es von Anfang an hätte laufen sollen:**
 
-Der Schlüssel gehört nicht in eine committete Datei. Übliche Wege: eine Datei `einstellungen.lokal.json`, die in der `.gitignore` steht, während eine committete `einstellungen.json` nur Platzhalter enthält; oder eine Umgebungsvariable, die das Programm mit `Environment.GetEnvironmentVariable("FIGURENDIENST_APIKEY")` liest; für .NET-Projekte zusätzlich `dotnet user-secrets` in der Entwicklung. In jedem Fall beschreibt die `README.md`, welche Werte man lokal setzen muss. Und die Reihenfolge beim Anlegen eines Repositorys lautet immer: `dotnet new gitignore`, **dann** `git add .`, und vor dem ersten Push einmal `git status` und `git diff --staged` lesen.
+Der Schlüssel gehört nicht in eine committete Datei. Übliche Wege: eine Datei `levelserver.lokal.json`, die in der `.gitignore` steht, während eine committete `levelserver.json` nur Platzhalter enthält; oder eine Umgebungsvariable, die das Programm mit `Environment.GetEnvironmentVariable("LEVELDIENST_APIKEY")` liest; für .NET-Projekte zusätzlich `dotnet user-secrets` in der Entwicklung. In jedem Fall beschreibt die `README.md`, welche Werte man lokal setzen muss. Und die Reihenfolge beim Anlegen eines Repositorys lautet immer: `dotnet new gitignore`, **dann** `git add .`, und vor dem ersten Push einmal `git status` und `git diff --staged` lesen.
 
 **Zentrale Designentscheidungen:**
 
 - **Zuerst den Schaden begrenzen** (Schlüssel zurückziehen), dann aufräumen.
+- **Nur Quellen gehören ins Repository:** Alles, was ein Programm erzeugt – Builds, Logs, Spielstände –, wird beim nächsten Lauf ohnehin neu geschrieben.
 - **Löschen ist keine Löschung:** Die Historie bewahrt alles, was je committet wurde – das ist die Stärke von Git und hier sein Problem.
 - **`.gitignore` vor dem ersten `git add`:** Was nie im Index war, muss nie mühsam wieder heraus.
 

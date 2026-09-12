@@ -67,7 +67,7 @@ Die `nlog.config` ist eine XML-Datei mit zwei Abschnitten. **Targets** beschreib
 </nlog>
 ```
 
-Wir definieren zwei Ziele: eine farbige Konsole und eine Datei `logs/app.log`, die NLog samt Ordner selbst anlegt. Das `layout` ist eine Schablone mit Platzhaltern wie `${longdate}`, `${level}`, `${logger}` und `${message}` – die Datei bekommt mehr Details als die Konsole, weil dort niemand auf Übersichtlichkeit angewiesen ist. Die beiden Regeln sagen: Auf die Konsole kommt alles ab `Info`, in die Datei alles ab `Debug`. `name="*"` heißt „für alle Logger“; mit `name="Geometrieeditor.Datenhaltung.*"` ließe sich eine Regel auf eine einzelne Schicht beschränken.
+Wir definieren zwei Ziele: eine farbige Konsole und eine Datei `logs/app.log`, die NLog samt Ordner selbst anlegt. Das `layout` ist eine Schablone mit Platzhaltern wie `${longdate}`, `${level}`, `${logger}` und `${message}` – die Datei bekommt mehr Details als die Konsole, weil dort niemand auf Übersichtlichkeit angewiesen ist. Die beiden Regeln sagen: Auf die Konsole kommt alles ab `Info`, in die Datei alles ab `Debug`. `name="*"` heißt „für alle Logger“; mit `name="Adventure.Daten.*"` ließe sich eine Regel auf eine einzelne Schicht unseres Spiels beschränken.
 
 ## Meldungen schreiben
 
@@ -101,9 +101,9 @@ NLog kennt sechs Stufen, aufsteigend nach Wichtigkeit. Die Regel `minlevel="Info
 | :--- | :--- | :--- |
 | `Trace` | Jedes Detail, nur zur Fehlersuche | „Betrete Methode `Laden`“ |
 | `Debug` | Technische Zwischenschritte | „Verarbeite Datensatz 2 von 3“ |
-| `Info` | Normale Ereignisse, die man später nachvollziehen will | „Programm gestartet“, „12 Figuren geladen“ |
+| `Info` | Normale Ereignisse, die man später nachvollziehen will | „Programm gestartet“, „Level 'kerker' geladen“ |
 | `Warn` | Ungewöhnlich, aber das Programm läuft weiter | „Konfigurationsdatei fehlt, nutze Standardwerte“ |
-| `Error` | Eine Operation ist fehlgeschlagen | „Speichern nach figuren.json fehlgeschlagen“ |
+| `Error` | Eine Operation ist fehlgeschlagen | „Speichern nach spielstand.json fehlgeschlagen“ |
 | `Fatal` | Das Programm kann nicht weitermachen | „Datenbank nicht erreichbar, beende“ |
 
 Die schwierigste Entscheidung im Alltag ist die zwischen `Info` und `Debug`: Was würde ich wissen wollen, wenn ich morgen früh ein Log lese, in dem etwas schiefgegangen ist? Das ist `Info`. Was hilft mir nur, während ich gerade einen Fehler suche? Das ist `Debug`.
@@ -148,7 +148,7 @@ Eine Exception, die man fängt und nur loggt, ist damit nicht behandelt – das 
 
 ## Alternativen
 
-NLog ist nicht die einzige Wahl. **Serilog** ist ähnlich verbreitet und setzt konsequent auf strukturiertes Logging, bei dem jede Meldung als Datensatz mit benannten Feldern gespeichert wird – praktisch, wenn man Logs später mit Werkzeugen durchsucht. Microsoft selbst liefert mit **`Microsoft.Extensions.Logging`** eine schlanke Abstraktion (`ILogger<T>`), die in ASP.NET-Anwendungen fest eingebaut ist; sie definiert nur die Schnittstelle, und NLog oder Serilog stecken als Anbieter dahinter. Für eine Klassenbibliothek, die nicht wissen soll, welches Logging-Paket die Anwendung benutzt, ist diese Abstraktion die richtige Wahl – im Geometrieeditor wäre das das Fachkonzept, das ja auch von der Datenhaltung nur das Interface `IFigurSpeicher` kennt.
+NLog ist nicht die einzige Wahl. **Serilog** ist ähnlich verbreitet und setzt konsequent auf strukturiertes Logging, bei dem jede Meldung als Datensatz mit benannten Feldern gespeichert wird – praktisch, wenn man Logs später mit Werkzeugen durchsucht. Microsoft selbst liefert mit **`Microsoft.Extensions.Logging`** eine schlanke Abstraktion (`ILogger<T>`), die in ASP.NET-Anwendungen fest eingebaut ist; sie definiert nur die Schnittstelle, und NLog oder Serilog stecken als Anbieter dahinter. Für eine Klassenbibliothek, die nicht wissen soll, welches Logging-Paket die Anwendung benutzt, ist diese Abstraktion die richtige Wahl – in unserem Spiel wäre das `Adventure.Kern`, das von der Datenhaltung ja auch nur die Interfaces `ILevelQuelle` und `ISpielstandSpeicher` kennt.
 
 Übung: Ändere die `nlog.config` von `NLogDemo`, ohne den C#-Code anzufassen, sodass die Konsole nur noch Warnungen und Fehler zeigt und die Datei zusätzlich `Trace`-Meldungen aufnimmt. Füge dann ein drittes Ziel hinzu, das ausschließlich `Error` und `Fatal` in eine eigene Datei `logs/fehler.log` schreibt. Wie viele Zeilen landen bei einem Programmlauf in jeder der drei Ausgaben?
 {: .notice--info}

@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Ein Merge-Konflikt ist kein Fehler und kein Zeichen, dass jemand etwas falsch gemacht hat. Er ist Gits Art zu sagen: „Zwei Leute haben dieselbe Stelle unterschiedlich geändert, und ich weiß nicht, welche Version stimmt – entscheidet ihr.“ Git ist beim Zusammenführen erstaunlich klug, solange Änderungen in verschiedenen Dateien oder verschiedenen Bereichen einer Datei liegen. Bei denselben Zeilen kann es aber keine inhaltliche Entscheidung treffen – ob die Prüfung auf doppelte Namen oder die auf `null` zuerst kommen soll, weiß nur, wer den Code versteht. Deshalb lernen wir hier, Konflikte gelassen zu lesen und aufzulösen.
+Ein Merge-Konflikt ist kein Fehler und kein Zeichen, dass jemand etwas falsch gemacht hat. Er ist Gits Art zu sagen: „Zwei Leute haben dieselbe Stelle unterschiedlich geändert, und ich weiß nicht, welche Version stimmt – entscheidet ihr.“ Git ist beim Zusammenführen erstaunlich klug, solange Änderungen in verschiedenen Dateien oder verschiedenen Bereichen einer Datei liegen. Bei denselben Zeilen kann es aber keine inhaltliche Entscheidung treffen – ob ein Zug gegen eine Wand eine Runde kosten soll oder nicht, weiß nur, wer die Spielregeln kennt. Deshalb lernen wir hier, Konflikte gelassen zu lesen und aufzulösen.
 
 ## Wann entsteht ein Konflikt?
 
@@ -25,64 +25,96 @@ Beim Merge in [Branches und Merges](/modules/git_branching/git_branching.md) hat
 
 Konflikte entstehen also nur, wenn drei Bedingungen zusammenkommen: zwei Branches, dieselbe Datei, überlappende Zeilen. Ein Umbenennen der Datei auf einer Seite und eine Änderung auf der anderen kann Git meist noch auflösen – eine Zeile, die beide Seiten unterschiedlich geschrieben haben, nicht.
 
-## Ein Konflikt im Geometrieeditor
+## Ein Konflikt im Adventure
 
-Zwei Personen arbeiten an `FigurenVerwaltung.Hinzufuegen`. Die eine will auf `main`, dass Figuren mit leerem Namen abgelehnt werden. Die andere fügt im Branch `feature/figur-validierung` eine Prüfung hinzu, dass `figur` nicht `null` sein darf. Beide ändern die ersten Zeilen der Methode. Beim Merge meldet Git:
+Zwei Personen arbeiten am Herzstück des Spiels, der Methode `Spielfeld.SpielerZieht`, die eine komplette Runde abwickelt. Auf `main` hat jemand eine Regel korrigiert: Ein Zug gegen eine Wand soll keine Runde kosten, die Gegner dürfen dafür also nicht ziehen. Im Branch `feature/falle` baut jemand anderes die neue Objektart aus [Branches und Merges](/modules/git_branching/git_branching.md) ein: Steht der Spieler zu Beginn seines Zuges auf einer Falle, löst sie aus. Beide haben dafür die ersten Zeilen derselben Methode umgestellt. Nebenbei hat der Feature-Branch auch `Gegner.cs` angefasst, damit eine `Wache` nicht in die eigene Falle läuft – diese Datei hat auf `main` niemand berührt. Beim Merge meldet Git:
 
 ```bash
 git switch main
-git merge feature/figur-validierung
-# Auto-merging Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
-# CONFLICT (content): Merge conflict in Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
+git merge feature/falle
+# Auto-merging Adventure.Kern/Gegner.cs
+# Auto-merging Adventure.Kern/Spielfeld.cs
+# CONFLICT (content): Merge conflict in Adventure.Kern/Spielfeld.cs
 # Automatic merge failed; fix conflicts and then commit the result.
 git status
 # You have unmerged paths.
 #   (fix conflicts and run "git commit")
 #   (use "git merge --abort" to abort the merge)
+# Changes to be committed:
+#   modified:   Adventure.Kern/Gegner.cs
 # Unmerged paths:
-#   both modified:   Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
+#   both modified:   Adventure.Kern/Spielfeld.cs
 ```
 
-Git hat den Merge nicht abgebrochen, sondern angehalten: Alle unproblematischen Änderungen sind bereits in der Arbeitskopie, nur die betroffene Datei enthält jetzt **Konfliktmarker**:
+An `Gegner.cs` sieht man, wie viel Git allein schafft: Die Änderung an `Wache.NaechsterZug` ist bereits zusammengeführt und liegt im Staging-Bereich, weil nur eine Seite sie vorgenommen hat. Auch in `Spielfeld.cs` ist alles Unstrittige schon in der Arbeitskopie – nur die umkämpfte Stelle enthält jetzt **Konfliktmarker**:
 
 ```csharp
-public void Hinzufuegen(Figur figur)
+public void SpielerZieht(Richtung richtung)
 {
+    if (Status != Spielstatus.Laeuft) return;
+
 <<<<<<< HEAD
-    if (string.IsNullOrWhiteSpace(figur.Name))
+    Position ziel = Spieler.Position.Verschoben(richtung);
+    StatischesObjekt? davor = StatischesObjektAn(ziel);
+    if (davor is Wand)
     {
-        throw new ArgumentException("Eine Figur braucht einen Namen.");
+        LetzteMeldung = "Da ist eine Wand.";
+        return;                       // ein Zug gegen die Wand kostet keine Runde
     }
+
+    Runde++;
+    StringBuilder meldung = new();
 =======
-    ArgumentNullException.ThrowIfNull(figur);
->>>>>>> feature/figur-validierung
-    if (figuren.Any(f => f.Name == figur.Name))
+    Runde++;
+    StringBuilder meldung = new();
+    if (StatischesObjektAn(Spieler.Position) is Falle falle)
     {
-        throw new ArgumentException($"Es gibt bereits eine Figur mit dem Namen '{figur.Name}'.");
+        meldung.Append(falle.Ausloesen(Spieler));
     }
-    figuren.Add(figur);
+
+    Position ziel = Spieler.Position.Verschoben(richtung);
+    StatischesObjekt? davor = StatischesObjektAn(ziel);
+>>>>>>> feature/falle
+
+    if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
+    {
+        meldung.Append(interagierbar.Interagieren(Spieler));
+    }
+    // ... unverändert weiter: bewegen, aufheben, Gegner ziehen lassen
 }
 ```
 
-Zwischen `<<<<<<< HEAD` und `=======` steht unsere Seite (der aktuelle Branch `main`), zwischen `=======` und `>>>>>>> feature/figur-validierung` ihre Seite. Alles außerhalb der Marker war unstrittig. Die Datei kompiliert in diesem Zustand natürlich nicht – die Marker sind kein C#.
+Zwischen `<<<<<<< HEAD` und `=======` steht unsere Seite (der aktuelle Branch `main`), zwischen `=======` und `>>>>>>> feature/falle` ihre Seite. Alles außerhalb der Marker war unstrittig. Die Datei kompiliert in diesem Zustand natürlich nicht – die Marker sind kein C#.
 
 ## Den Konflikt auflösen
 
-Auflösen heißt: die Datei so bearbeiten, dass sie fachlich richtig ist, und alle Marker entfernen. Oft ist die Antwort nicht „ours“ oder „theirs“, sondern **beides in der richtigen Reihenfolge**. Hier muss die `null`-Prüfung zuerst kommen, sonst wirft `figur.Name` bereits eine `NullReferenceException`:
+Auflösen heißt: die Datei so bearbeiten, dass sie fachlich richtig ist, und alle Marker entfernen. Oft ist die Antwort nicht „ours“ oder „theirs“, sondern **beides in der richtigen Reihenfolge**. Hier muss die Wandprüfung zuerst kommen: Sonst würde ein Zug gegen die Wand die Falle auslösen und einen Lebenspunkt kosten, obwohl der Spieler sich gar nicht bewegt hat. Außerdem dürfen `ziel` und `davor` nur **einmal** deklariert werden – wer beide Seiten unbesehen untereinander klebt, bekommt vom Compiler eine doppelte Variablendeklaration:
 
 ```csharp
-public void Hinzufuegen(Figur figur)
+public void SpielerZieht(Richtung richtung)
 {
-    ArgumentNullException.ThrowIfNull(figur);
-    if (string.IsNullOrWhiteSpace(figur.Name))
+    if (Status != Spielstatus.Laeuft) return;
+
+    Position ziel = Spieler.Position.Verschoben(richtung);
+    StatischesObjekt? davor = StatischesObjektAn(ziel);
+    if (davor is Wand)
     {
-        throw new ArgumentException("Eine Figur braucht einen Namen.");
+        LetzteMeldung = "Da ist eine Wand.";
+        return;                       // ein Zug gegen die Wand kostet keine Runde
     }
-    if (figuren.Any(f => f.Name == figur.Name))
+
+    Runde++;
+    StringBuilder meldung = new();
+    if (StatischesObjektAn(Spieler.Position) is Falle falle)
     {
-        throw new ArgumentException($"Es gibt bereits eine Figur mit dem Namen '{figur.Name}'.");
+        meldung.Append(falle.Ausloesen(Spieler));
     }
-    figuren.Add(figur);
+
+    if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
+    {
+        meldung.Append(interagierbar.Interagieren(Spieler));
+    }
+    // ... unverändert weiter: bewegen, aufheben, Gegner ziehen lassen
 }
 ```
 
@@ -90,13 +122,13 @@ Nach dem Bearbeiten teilst du Git mit `git add` mit, dass der Konflikt in dieser
 
 ```bash
 dotnet build                                    # kompiliert es wieder?
-dotnet test                                     # laufen die Tests? (sobald es welche gibt – Vorlesung 12)
-git add Geometrieeditor.Fachkonzept/FigurenVerwaltung.cs
+dotnet run --project Adventure.Konsole          # einmal gegen die Wand und einmal über die Falle laufen
+git add Adventure.Kern/Spielfeld.cs
 git commit
-# [main 6d0f9a2] Merge branch 'feature/figur-validierung'
+# [main 6d0f9a2] Merge branch 'feature/falle'
 ```
 
-Bauen und Testen **vor** dem Commit ist kein optionaler Schritt. Ein Merge kann auch ohne Konfliktmarker fachlich falsch sein: Wenn eine Seite eine Methode umbenennt und die andere an einer ganz anderen Stelle den alten Namen aufruft, fügt Git beides klaglos zusammen – und erst der Compiler meckert.
+Bauen und Ausprobieren **vor** dem Commit ist kein optionaler Schritt. Ein Merge kann auch ohne Konfliktmarker fachlich falsch sein: Wenn eine Seite eine Methode umbenennt und die andere an einer ganz anderen Stelle den alten Namen aufruft, fügt Git beides klaglos zusammen – und erst der Compiler meckert. Sobald es Unit-Tests gibt (dazu mehr in [Vorlesung 12](/lectures/12/12.md)), läuft an dieser Stelle zusätzlich `dotnet test`.
 {: .notice--warning}
 
 Bist du mitten im Merge und merkst, dass du erst mit der anderen Person reden willst, bricht `git merge --abort` alles ab und stellt den Zustand vor dem `git merge` wieder her. Nichts geht verloren, beide Branches bleiben unverändert.
@@ -111,10 +143,10 @@ Konflikte lassen sich nicht ganz verhindern, aber selten und klein halten:
 
 - **Klein committen, oft pushen:** Ein Branch, der drei Tage alt ist, kollidiert eher als einer, der drei Stunden alt ist.
 - **Oft pullen bzw. `main` in den Feature-Branch mergen:** Wer regelmäßig `git merge main` im Feature-Branch ausführt, löst kleine Konflikte sofort statt eines großen am Ende.
-- **Absprachen im Team:** Wenn zwei Personen gleichzeitig `FigurenVerwaltung.cs` umbauen wollen, hilft ein kurzes Gespräch mehr als jedes Werkzeug. Eine saubere Aufteilung in Klassen und Dateien hilft ebenfalls: Wer an `Kreis.cs` arbeitet, kommt niemandem in `Dreieck.cs` in die Quere – und sobald Oberfläche und Fachkonzept ab [Vorlesung 04](/lectures/04/04.md) in getrennten Projekten liegen, gilt das erst recht.
+- **Absprachen im Team:** Wenn zwei Personen gleichzeitig `Spielfeld.cs` umbauen wollen, hilft ein kurzes Gespräch mehr als jedes Werkzeug. Eine saubere Aufteilung in Klassen und Dateien hilft ebenfalls: Wer an `Tuer.cs` arbeitet, kommt niemandem in `Gegner.cs` in die Quere – und sobald Oberfläche und Spiellogik ab [Vorlesung 04](/lectures/04/04.md) in getrennten Projekten liegen, gilt das erst recht.
 - **Keine kosmetischen Massenänderungen:** Ein Commit, der alle Dateien neu formatiert, kollidiert mit jedem offenen Branch. Formatierung nur in abgesprochenen, eigenen Commits ändern.
 
-Übung: Erzeuge in deinem Repository absichtlich einen Konflikt: Ändere in `main` die Nachricht der `ArgumentException` in `Hinzufuegen`, lege dann einen Branch vom vorigen Commit an (`git switch -c test HEAD~1`) und ändere dort dieselbe Zeile anders. Merge den Branch in `main`, sieh dir die Marker an, löse den Konflikt auf und prüfe mit `git log --oneline --graph`, dass ein Merge-Commit mit zwei Eltern entstanden ist.
+Übung: Erzeuge in deinem Repository absichtlich einen Konflikt: Ändere in `main` die Meldung „Da geht es nicht weiter.“ in `Spielfeld.SpielerZieht`, lege dann einen Branch vom vorigen Commit an (`git switch -c test HEAD~1`) und ändere dort dieselbe Zeile anders. Merge den Branch in `main`, sieh dir die Marker an, löse den Konflikt auf und prüfe mit `git log --oneline --graph`, dass ein Merge-Commit mit zwei Eltern entstanden ist.
 {: .notice--info}
 
 ## Weitere Quellen

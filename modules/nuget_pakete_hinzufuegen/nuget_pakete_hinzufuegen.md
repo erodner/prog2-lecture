@@ -48,6 +48,8 @@ Das Ergebnis ist eine neue Zeile in der Projektdatei. Mehr als diese Zeile ist e
 
 `PackageReference` ist das Gegenstück zur `ProjectReference` aus dem Modul [Projekte mit der dotnet-CLI](/modules/dotnet_cli_projekte/dotnet_cli_projekte.md): Statt auf ein Projekt im selben Ordner zeigt es auf ein Paket in einem Feed. Man kann die Zeile auch von Hand in die `.csproj` schreiben – das Ergebnis ist dasselbe.
 
+Manche Vorlagen nehmen einem den Befehl sogar ab: `dotnet new nunit` legt ein Projekt an, in dessen `.csproj` `NUnit`, `NUnit3TestAdapter` und `Microsoft.NET.Test.Sdk` bereits als `PackageReference` stehen. So ist auch `Adventure.Tests`, das Testprojekt unseres Spiels, zu seinen fünf Paketen gekommen – niemand hat sie einzeln hinzugefügt.
+
 Die Angabe `Version="6.2.0"` bedeutet für NuGet „mindestens 6.2.0“. In der Praxis bekommt ihr genau diese Version, weil NuGet immer die kleinste passende wählt – außer ein anderes Paket verlangt eine höhere. Schreibt man `Version="6.*"`, nimmt NuGet bei jedem Restore die neueste 6er-Version; das klingt bequem, führt aber dazu, dass zwei Rechner mit derselben `.csproj` unterschiedlichen Code bauen. Lasst die Finger davon.
 {: .notice--warning}
 
@@ -119,7 +121,7 @@ Weil die `.csproj` die einzige Wahrheit über die Pakete ist, gilt im Team eine 
 
 - Jedes Teammitglied und jede Build-Pipeline baut mit exakt derselben Paketversion. „Bei mir läuft es“ scheidet als Fehlerursache aus.
 - Ein Paket-Update ist ein normaler Commit, den man im Diff sieht, reviewen und bei Problemen mit `git revert` zurücknehmen kann.
-- Verwenden mehrere Projekte einer Solution dasselbe Paket, sollten sie dieselbe Version angeben – sonst streitet NuGet beim Bauen und wählt die höchste. Wer etwa `Serilog` im Fachkonzept und in der Datenhaltung benutzt, trägt in beiden `.csproj` dieselbe Version ein.
+- Verwenden mehrere Projekte einer Solution dasselbe Paket, sollten sie dieselbe Version angeben – sonst streitet NuGet beim Bauen und wählt die höchste. Wer etwa `NLog` in `Adventure.Daten` und in `Adventure.Web` benutzt, trägt in beiden `.csproj` dieselbe Version ein; bei vielen Projekten hilft eine gemeinsame `Directory.Build.props` oder `Directory.Packages.props` im Solution-Ordner, in der die Versionen nur einmal stehen.
 
 Übung: Lege ein Konsolenprojekt an und füge das Paket `Humanizer` hinzu – eine kleine Bibliothek, die zum Beispiel aus `DateTime.Now.AddHours(-3)` den Text „3 hours ago“ macht. Schau in die `.csproj`, in `obj/project.assets.json` und in `~/.nuget/packages/humanizer*`: Wie viele Pakete sind wirklich gelandet, und warum mehr als eines? Entferne das Paket danach wieder und prüfe, was aus den drei Orten verschwunden ist und was nicht.
 {: .notice--info}

@@ -9,126 +9,164 @@ toc: false
 classes: wide
 ---
 
-Ein Steckdosenadapter interessiert sich nicht dafür, welches Gerät du anschließt – Föhn, Laptop oder Ladegerät. Er verlangt nur, dass der Stecker eine bestimmte Form hat. Genau so funktioniert ein **Interface** in C#: Es beschreibt eine Fähigkeit, die eine Klasse anbieten muss, ohne festzulegen, wie sie umgesetzt wird. Und anders als bei einer Basisklasse kann ein Objekt beliebig viele solcher Fähigkeiten haben. Das löst ein Problem, an dem Vererbung allein scheitert.
+Ein Steckdosenadapter interessiert sich nicht dafür, welches Gerät du anschließt – Föhn, Laptop oder Ladegerät. Er verlangt nur, dass der Stecker eine bestimmte Form hat. Genau so funktioniert ein **Interface** in C#: Es beschreibt eine Fähigkeit, die eine Klasse anbieten muss, ohne festzulegen, wie sie umgesetzt wird. Und anders als bei einer Basisklasse kann ein Objekt beliebig viele solcher Fähigkeiten haben. Das löst ein Problem, an dem unsere Vererbungshierarchie aus dem vorigen Modul gerade scheitert.
 
-## Smartphone, Taschenlampe oder Funkgerät?
+## Eine Tür ist zwei Dinge gleichzeitig
 
-Wir wollen elektronische Geräte modellieren. Es gibt aufladbare Geräte wie Smartphones und Taschenlampen, die einen Akkustand haben, und funkfähige Geräte wie Smartphones und Funkgeräte, die eine Reichweite haben. Der Vererbungsansatz liegt nahe: eine Basisklasse `AufladbaresGeraet` mit `Akkustand` und eine Basisklasse `FunkfaehigesGeraet` mit `Reichweite`. Nur: Wovon erbt dann `Smartphone`?
+Unser Dungeon soll eine Tür bekommen. Eine Tür steht fest an ihrem Platz, blockiert den Weg und wird auf der Karte gezeichnet – sie ist also ein `StatischesObjekt`, genau wie eine Wand. Gleichzeitig kann der Spieler etwas mit ihr *tun*: davorstehen, drücken, mit einem Schlüssel aufschließen. Dieselbe Fähigkeit braucht die Truhe, die man öffnet und plündert.
+
+Der naheliegende Versuch mit Vererbung: eine weitere Zwischenklasse `InteragierbaresObjekt` mit einer Methode `Interagieren`. Nur – wovon erbt dann die Tür?
 
 ```csharp
-class Smartphone : AufladbaresGeraet, FunkfaehigesGeraet   // Compilerfehler CS1721
+public sealed class Tuer : StatischesObjekt, InteragierbaresObjekt   // Compilerfehler CS1721
 {
 }
 ```
 
-Eine Klasse in C# hat genau **eine** Basisklasse. Mehrfachvererbung gibt es bewusst nicht: Zwei Basisklassen könnten Felder mit gleichem Namen mitbringen oder dieselbe Methode unterschiedlich implementieren, und dann wäre unklar, welche Version im Objekt landet. Das Problem ist aber real – ein Smartphone *ist* aufladbar *und* funkfähig, während eine Taschenlampe nur aufladbar und ein einfaches Funkgerät mit Batterien nur funkfähig ist. Was wir brauchen, ist eine Möglichkeit, Fähigkeiten zu beschreiben, die keinen Zustand und keine Implementierung mitbringen und sich deshalb gefahrlos kombinieren lassen.
+Eine Klasse in C# hat genau **eine** Basisklasse. Mehrfachvererbung gibt es bewusst nicht: Zwei Basisklassen könnten Felder mit gleichem Namen mitbringen oder dieselbe Methode unterschiedlich implementieren, und dann wäre unklar, welche Version im Objekt landet. Wir könnten `InteragierbaresObjekt` natürlich zwischen `StatischesObjekt` und `Tuer` schieben – aber dann hängt die Fähigkeit „ansprechbar“ für immer daran, statisch zu sein. Ein Händler, der über die Karte läuft und mit dem man reden kann, wäre nicht mehr möglich. Und beim Aufheben von Gegenständen wird es noch enger: Ein Schlüssel liegt zwar als statisches Objekt herum, landet aber anschließend im Inventar, wo auch Dinge Platz haben sollen, die nie auf dem Spielfeld lagen.
+
+Was wir brauchen, ist eine Möglichkeit, Fähigkeiten zu beschreiben, die keinen Zustand und keine Implementierung mitbringen und sich deshalb gefahrlos kombinieren lassen.
 
 ## Ein Interface definieren
 
-Ein Interface wird mit dem Schlüsselwort `interface` statt `class` definiert. Es enthält die Signaturen von Properties und Methoden, die eine Klasse anbieten muss, wenn sie das Interface implementiert:
+Ein Interface wird mit dem Schlüsselwort `interface` statt `class` definiert. Es enthält nur die Signaturen der Mitglieder, die eine Klasse anbieten muss, wenn sie das Interface implementiert:
 
 ```csharp
-interface IAufladbar
+/// <summary>
+/// Etwas, mit dem der Spieler etwas tun kann, wenn er davor steht:
+/// eine Tür aufschließen, eine Truhe öffnen.
+/// </summary>
+public interface IInteragierbar
 {
-    int Akkustand { get; set; }
-    void Aufladen();
+    /// <summary>Führt die Interaktion aus und liefert eine Meldung für den Spieler.</summary>
+    string Interagieren(Spieler spieler);
 }
 
-interface IFunkfaehig
+/// <summary>Etwas, das der Spieler aufheben und im Inventar tragen kann.</summary>
+public interface ISammelbar
 {
-    double Reichweite { get; set; }
+    string Name { get; }
+
+    /// <summary>Wird aufgerufen, sobald der Spieler das Objekt aufhebt.</summary>
+    string Aufheben(Spieler spieler);
 }
 ```
 
 Drei Dinge sind hier anders als bei Klassen. Erstens steht bei den Mitgliedern **keine Sichtbarkeit** – sie sind automatisch `public`, denn ein Interface beschreibt ja gerade, was von außen nutzbar ist. Zweitens haben die Methoden keinen Rumpf, ähnlich wie abstrakte Methoden. Drittens beginnt der Name mit einem großen `I`: Das ist keine Sprachregel, aber eine Konvention, an die sich die gesamte .NET-Welt hält – man erkennt Interfaces im Code sofort.
 
-Ein Interface hat keine Felder und keine Konstruktoren. Es beschreibt ausschließlich, *was* ein Objekt kann – nicht, welche Daten es dafür intern speichert. Ein `{ get; set; }` im Interface ist deshalb kein Auto-Property, sondern nur die Forderung, dass die Klasse ein Property mit Getter und Setter bereitstellt.
+Ein Interface hat keine Felder und keine Konstruktoren. Es beschreibt ausschließlich, *was* ein Objekt kann – nicht, welche Daten es dafür intern speichert. Das `string Name { get; }` in `ISammelbar` ist deshalb kein Auto-Property, sondern nur die Forderung, dass die Klasse ein lesbares `Name`-Property bereitstellt.
 {: .notice--primary}
 
 ## Ein Interface implementieren
 
-Die Syntax sieht aus wie Vererbung – nach dem Doppelpunkt steht das Interface. Die Bedeutung ist aber eine andere: Die Klasse erbt nichts, sondern **verpflichtet sich**, alle Mitglieder des Interfaces öffentlich bereitzustellen.
+Die Syntax sieht aus wie Vererbung – nach dem Doppelpunkt steht das Interface, hinter der Basisklasse und durch Komma getrennt. Die Bedeutung ist aber eine andere: Die Klasse erbt nichts, sondern **verpflichtet sich**, alle Mitglieder des Interfaces öffentlich bereitzustellen.
 
 ```csharp
-class Taschenlampe : IAufladbar
+public sealed class Tuer : StatischesObjekt, IInteragierbar
 {
-    public int Akkustand { get; set; }
+    public bool IstOffen { get; private set; }
 
-    public void Aufladen()
+    public Tuer(Position position) : base("Tür", position) { }
+
+    public override char Symbol => IstOffen ? '/' : 'D';
+    public override bool IstPassierbar => IstOffen;
+
+    public string Interagieren(Spieler spieler)
     {
-        Akkustand = 100;
+        if (IstOffen) return "Die Tür ist schon offen.";
+        if (!spieler.Inventar.Enthaelt<Schluessel>())
+        {
+            return "Die Tür ist verschlossen. Du brauchst einen Schlüssel.";
+        }
+        spieler.Inventar.Entfernen<Schluessel>();
+        IstOffen = true;
+        return "Du schließt die Tür auf.";
     }
 }
 ```
 
-`public` ist hier Pflicht: Das Interface verspricht öffentliche Mitglieder, also muss die Klasse sie auch öffentlich anbieten. Lässt man `Aufladen` weg oder macht `Akkustand` privat, meldet der Compiler, dass `Taschenlampe` das Interface nicht vollständig implementiert. Und jetzt kommt der entscheidende Schritt – mehrere Interfaces werden einfach durch Komma getrennt:
+Die Tür ist jetzt beides: **ein** statisches Objekt (Vererbung, mit `Name`, `Position` und dem geerbten Vertrag `Symbol`) und sie **kann** Interaktion (Interface). `public` ist bei `Interagieren` Pflicht – das Interface verspricht öffentliche Mitglieder, also muss die Klasse sie auch öffentlich anbieten. Lässt man die Methode weg oder macht sie privat, meldet der Compiler, dass `Tuer` das Interface nicht vollständig implementiert.
+
+Nach demselben Muster wird die `Truhe` interagierbar, und die Gegenstände erfüllen den zweiten Vertrag. Interessant ist dabei, dass nicht die einzelnen Gegenstände `ISammelbar` implementieren, sondern ihre gemeinsame abstrakte Basisklasse:
 
 ```csharp
-class Smartphone : IAufladbar, IFunkfaehig
+public abstract class Gegenstand : StatischesObjekt, ISammelbar
 {
-    public int Akkustand { get; set; }
-    public double Reichweite { get; set; }
+    protected Gegenstand(string name, Position position) : base(name, position) { }
 
-    public void Aufladen()
-    {
-        Akkustand = 100;
-    }
+    // Man kann auf einen Gegenstand treten – dabei wird er aufgehoben.
+    public override bool IstPassierbar => true;
+
+    public virtual string Aufheben(Spieler spieler) => $"{spieler.Name} hebt {Name} auf.";
 }
 
-class Funkgeraet : IFunkfaehig
+public sealed class Schluessel : Gegenstand
 {
-    public double Reichweite { get; set; }
+    public Schluessel(Position position) : base("Schlüssel", position) { }
+    public override char Symbol => 'k';
+}
+
+public sealed class Trank : Gegenstand
+{
+    public int Heilung { get; }
+    public override char Symbol => '!';
+
+    // Ein Trank wird sofort getrunken statt ins Inventar gelegt.
+    public override string Aufheben(Spieler spieler)
+    {
+        spieler.Heilen(Heilung);
+        return $"{spieler.Name} trinkt einen Trank (+{Heilung}).";
+    }
 }
 ```
 
-`Smartphone` erfüllt beide Verträge, `Taschenlampe` und `Funkgeraet` je einen – das Funkgerät läuft mit Batterien und hat deshalb keinen Akkustand. Hätte `Smartphone` zusätzlich eine echte Basisklasse, etwa `Geraet` mit einem Namen und einem Gewicht, stünde sie als erste in der Liste: `class Smartphone : Geraet, IAufladbar, IFunkfaehig`. Eine Basisklasse, beliebig viele Interfaces – das ist die Regel.
+`Schluessel` und `Trank` erfüllen `ISammelbar`, ohne es je zu erwähnen: `Name` kommt aus `Spielobjekt`, `Aufheben` aus `Gegenstand`. Ein Interface wird mitvererbt – wer von einer Klasse erbt, die es implementiert, implementiert es ebenfalls.
 
 ## Das Interface als Typ
 
-Ein Interface kann überall dort als Typ stehen, wo auch eine Klasse stehen könnte: bei Variablen, Parametern, Rückgabewerten und in Sammlungen. Damit lassen sich Objekte ganz verschiedener Klassen gemeinsam behandeln, solange sie dieselbe Fähigkeit haben:
+Ein Interface kann überall dort als Typ stehen, wo auch eine Klasse stehen könnte: bei Variablen, Parametern, Rückgabewerten und in Sammlungen. Genau das nutzt die Zugregel des Spielfelds. Wenn der Spieler in eine Richtung zieht, schaut sie zuerst nach, was dort steht:
 
 ```csharp
-IAufladbar[] aufladbareGeraete =
-{
-    new Smartphone { Akkustand = 15, Reichweite = 30 },
-    new Taschenlampe { Akkustand = 40 }
-};
+Position ziel = Spieler.Position.Verschoben(richtung);
+StatischesObjekt? davor = StatischesObjektAn(ziel);
 
-foreach (IAufladbar geraet in aufladbareGeraete)
+if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
 {
-    int vorher = geraet.Akkustand;
-    geraet.Aufladen();
-    Console.WriteLine($"{geraet.GetType().Name}: {vorher} % -> {geraet.Akkustand} %");
+    // Vor einer verschlossenen Tür oder einer Truhe: interagieren statt gehen.
+    meldung.Append(interagierbar.Interagieren(Spieler));
 }
-// Smartphone: 15 % -> 100 %
-// Taschenlampe: 40 % -> 100 %
+else if (Spieler.Bewegen(richtung, this))
+{
+    if (davor is Gegenstand gegenstand)
+    {
+        meldung.Append(gegenstand.Aufheben(Spieler));
+        // ...
+    }
+}
 ```
 
-Die Objekte werden hier mit einem *Objektinitialisierer* erzeugt – `new Taschenlampe { Akkustand = 40 }` ruft den parameterlosen Konstruktor auf und setzt anschließend die Properties. Über eine Variable vom Typ `IAufladbar` sind nur die Mitglieder des Interfaces erreichbar: `geraet.Reichweite` würde nicht kompilieren, obwohl das erste Objekt ein `Smartphone` ist. Das kennen wir vom [Kompilierzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md): Der deklarierte Typ bestimmt, was man sehen darf, der Laufzeittyp bestimmt, was passiert.
+Das `is`-Muster prüft zur Laufzeit, ob das Objekt die Fähigkeit hat, und liefert gleich eine passend typisierte Variable. Über `interagierbar` ist ausschließlich `Interagieren` erreichbar – `interagierbar.Symbol` würde nicht kompilieren, obwohl dahinter sicher ein `Spielobjekt` steckt. Das kennen wir vom [Kompilierzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md): Der deklarierte Typ bestimmt, was man sehen darf, der Laufzeittyp bestimmt, was passiert.
 
-Ob ein Objekt eine bestimmte Fähigkeit hat, prüft man wie bei Klassen mit `is` – inklusive Musterabgleich, der gleich die passende Variable liefert:
+Der große Gewinn ist die Offenheit dieser Regel. Sie nennt weder `Tuer` noch `Truhe`. Jede neue Objektart, die `IInteragierbar` implementiert – ein Hebel, ein Brunnen, ein Schalter – funktioniert sofort, ohne dass `SpielerZieht` angefasst werden muss. Dasselbe gilt für das Inventar, das mit beliebigen sammelbaren Dingen arbeitet:
 
 ```csharp
-object[] alles = { new Smartphone { Reichweite = 30 }, new Taschenlampe(), new Funkgeraet { Reichweite = 5 } };
-
-foreach (object o in alles)
+public class Inventar<T> : IEnumerable<T> where T : ISammelbar
 {
-    if (o is IFunkfaehig funk)
-        Console.WriteLine($"{o.GetType().Name} funkt bis {funk.Reichweite} km weit");
+    // ...
 }
-// Smartphone funkt bis 30 km weit
-// Funkgeraet funkt bis 5 km weit
 ```
+
+Diese Schreibweise mit dem `T` schauen wir uns in Vorlesung 05 genauer an; hier zählt nur die Aussage: Was ins Inventar darf, wird über ein Interface festgelegt, nicht über eine Basisklasse.
 
 ## Interfaces in .NET
 
-Die .NET-Klassenbibliothek ist voll von Interfaces, und du hast einige davon längst benutzt, ohne es zu merken. `foreach` funktioniert über jede Klasse, die `IEnumerable` implementiert – deshalb kann man Arrays, Listen und Dictionaries mit derselben Schleife durchlaufen. `IComparable` beschreibt, dass sich Objekte vergleichen lassen, was `Sort()` für eigene Klassen möglich macht. Und `IDisposable` kennzeichnet Objekte, die Ressourcen wie Dateien freigeben müssen. Alle drei tauchen in späteren Vorlesungen im Detail auf; hier reicht die Erkenntnis: Ein Interface ist die Art, wie .NET „dieses Objekt kann X“ ausdrückt.
+Die .NET-Klassenbibliothek ist voll von Interfaces, und du hast einige davon längst benutzt, ohne es zu merken. `foreach` funktioniert über jede Klasse, die `IEnumerable` implementiert – deshalb kann man Arrays, Listen und auch unser `Inventar<T>` mit derselben Schleife durchlaufen. `IComparable` beschreibt, dass sich Objekte vergleichen lassen, was `Sort()` für eigene Klassen möglich macht. Und `IDisposable` kennzeichnet Objekte, die Ressourcen wie Dateien freigeben müssen. Alle drei tauchen in späteren Vorlesungen im Detail auf; hier reicht die Erkenntnis: Ein Interface ist die Art, wie .NET „dieses Objekt kann X“ ausdrückt.
 
-Übung: Definiere ein Interface `IHatSpeicher` mit `double Speicherplatz { get; set; }` (in Gigabyte) und einer Methode `bool IstVoll()`. Welche der Klassen `Smartphone`, `Taschenlampe` und `Funkgeraet` sollten es implementieren? Schreibe dann eine Methode `Gesamtspeicher(object[] geraete)`, die den Speicherplatz aller Geräte mit Speicher im Array zusammenzählt.
+Übung: Schreibe eine Klasse `Hebel : StatischesObjekt, IInteragierbar`, die beim Interagieren zwischen „umgelegt“ und „zurückgestellt“ wechselt, das Symbol entsprechend `'-'` (umgelegt) oder `'|'` (zurückgestellt) liefert und nicht passierbar ist. Teste sie, indem du sie mit `feld.Hinzufuegen(new Hebel(new Position(3, 4)))` ins Spielfeld setzt und davorläufst. Welche Zeile in `Spielfeld.SpielerZieht` musstest du dafür ändern?
 {: .notice--info}
 
 ## Weitere Quellen
 
 - [Schnittstellen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/interfaces)
 - [interface (C#-Referenz) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/interface)
-- [Objekt- und Auflistungsinitialisierer – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers)
+- [Mustervergleich mit `is` – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/functional/pattern-matching)

@@ -9,131 +9,155 @@ toc: false
 classes: wide
 ---
 
-In [Die erste Blazor-App](/modules/blazor_erste_app/blazor_erste_app.md) haben wir gesehen, dass eine Razor-Datei aus Markup und einem `@code`-Block besteht. Die Startseite des Geometrieeditors muss deutlich mehr können als `HalloBlazor`: eine Liste aller Figuren anzeigen, die sich ständig ändert, Details nur dann zeigen, wenn eine Figur ausgewählt ist, Buttons abschalten, solange nichts ausgewählt ist, und einen Dialog einblenden. Für all das brauchen wir keine neue Sprache, sondern zwei Dinge: die **Razor-Syntax**, mit der C#-Werte und C#-Kontrollfluss ins Markup gelangen, und das Wissen, welche HTML-Elemente die Rolle der Steuerelemente übernehmen. Am Ende sehen wir, dass jede Razor-Datei selbst zu einem Steuerelement wird, das andere Seiten einbetten können.
+In [Die erste Blazor-App](/modules/blazor_erste_app/blazor_erste_app.md) haben wir gesehen, dass eine Razor-Datei aus Markup und einem `@code`-Block besteht. Die Startseite von `Adventure.Web` muss deutlich mehr können als ein Eingabefeld mit Button: ein Spielfeld aus Dutzenden Zellen zeichnen, das sich nach jedem Zug ändert, daneben Lebenspunkte und Meldungen anzeigen, ein Level zur Auswahl stellen und am Spielende einen Dialog einblenden. Für all das brauchen wir keine neue Sprache, sondern zwei Dinge: die **Razor-Syntax**, mit der C#-Werte und C#-Kontrollfluss ins Markup gelangen, und das Wissen, welche HTML-Elemente die Rolle der Steuerelemente übernehmen. Am Ende sehen wir, dass jede Razor-Datei selbst zu einem Steuerelement wird, das andere Seiten einbetten können.
 
 ## Razor-Syntax: C# im Markup
 
 Razor ist HTML, in dem das Zeichen `@` in die Welt von C# umschaltet. Die einfachste Form ist ein Ausdruck, dessen Wert als Text eingefügt wird:
 
 ```razor
-<p>Hallo, @name!</p>
-<p>Summe: @(a + b)</p>
-<p>Umfang: @figur.Umfang.ToString("F2")</p>
+<p>Runde: @feld.Runde</p>
+<p>Held: @feld.Spieler.Name</p>
+<p>Verbleibend: @(feld.Spieler.Lebenspunkte * 10) Prozent</p>
 ```
 
-Ein einzelner Bezeichner wie `@name` oder eine Kette aus Punkten und Methodenaufrufen wie `@figur.Umfang.ToString("F2")` kommt ohne Klammern aus. Sobald Operatoren im Spiel sind, braucht der Ausdruck runde Klammern – `@(a + b)` –, sonst würde Razor nach `@a` wieder in HTML zurückwechseln und ` + b` als Text ausgeben. Die Werte werden beim Einfügen automatisch HTML-kodiert; ein `<` im Namen einer Figur landet also als Text auf der Seite und nicht als Tag.
+Ein einzelner Bezeichner wie `@name` oder eine Kette aus Punkten und Methodenaufrufen wie `@feld.Spieler.Beschreibung()` kommt ohne Klammern aus. Sobald Operatoren im Spiel sind, braucht der Ausdruck runde Klammern – `@(a * 10)` –, sonst würde Razor nach `@a` wieder in HTML zurückwechseln und ` * 10` als Text ausgeben. Die Werte werden beim Einfügen automatisch HTML-kodiert; ein `<` in einer Meldung landet also als Text auf der Seite und nicht als Tag.
 
-Neben Ausdrücken gibt es Kontrollfluss. `@if`, `@else` und `@foreach` funktionieren wie in C#, nur dass ihr Rumpf Markup enthält statt Anweisungen. Genau so baut die Startseite des Geometrieeditors ihre Detailansicht und die Figurenliste:
+Neben Ausdrücken gibt es Kontrollfluss. `@if`, `@else`, `@foreach` und `@for` funktionieren wie in C#, nur dass ihr Rumpf Markup enthält statt Anweisungen. Die Levelauswahl der Startseite baut so ihre Einträge:
 
 ```razor
-<div class="details">
-    @if (ausgewaehlt is null)
+<label>Level:
+    <select @bind="levelName" @bind:after="NeuStarten">
+        @foreach (string name in LevelQuelle.LevelNamen)
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+</label>
+```
+
+Für jeden Levelnamen entsteht eine `<option>`. Es gibt keine Methode `ListeAktualisieren`, die wir nach einer Änderung aufrufen müssten: Das Markup ist eine **Beschreibung** des gewünschten Zustands, keine Folge von Befehlen. Kämen morgen drei Level dazu, hätte die Auswahlliste drei Einträge mehr, ohne dass eine Zeile Markup sich ändert.
+
+## Das Spielfeld: zwei Schleifen über das Raster
+
+Der interessanteste Teil der Seite ist die Karte. Ein `Spielfeld` kennt seine `Breite` und `Hoehe` und beantwortet mit `ObjektAn(Position)`, was an einer Stelle liegt – oder `null`, wenn dort Boden ist. Genau daraus entsteht das Markup:
+
+```razor
+<div class="spielfeld" style="grid-template-columns: repeat(@feld.Breite, 1fr);">
+    @for (int y = 0; y < feld.Hoehe; y++)
     {
-        <p>Keine Figur ausgewählt.</p>
-    }
-    else
-    {
-        <p>@ausgewaehlt.Beschreibung()</p>
-        <p>Umfang: @ausgewaehlt.Umfang.ToString("F2")</p>
+        for (int x = 0; x < feld.Breite; x++)
+        {
+            Spielobjekt? objekt = feld.ObjektAn(new Position(x, y));
+            <div class="feld @KlasseFuer(objekt)" title="@objekt?.Beschreibung()">@SymbolFuer(objekt)</div>
+        }
     }
 </div>
 ```
 
-Innerhalb der geschweiften Klammern gilt: Was mit `<` beginnt, ist Markup, alles andere C#. Deshalb kann der `else`-Zweig ohne weiteres `@ausgewaehlt.Beschreibung()` aufrufen – die Methode aus der `Figur`-Basisklasse, die wir in [Abstrakte Klassen](/modules/abstrakte_klassen/abstrakte_klassen.md) definiert haben. Die Liste entsteht mit `@foreach`:
+Zwei Feinheiten stecken darin. Erstens braucht nur die **äußere** Schleife das `@` – es schaltet einmal nach C# um, und alles im Rumpf ist bereits C#. Die innere `for`-Schleife und die Zuweisung `Spielobjekt? objekt = ...` stehen deshalb ohne `@` da; nur die Zeile, die mit `<` beginnt, wird wieder als Markup erkannt. Zweitens erzeugen die beiden Schleifen einen *flachen* Strom von `<div>`-Elementen, ohne Zeilenumbrüche im Markup. Dass daraus ein Raster wird, entscheidet das CSS-Grid – dazu mehr in [Layout mit HTML und CSS](/modules/blazor_layout/blazor_layout.md).
 
-```razor
-<ul class="figurenliste">
-    @foreach (Figur figur in Verwaltung.AlleFiguren)
-    {
-        <li class="@(figur == ausgewaehlt ? "ausgewaehlt" : "")"
-            @onclick="() => ausgewaehlt = figur">@figur.Name</li>
-    }
-</ul>
+Was die einzelne Zelle anzeigt, entscheiden zwei statische Hilfsmethoden im `@code`-Block. Sie sind das Gegenstück zu `Spielobjekt.Symbol` aus dem Kern: Dort steht ein `char` für die Konsole, hier ein Emoji für den Browser.
+
+```csharp
+private static string SymbolFuer(Spielobjekt? objekt) => objekt switch
+{
+    null => "",
+    Wand => "🧱",
+    Spieler => "🧝",
+    Wache => "💂",
+    Verfolger => "👹",
+    Schluessel => "🔑",
+    Tuer t => t.IstOffen ? "▫️" : "🚪",
+    Truhe t => t.IstGeoeffnet ? "📭" : "🎁",
+    Trank => "🧪",
+    Schatz => "💰",
+    Ausgang => "🏁",
+    _ => objekt.Symbol.ToString()
+};
 ```
 
-Für jede Figur in `Verwaltung.AlleFiguren` entsteht ein `<li>`. Es gibt keine Methode `ListeAktualisieren`, die wir nach jeder Änderung aufrufen müssten: Fügt jemand eine Figur hinzu, rendert Blazor die Komponente neu, die Schleife läuft erneut und die Liste hat ein Element mehr. Das Markup ist eine **Beschreibung** des gewünschten Zustands, keine Folge von Befehlen.
+Hier zahlt sich die Klassenhierarchie aus [Vorlesung 01](/lectures/01/01.md) und [Vorlesung 02](/lectures/02/02.md) aus: Der `switch`-Ausdruck arbeitet mit **Typmustern**, prüft also den Laufzeittyp des Objekts. Zwei Zweige benennen ihr Objekt zusätzlich (`Tuer t`), weil sie eine Property abfragen müssen – eine offene Tür sieht anders aus als eine verschlossene. Der letzte Zweig `_ => objekt.Symbol.ToString()` ist die Rückfallebene: Ein Spielobjekt, an das hier niemand gedacht hat, erscheint mit seinem Konsolenzeichen statt gar nicht.
 
-Die Schleifenvariable `figur` wird in dem Lambda `() => ausgewaehlt = figur` verwendet. Weil `foreach` in C# für jeden Durchlauf eine neue Variable anlegt, merkt sich jedes `<li>` seine eigene Figur – das ist gewollt und funktioniert zuverlässig. Bei einer klassischen `for`-Schleife mit Index müsste man den Wert dagegen erst in eine lokale Variable kopieren.
-{: .notice--primary}
+Die Reihenfolge der Zweige ist bei Typmustern entscheidend: `Wache` und `Verfolger` erben beide von `Gegner`. Stünde ein Zweig `Gegner => "👾"` weiter oben, wären beide Zweige darunter unerreichbar – der Compiler meldet das glücklicherweise als Fehler CS8120.
+{: .notice--warning}
 
 ## HTML-Elemente sind die Steuerelemente
 
-Desktop-Frameworks bringen eigene Klassen wie `TextBox` oder `CheckBox` mit. In Blazor übernehmen die eingebauten HTML-Elemente diese Rolle – der Browser zeichnet sie, wir binden sie an unsere Felder. Die wichtigsten auf einen Blick:
+Desktop-Frameworks bringen eigene Klassen wie `TextBox` oder `ComboBox` mit. In Blazor übernehmen die eingebauten HTML-Elemente diese Rolle – der Browser zeichnet sie, wir binden sie an unsere Felder. Die wichtigsten auf einen Blick:
 
 | Steuerelement | HTML-Element | Wichtigstes Binding/Attribut |
 | :--- | :--- | :--- |
 | Textfeld | `<input>` | `@bind="name"` |
 | Zahlenfeld | `<input type="number">` | `@bind="anzahl"` (bindet an `int`/`double`) |
 | Checkbox | `<input type="checkbox">` | `@bind="aktiv"` (bindet an `bool`) |
-| Auswahlliste | `<select>` mit `<option>` | `@bind="art"` |
-| Button | `<button>` | `@onclick="Methode"` |
-| Mehrzeiliger Text | `<textarea>` | `@bind="text"` |
+| Auswahlliste | `<select>` mit `<option>` | `@bind="levelName"` |
+| Button | `<button>` | `@onclick="NeuStarten"` |
+| Bereich mit Tastaturfokus | `<div tabindex="0">` | `@onkeydown="TasteGedrueckt"` |
 | Liste | `<ul>` mit `<li>` | `@foreach` |
-| Fortschrittsanzeige | `<progress>` | `value="@fortschritt" max="100"` |
-| Bild | `<img>` | `src="@pfad"` |
+| Fortschrittsanzeige | `<progress>` | `value="@lebenspunkte" max="3"` |
 | Beschriftung | `<label>`, `<p>` | Text mit `@`-Ausdrücken |
 
-Ein Beispiel für die Auswahlliste liefert der Dialog `NeueFigurDialog` des Geometrieeditors: Ein `<select>` mit drei `<option>`-Einträgen ist per `@bind="art"` an ein `string`-Feld gebunden, und je nach Wert ändert sich die Beschriftung des Maße-Feldes:
+Die Werkzeugleiste des Spiels besteht aus zwei dieser Elemente: der Levelauswahl von oben und einem Button, der eine Methode aus dem `@code`-Block auslöst.
 
 ```razor
-<label>Art:
-    <select @bind="art">
-        <option value="Rechteck">Rechteck</option>
-        <option value="Kreis">Kreis</option>
-        <option value="Dreieck">Dreieck</option>
-    </select>
-</label>
-
-<label>@MasseBeschriftung <input @bind="masse" placeholder="z. B. 4, 3" /></label>
+<button @onclick="NeuStarten">Neu starten</button>
 ```
 
-`MasseBeschriftung` ist dabei eine Property im `@code`-Block mit einem `switch`-Ausdruck über `art` – Markup und Logik bleiben getrennt, obwohl sie in einer Datei stehen.
-
-## Attribute aus C# setzen
-
-Nicht nur der Inhalt, auch die Attribute eines Elements dürfen aus C# stammen. Das nutzt die Werkzeugleiste des Geometrieeditors, um Buttons abzuschalten, solange keine Figur ausgewählt ist:
-
-```razor
-<button @onclick="Entfernen" disabled="@(ausgewaehlt is null)">Entfernen</button>
-<button @onclick="Verschieben" disabled="@(ausgewaehlt is null)">Verschieben</button>
-```
-
-Für `bool`-Attribute wie `disabled` ist Blazor besonders hilfreich: Ergibt der Ausdruck `true`, wird das Attribut gesetzt, bei `false` ganz weggelassen – genau so, wie HTML es erwartet. Beim `class`-Attribut haben wir das Muster schon in der Figurenliste gesehen: `class="@(figur == ausgewaehlt ? "ausgewaehlt" : "")"` hängt nur dem ausgewählten Eintrag die CSS-Klasse `ausgewaehlt` an, die ihn farblich hervorhebt. Der Zustand lebt in einem C#-Feld, das Aussehen folgt daraus – wir manipulieren nie direkt „das Element auf der Seite“.
+Auch Attribute dürfen aus C# stammen – nicht nur der Inhalt eines Elements. Das nutzt das Spielfeld gleich zweimal: `style="grid-template-columns: repeat(@feld.Breite, 1fr);"` berechnet die Spaltenzahl aus dem geladenen Level, und `class="feld @KlasseFuer(objekt)"` hängt an die feste Klasse `feld` eine zweite an, die vom Inhalt der Zelle abhängt. Für `bool`-Attribute wie `disabled` ist Blazor besonders hilfreich: Ergibt der Ausdruck `true`, wird das Attribut gesetzt, bei `false` ganz weggelassen – genau so, wie HTML es erwartet. Der Zustand lebt immer in C#, das Aussehen folgt daraus; wir manipulieren nie direkt „das Element auf der Seite“.
 
 ## Eigene Komponenten
 
-Bis hierher haben wir nur eingebaute HTML-Elemente verwendet. Die eigentliche Stärke von Blazor ist, dass **jede `.razor`-Datei eine wiederverwendbare Komponente** ist, die sich wie ein Tag einbinden lässt. `PageTitle` war schon so ein Fall: keine HTML-Vorschrift, sondern eine Komponente von Blazor, die den Titel der Browser-Registerkarte setzt. Der Geometrieeditor besitzt eine eigene Komponente `NeueFigurDialog.razor` im Ordner `Components`, und die Startseite bindet sie so ein:
+Bis hierher haben wir nur eingebaute HTML-Elemente verwendet. Die eigentliche Stärke von Blazor ist, dass **jede `.razor`-Datei eine wiederverwendbare Komponente** ist, die sich wie ein Tag einbinden lässt. `<PageTitle>Adventure</PageTitle>` am Anfang von `Home.razor` war schon so ein Fall: keine HTML-Vorschrift, sondern eine Komponente von Blazor, die den Text in der Browser-Registerkarte setzt.
+
+Die Anzeige neben dem Spielfeld – Name, Lebenspunkte, Punkte, Inventar, Runde und letzte Meldung – ist lang genug, um sie aus der Seite herauszulösen. Sie liegt deshalb in einer eigenen Datei `Components/Statusleiste.razor`:
 
 ```razor
-@if (dialogOffen)
-{
-    <NeueFigurDialog OnGeschlossen="DialogGeschlossen" />
-}
-```
+@using Adventure.Kern
 
-Der Tag-Name ist der Dateiname, und die Komponente erscheint nur, solange `dialogOffen` den Wert `true` hat. Das Attribut `OnGeschlossen` ist kein HTML-Attribut, sondern ein **Parameter** der Komponente – eine öffentliche Property, die im `@code`-Block des Dialogs mit `[Parameter]` markiert ist:
+<div class="status">
+    <h2>@Spieler.Name</h2>
+    <p>Lebenspunkte: <span class="herzen">@Herzen</span></p>
+    <p>Punkte: <strong>@Spieler.Punkte</strong></p>
+    <p>Inventar: @Spieler.Inventar</p>
+    <p>Runde: @Runde</p>
+    <p class="meldung">@Meldung</p>
+</div>
 
-```razor
 @code {
-    [Parameter]
-    public EventCallback<Figur?> OnGeschlossen { get; set; }
-    // ...
+    [Parameter, EditorRequired] public Spieler Spieler { get; set; } = null!;
+    [Parameter] public int Runde { get; set; }
+    [Parameter] public string Meldung { get; set; } = "";
+
+    private string Herzen => new string('♥', Spieler.Lebenspunkte)
+                           + new string('♡', Spieler.MaxLebenspunkte - Spieler.Lebenspunkte);
 }
 ```
 
-Über Parameter fließen Daten von der einbettenden Seite in die Komponente hinein: eine Überschrift, eine Figur zum Bearbeiten oder – wie hier – ein Rückkanal vom Typ `EventCallback<Figur?>`, über den der Dialog sein Ergebnis zurückmeldet. Wie der Dialog mit diesem Rückkanal arbeitet und warum wir ihn nicht als Fenster, sondern als Komponente bauen, ist Thema von [Dialoge als Komponenten](/modules/blazor_dialoge/blazor_dialoge.md).
+Die Startseite bindet sie als Tag ein und füllt ihre Parameter wie HTML-Attribute:
+
+```razor
+<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="feld.LetzteMeldung" />
+```
+
+Der Tag-Name ist der Dateiname, und die Attribute sind **Parameter** – öffentliche Properties, die im `@code`-Block mit `[Parameter]` markiert sind. Über sie fließen Daten von der einbettenden Seite in die Komponente hinein. Der Zusatz `EditorRequired` bei `Spieler` sorgt dafür, dass der Compiler warnt, wenn jemand die Statusleiste ohne Spieler einbindet; `null!` daneben beruhigt die Nullable-Analyse, weil der Wert garantiert von außen gesetzt wird. `Runde` und `Meldung` haben sinnvolle Standardwerte und sind deshalb optional.
+
+Beachte, was `Statusleiste` **nicht** tut: Sie berechnet keine Lebenspunkte, sie beendet kein Spiel, sie kennt das `Spielfeld` gar nicht. Sie bekommt einen `Spieler` und zeigt ihn an. Genau diese Bescheidenheit macht eine Komponente wiederverwendbar – dieselbe Leiste könnte in einer Übersicht über mehrere Helden mehrfach vorkommen.
+{: .notice--primary}
+
+Die Property `Herzen` zeigt nebenbei, was in eine Komponente gehören darf: eine reine **Darstellungsfrage**. Dass drei Lebenspunkte als `♥♥♥` und ein verlorener als `♡` erscheinen, ist keine Spielregel – die Konsolenversion schreibt an derselben Stelle schlicht `3/3`. Wie viele Lebenspunkte ein Treffer kostet, steht dagegen im Kern und hat in der Komponente nichts verloren.
 
 Komponenten machen sich als Tags nur bemerkbar, wenn ihr Namespace bekannt ist. Die Datei `_Imports.razor` enthält dafür `@using`-Zeilen, die für alle Razor-Dateien gelten. Verschiebt man eine Komponente in einen neuen Unterordner, ändert sich ihr Namespace, und der Compiler meldet, das Tag sei unbekannt – dann fehlt eine `@using`-Zeile.
 {: .notice--warning}
 
-Übung: Baue eine Komponente `FigurKarte.razor` mit einem Parameter `public Figur Figur { get; set; }`, die Name, Position und Fläche als kleine Karte anzeigt. Ersetze dann in der Figurenliste den Text `@figur.Name` durch `<FigurKarte Figur="figur" />`. Was muss sich am `@onclick` ändern, damit die Auswahl weiterhin funktioniert?
+Übung: Zerlege die Werkzeugleiste in eine eigene Komponente `Levelauswahl.razor`. Sie bekommt die Liste der Levelnamen als Parameter und meldet die Auswahl über einen Rückkanal an die Startseite. Überlege zuerst auf Papier: Welche Parameter braucht sie, und welchen Typ muss der Rückkanal haben? Den passenden Typ dafür lernst du in [Dialoge als Komponenten](/modules/blazor_dialoge/blazor_dialoge.md) kennen.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`.
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 ## Weitere Quellen
 
 - [Razor-Syntaxreferenz für ASP.NET Core – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/mvc/views/razor)
 - [Razor-Komponenten in ASP.NET Core – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/)
 - [Attribute und Parameter von Komponenten – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/#component-parameters)
-- [`<input>` – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/HTML/Element/input)
+- [Mustervergleich mit `switch`-Ausdrücken – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/operators/patterns)

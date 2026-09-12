@@ -9,186 +9,186 @@ toc: false
 classes: wide
 ---
 
-Die [Schichten-Architektur](/modules/schichten_architektur/schichten_architektur.md) haben wir bisher als Bauplan kennengelernt: drei Schichten, vier Regeln, Zugriff nur nach unten und nur über Schnittstellen. Jetzt geht es an die Umsetzung – und dabei tauchen Fragen auf, die der Bauplan nicht beantwortet. Wie werden aus den Schichten Projekte? Woran erkennt man beim Schreiben einer Komponente, dass man gerade Fachlogik hineinschmuggelt? Und wenn das Fachkonzept nur ein Interface `IFigurSpeicher` kennt – wer erzeugt dann das konkrete Objekt, das dahintersteht? Der Geometrieeditor beantwortet alle drei Fragen, und die dritte führt uns zu einem Mechanismus, den jede ASP.NET-Core-Anwendung mitbringt: **Dependency Injection**.
+Die [Schichten-Architektur](/modules/schichten_architektur/schichten_architektur.md) haben wir bisher als Bauplan kennengelernt: drei Schichten, vier Regeln, Zugriff nur nach unten und nur über Schnittstellen. Jetzt geht es an die Umsetzung – und dabei tauchen Fragen auf, die der Bauplan nicht beantwortet. Wie werden aus den Schichten Projekte? Woran erkennt man beim Schreiben einer Komponente, dass man gerade eine Spielregel hineinschmuggelt? Und wenn der Kern nur ein Interface `ILevelQuelle` kennt – wer erzeugt dann das konkrete Objekt, das dahintersteht? Das Adventure beantwortet alle drei Fragen, und die dritte führt uns zu einem Mechanismus, den jede ASP.NET-Core-Anwendung mitbringt: **Dependency Injection**.
 
 ## Die Solution: vier Projekte
 
-Jede Schicht wird ein eigenes Projekt, dazu kommt ein Testprojekt. Die Datei `Geometrieeditor.slnx` fasst sie zusammen:
+Jede Schicht wird ein eigenes Projekt – und weil die GUI-Schicht zwei Bewohner hat, sind es vier. Die Datei `Adventure.slnx` fasst sie zusammen:
 
 ```xml
 <Solution>
-  <Project Path="Geometrieeditor.Datenhaltung/Geometrieeditor.Datenhaltung.csproj" />
-  <Project Path="Geometrieeditor.Fachkonzept/Geometrieeditor.Fachkonzept.csproj" />
-  <Project Path="Geometrieeditor.Tests/Geometrieeditor.Tests.csproj" />
-  <Project Path="Geometrieeditor.Web/Geometrieeditor.Web.csproj" />
+  <Project Path="Adventure.Daten/Adventure.Daten.csproj" />
+  <Project Path="Adventure.Kern/Adventure.Kern.csproj" />
+  <Project Path="Adventure.Konsole/Adventure.Konsole.csproj" />
+  <Project Path="Adventure.Web/Adventure.Web.csproj" />
 </Solution>
 ```
 
-Angelegt wird das mit den Befehlen aus [Projekte mit der dotnet-CLI](/modules/dotnet_cli_projekte/dotnet_cli_projekte.md) – zwei Klassenbibliotheken, eine Blazor Web App, ein NUnit-Projekt, und dann die Projektreferenzen, die die erlaubten Abhängigkeiten festlegen:
+Angelegt wird das mit den Befehlen aus [Projekte mit der dotnet-CLI](/modules/dotnet_cli_projekte/dotnet_cli_projekte.md) – zwei Klassenbibliotheken, eine Konsolen-App, eine Blazor Web App, und dann die Projektreferenzen, die die erlaubten Abhängigkeiten festlegen:
 
 ```bash
-dotnet new sln -n Geometrieeditor
-dotnet new classlib -o Geometrieeditor.Fachkonzept
-dotnet new classlib -o Geometrieeditor.Datenhaltung
-dotnet new blazor -o Geometrieeditor.Web --empty -int Server -ai
-dotnet new nunit -o Geometrieeditor.Tests
-dotnet sln add Geometrieeditor.Fachkonzept Geometrieeditor.Datenhaltung Geometrieeditor.Web Geometrieeditor.Tests
+dotnet new classlib -o Adventure.Kern
+dotnet new classlib -o Adventure.Daten
+dotnet new console  -o Adventure.Konsole
+dotnet new blazor   -o Adventure.Web --empty -int Server -ai
 
-dotnet add Geometrieeditor.Datenhaltung reference Geometrieeditor.Fachkonzept
-dotnet add Geometrieeditor.Web reference Geometrieeditor.Fachkonzept Geometrieeditor.Datenhaltung
-dotnet add Geometrieeditor.Tests reference Geometrieeditor.Fachkonzept Geometrieeditor.Datenhaltung
+dotnet add Adventure.Daten   reference Adventure.Kern
+dotnet add Adventure.Konsole reference Adventure.Kern Adventure.Daten
+dotnet add Adventure.Web     reference Adventure.Kern Adventure.Daten
 ```
 
 Die Referenzen ergeben folgendes Bild – jeder Pfeil bedeutet „kennt und benutzt“:
 
 ```
-   Geometrieeditor.Web                      Geometrieeditor.Tests
-   Home.razor, NeueFigurDialog.razor         FigurenVerwaltungTests
-   Program.cs wählt den Speicher aus         JsonFigurSpeicherTests
-        │            │                             │           │
-        │            └────────────┐   ┌────────────┘           │
-        ▼                         ▼   ▼                        ▼
-   Geometrieeditor.Fachkonzept          Geometrieeditor.Datenhaltung
-   Figur, Rechteck, Kreis, Dreieck      ArbeitsspeicherFigurSpeicher
-   FigurenVerwaltung                    JsonFigurSpeicher
-   IFigurSpeicher        ◄───────────── implementiert IFigurSpeicher
+   Adventure.Konsole                     Adventure.Web
+   Program.cs: while-Schleife            Home.razor, Statusleiste, SpielEndeDialog
+   ReadKey, AlsText()                    Program.cs wählt die Levelquelle aus
+        │            │                        │            │
+        │            └───────────┐   ┌────────┘            │
+        ▼                        ▼   ▼                     ▼
+   Adventure.Kern                          Adventure.Daten
+   Spielobjekt, Spielfeld, Spieler         EingebauteLevelQuelle
+   LevelParser, Level                             │
+   ILevelQuelle   ◄───────────────────────────────┘ implementiert
 ```
 
-Auffällig ist, dass **niemand** auf `Geometrieeditor.Web` zeigt und das Fachkonzept auf **nichts** zeigt. Damit sind die Schichtregeln 1 und 2 vom Compiler garantiert: Wollte jemand aus der Datenhaltung eine Komponente aufrufen, bräuchte er eine Referenz auf das Web-Projekt, und die wäre ein Zirkelbezug. Der Pfeil vom Web-Projekt zur Datenhaltung ist die eine bewusste Ausnahme; wozu er nötig ist, sehen wir gleich in `Program.cs`. Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`.
+Auffällig ist, dass **niemand** auf `Adventure.Web` oder `Adventure.Konsole` zeigt und dass der Kern auf **nichts** zeigt. Damit sind die Schichtregeln 1 und 2 vom Compiler garantiert: Wollte jemand aus der Datenschicht eine Komponente aufrufen, bräuchte er eine Referenz auf das Web-Projekt, und die wäre ein Zirkelbezug. Die Pfeile von den beiden Oberflächen zur Datenschicht sind die eine bewusste Ausnahme; wozu sie nötig sind, sehen wir gleich in `Program.cs`.
 
-## Die Komponente enthält keine Geschäftslogik
+## Zwei Oberflächen als Beweis
 
-Die wichtigste Regel für die GUI-Schicht ist leicht zu formulieren und schwer durchzuhalten: Eine Komponente **liest Eingaben, ruft das Fachkonzept und zeigt das Ergebnis an** – mehr nicht. In `Home.razor` sehen die Handler deshalb alle gleich aus:
+Die eigentliche Prüfung einer Schichtung ist nicht das Diagramm, sondern der Versuch. Und der ist in diesem Projekt jederzeit machbar:
 
-```razor
-@inject FigurenVerwaltung Verwaltung
+```bash
+dotnet run --project Adventure.Konsole    # ASCII-Karte im Terminal, Pfeiltasten oder WASD
+dotnet run --project Adventure.Web        # dieselbe Karte im Browser, mit Emojis
+```
 
-@code {
-    private Figur? ausgewaehlt;
-    private string status = "";
+Beide Programme spielen dasselbe Spiel mit denselben Regeln, und im Kern gibt es **keine einzige Zeile**, die weiß, welche der beiden Oberflächen gerade läuft – kein `if (istWeb)`, keine Konsolenausgabe, kein HTML. Das ist kein hübsches Extra, sondern ein Testverfahren: Jede Spielregel, die nur in einer der beiden Versionen funktioniert, liegt am falschen Ort. Wer die Schichtung überprüfen will, baut einfach die zweite Oberfläche – sie findet die Verstöße von selbst.
 
-    private void StatusAktualisieren()
+Ein Gegenbeispiel macht das konkret. Nehmen wir an, jemand ergänzt in `TasteGedrueckt` eine Zeile, die vor dem Zug prüft, ob das Zielfeld eine Wand ist, und dann den Zug unterdrückt. Die Browserversion verhält sich danach sinnvoll – und die Konsolenversion nicht, weil sie diese Prüfung nicht kennt. Die Regel ist dupliziert worden, statt an einer Stelle zu leben. Die Reparatur ist immer dieselbe: Die Prüfung wandert in `Spielfeld.SpielerZieht` (dort gibt es sie längst, als `IstFrei`), und beide Oberflächen profitieren.
+{: .notice--warning}
+
+## Die Komponente enthält keine Spielregeln
+
+Die wichtigste Regel für die GUI-Schicht ist leicht zu formulieren und schwer durchzuhalten: Eine Komponente **liest Eingaben, ruft das Fachkonzept und zeigt das Ergebnis an** – mehr nicht. In `Home.razor` sehen die Handler deshalb erschreckend leer aus:
+
+```csharp
+private void NeuStarten()
+{
+    feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
+}
+
+private void TasteGedrueckt(KeyboardEventArgs e)
+{
+    Richtung? richtung = e.Key switch
     {
-        status = $"{Verwaltung.AlleFiguren.Count} Figuren, Gesamtfläche {Verwaltung.GesamtFlaeche():F2}";
-    }
-
-    private void DialogGeschlossen(Figur? neueFigur)
+        "ArrowUp" or "w" or "W" => Richtung.Oben,
+        "ArrowDown" or "s" or "S" => Richtung.Unten,
+        "ArrowLeft" or "a" or "A" => Richtung.Links,
+        "ArrowRight" or "d" or "D" => Richtung.Rechts,
+        _ => null
+    };
+    if (richtung is Richtung r)
     {
-        dialogOffen = false;
-        if (neueFigur is null)
-        {
-            status = "Abgebrochen.";
-            return;
-        }
-
-        try
-        {
-            Verwaltung.Hinzufuegen(neueFigur);
-            StatusAktualisieren();
-        }
-        catch (ArgumentException ex)
-        {
-            status = ex.Message;
-        }
-    }
-
-    private void Entfernen()
-    {
-        if (ausgewaehlt is not null)
-        {
-            Verwaltung.Entfernen(ausgewaehlt);
-            ausgewaehlt = null;
-            StatusAktualisieren();
-        }
+        feld.SpielerZieht(r);   // danach rendert Blazor die Komponente automatisch neu
     }
 }
 ```
 
-Nirgends steht hier, dass Namen eindeutig sein müssen oder wie eine Flächensumme gebildet wird. `DialogGeschlossen` gibt die Figur weiter und reagiert auf das Ergebnis – die Regel „kein doppelter Name“ lebt in `FigurenVerwaltung.Hinzufuegen`, die Komponente erfährt sie nur als `ArgumentException`. `StatusAktualisieren` ruft `GesamtFlaeche()` auf, statt selbst zu addieren. Die Probe aus dem Architektur-Modul hilft beim Einordnen: Könnte die Zeile unverändert in einer Konsolenversion stehen? `Verwaltung.Hinzufuegen(neueFigur)` ja, `status = ex.Message` nein – also ist die Verteilung richtig.
+Das ist der gesamte aktive Code der Seite. `TasteGedrueckt` **übersetzt** – von der Browserwelt (`"ArrowUp"`) in die Spielwelt (`Richtung.Oben`) – und delegiert dann. Nirgends steht hier, ob man durch eine Tür gehen darf, wie viel Schaden eine Wache macht oder wann das Spiel gewonnen ist. Die Komponente erfährt das Ergebnis einer Runde ausschließlich daran, dass sich `feld.Status`, `feld.LetzteMeldung` und die Positionen der Objekte geändert haben.
 
-Was in die Komponente gehört: Felder für Auswahl und Statuszeile, das Öffnen und Schließen des Dialogs, das Umwandeln von Text in Zahlen und Zahlen in Text. Was nicht hineingehört: alles, was eine Regel des Anwendungsgebiets ist. Im Zweifel ins Fachkonzept – dorthin kann man es testen, aus der Komponente nicht.
+Was in die Komponente gehört: die Übersetzung von Tasten in Richtungen, die Auswahl von Emojis und CSS-Klassen, die Herzendarstellung, das Feld `levelName`, das Ein- und Ausblenden des Dialogs. Was nicht hineingehört: alles, was eine Regel des Spiels ist. Im Zweifel in den Kern – dorthin kann man es testen, aus der Komponente nicht.
 {: .notice--primary}
 
-## `IFigurSpeicher`: das Fachkonzept bestimmt, die Datenhaltung liefert
+Die restlichen Mitglieder des `@code`-Blocks – `SymbolFuer`, `KlasseFuer`, `OnInitialized`, `OnAfterRenderAsync` – sind reine Darstellung. Nicht zufällig sind `SymbolFuer` und `KlasseFuer` **statisch**: Eine Methode, die nur ihr Argument in eine Zeichenkette übersetzt, braucht keinen Zugriff auf den Zustand der Komponente. Wenn ein Handler dagegen anfängt, mehrere Objekte zu vergleichen und Bedingungen zu verknüpfen, ist das ein zuverlässiges Warnsignal.
 
-Schichtregel 4 verlangt, dass eine Schicht die darunterliegende nur über Schnittstellen benutzt. Das Fachkonzept legt daher selbst fest, was es von einem Speicher braucht:
+## `ILevelQuelle`: der Kern bestimmt, die Datenschicht liefert
+
+Schichtregel 4 verlangt, dass eine Schicht die darunterliegende nur über Schnittstellen benutzt. Der Kern legt daher selbst fest, was er von einer Levelquelle braucht – die beiden Typen stehen in `Adventure.Kern/Level.cs`:
 
 ```csharp
-namespace Geometrieeditor.Fachkonzept;
+namespace Adventure.Kern;
 
-public interface IFigurSpeicher
+/// <summary>Ein Level ist eine Karte aus Textzeilen plus ein Name.</summary>
+public record Level(string Name, IReadOnlyList<string> Zeilen);
+
+/// <summary>Woher die Level kommen, ist dem Spiel egal – Datei, Netz oder fest im Code.</summary>
+public interface ILevelQuelle
 {
-    void Speichern(IEnumerable<Figur> figuren);
-    List<Figur> Laden();
+    IReadOnlyList<string> LevelNamen { get; }
+    Level Laden(string name);
 }
 ```
 
-Die `FigurenVerwaltung` bekommt den Speicher im Konstruktor und kennt ihn nur als `IFigurSpeicher`:
+Zwei Mitglieder, mehr braucht es nicht: eine Liste der verfügbaren Namen für die Auswahl und eine Methode, die zu einem Namen die Karte liefert. Die Datenschicht implementiert diesen Vertrag – vorerst mit zwei fest einprogrammierten Karten:
 
 ```csharp
-public class FigurenVerwaltung
-{
-    private readonly List<Figur> figuren = new();
-    private readonly IFigurSpeicher speicher;
+using Adventure.Kern;
 
-    public FigurenVerwaltung(IFigurSpeicher speicher)
+namespace Adventure.Daten;
+
+/// <summary>Zwei Level fest im Code – solange wir noch keine Dateien lesen können.</summary>
+public class EingebauteLevelQuelle : ILevelQuelle
+{
+    private static readonly Dictionary<string, string[]> level = new()
     {
-        this.speicher = speicher;
-    }
+        ["Kerker"] = new[]
+        {
+            "####################",
+            "#@.....#...........#",
+            // ... weitere Zeilen ...
+            "####################",
+        },
+        // ["Katakomben"] = ...
+    };
 
-    public void Speichern() => speicher.Speichern(figuren);
+    public IReadOnlyList<string> LevelNamen => level.Keys.ToList();
+
+    public Level Laden(string name)
+    {
+        if (!level.TryGetValue(name, out string[]? zeilen))
+        {
+            throw new KeyNotFoundException($"Es gibt kein Level namens '{name}'.");
+        }
+        return new Level(name, zeilen);
+    }
 }
 ```
 
-Die Datenhaltung implementiert das Interface – `JsonFigurSpeicher` mit `System.Text.Json` und einer Datei, `ArbeitsspeicherFigurSpeicher` mit einer Liste. Man beachte die Richtung: Das Interface liegt im Projekt `Fachkonzept`, und die Datenhaltung verweist *auf das Fachkonzept*, nicht umgekehrt. Dieses Prinzip heißt **Dependency Inversion**: Die Abhängigkeit zeigt zur Abstraktion im Fachkonzept, und deshalb bleibt die Schichtregel „nur über Schnittstellen“ erfüllt, obwohl die Datenhaltung die tiefere Schicht ist.
+Man beachte die Richtung: Das Interface liegt im Projekt `Adventure.Kern`, und `Adventure.Daten` verweist *auf den Kern*, nicht umgekehrt. Dieses Prinzip heißt **Dependency Inversion**: Die Abhängigkeit zeigt zur Abstraktion im Fachkonzept, und deshalb bleibt die Schichtregel „nur über Schnittstellen“ erfüllt, obwohl die Datenhaltung die tiefere Schicht ist. Der Gewinn zeigt sich in [Vorlesung 09](/lectures/09/09.md): Dort kommen eine `TextdateiLevelQuelle` und eine `HttpLevelQuelle` dazu, und weder der Kern noch eine Komponente ändert sich dafür.
 
-## Dependency Injection: wer erzeugt den Speicher?
+## Dependency Injection: wer erzeugt die Levelquelle?
 
-Bleibt die Frage, wer `new JsonFigurSpeicher("figuren.json")` schreibt. Die `FigurenVerwaltung` darf es nicht, sonst würde sie die Datenhaltung kennen. Die Komponente sollte es nicht, sonst müsste jede Seite wissen, welcher Speicher gerade gilt. ASP.NET Core sieht dafür genau eine Stelle vor, den **DI-Container** in `Program.cs`:
+Bleibt die Frage, wer `new EingebauteLevelQuelle()` schreibt. Der Kern darf es nicht, sonst würde er die Datenschicht kennen. Die Komponente sollte es nicht, sonst müsste jede Seite wissen, welche Quelle gerade gilt – und ein Wechsel wäre eine Suchen-und-Ersetzen-Aktion. ASP.NET Core sieht dafür genau eine Stelle vor, den **DI-Container** in `Program.cs`:
 
 ```csharp
-// Hier wird entschieden, welche Datenhaltung hinter dem Fachkonzept steckt.
-// "Scoped" heißt in Blazor: ein Objekt pro Browser-Verbindung (Circuit).
-builder.Services.AddScoped<IFigurSpeicher>(_ => new JsonFigurSpeicher("figuren.json"));
-builder.Services.AddScoped<FigurenVerwaltung>();
+// Die eine Stelle, an der entschieden wird, woher die Level kommen.
+builder.Services.AddSingleton<ILevelQuelle, EingebauteLevelQuelle>();
 ```
 
-Die erste Zeile registriert: „Wer einen `IFigurSpeicher` braucht, bekommt einen `JsonFigurSpeicher`.“ Die zweite registriert die `FigurenVerwaltung` ohne Fabrikfunktion – der Container sieht ihren Konstruktor, erkennt den Parameter `IFigurSpeicher` und setzt den registrierten Speicher ein. Das ist **Dependency Injection**: Objekte bekommen ihre Abhängigkeiten von außen geliefert, statt sie selbst zu erzeugen. Deshalb braucht das Web-Projekt die Referenz auf die Datenhaltung – nur für diese eine Zeile.
+Die Zeile registriert: „Wer einen `ILevelQuelle` braucht, bekommt eine `EingebauteLevelQuelle`.“ Das ist **Dependency Injection**: Objekte bekommen ihre Abhängigkeiten von außen geliefert, statt sie selbst zu erzeugen. Deshalb braucht das Web-Projekt überhaupt eine Referenz auf `Adventure.Daten` – nur für diese eine Zeile. Die Konsolenversion hat kein `Program.cs` mit Container und schreibt die Entscheidung direkt hin (`ILevelQuelle levelQuelle = new EingebauteLevelQuelle();`) – auch das ist in Ordnung, denn es ist wieder *eine* Stelle, ganz oben im Programm.
 
 In der Komponente holt eine Anweisung das fertige Objekt ab:
 
 ```razor
-@inject FigurenVerwaltung Verwaltung
+@page "/"
+@using Adventure.Kern
+@inject ILevelQuelle LevelQuelle
 ```
 
-Ab da steht `Verwaltung` in Markup und `@code` als Property zur Verfügung. **Scoped** bedeutet dabei: ein Objekt pro Browser-Verbindung. Öffnen zwei Personen die Seite, hat jede ihre eigene `FigurenVerwaltung` mit eigener Figurenliste; alle Komponenten derselben Verbindung teilen sich aber dasselbe Objekt. Die Alternativen wären `AddSingleton` (ein Objekt für den ganzen Server – alle Benutzer sähen dieselben Figuren) und `AddTransient` (bei jedem `@inject` ein neues Objekt – die Figuren wären nach jedem Seitenwechsel weg).
+Ab da steht `LevelQuelle` in Markup und `@code` als Property zur Verfügung – die `@foreach`-Schleife der Levelauswahl liest `LevelQuelle.LevelNamen`, `NeuStarten` ruft `LevelQuelle.Laden(levelName)`. Entscheidend ist der Typ: `@inject ILevelQuelle` nennt das **Interface**, nicht die Klasse. Die Komponente könnte gar nicht bemerken, wenn morgen eine Datei- oder Webquelle dahinterstünde.
+
+**Singleton, Scoped oder Transient?** `AddSingleton` erzeugt ein Objekt für den ganzen Server, `AddScoped` in Blazor eines pro Browser-Verbindung (Circuit), `AddTransient` bei jedem `@inject` ein neues. Für die Levelquelle ist `Singleton` richtig, weil sie nur liest und keinen benutzerabhängigen Zustand hat – zwei Spieler dürfen sich dieselben Karten teilen. Das `Spielfeld` steht dagegen bewusst **nicht** im Container: Es ist ein Feld der Komponente, und damit hat jede Browser-Sitzung automatisch ihr eigenes Spiel.
+{: .notice--primary}
 
 ## Was man damit gewinnt
 
-Zwei Dinge, die ohne die Trennung nicht gingen. Erstens lässt sich der Speicher **austauschen, ohne eine Komponente anzufassen**: Wird aus der ersten Zeile in `Program.cs` `AddScoped<IFigurSpeicher, ArbeitsspeicherFigurSpeicher>()`, läuft alles weiter, nur ohne Datei. Wie der `JsonFigurSpeicher` die Figuren mit `System.Text.Json` tatsächlich in die Datei bringt, sehen wir in [JSON-Serialisierung](/modules/json_serialisierung/json_serialisierung.md). Zweitens lässt sich das Fachkonzept **ohne Browser testen**, weil ein Test denselben Konstruktor benutzt wie der DI-Container:
+Drei Dinge, die ohne die Trennung nicht gingen. Erstens lässt sich die Levelquelle **austauschen, ohne eine Komponente anzufassen** – eine Zeile in `Program.cs`. Zweitens lässt sich der Kern **ohne Browser testen**: Ein NUnit-Test baut sich ein `Spielfeld` mit dem `LevelParser`, ruft `SpielerZieht` und prüft `Status`, `Lebenspunkte` oder `Punkte`, ohne dass eine Seite gerendert wird. Genau das holen wir in [Vorlesung 12](/lectures/12/12.md) nach; warum das so wertvoll ist, vertieft das Modul [Warum Unit-Tests?](/modules/unit_tests_motivation/unit_tests_motivation.md). Und drittens konnte diese ganze Vorlesung existieren: Eine neue Oberfläche zu bauen war möglich, *ohne* das Spiel neu zu schreiben.
 
-```csharp
-[SetUp]
-public void Vorbereiten()
-{
-    // Für Tests reicht der Speicher im Arbeitsspeicher – keine Datei, keine GUI.
-    verwaltung = new FigurenVerwaltung(new ArbeitsspeicherFigurSpeicher());
-}
-
-[Test]
-public void Hinzufuegen_DoppelterName_WirftArgumentException()
-{
-    verwaltung.Hinzufuegen(new Kreis("k1", 0, 0, 1));
-
-    Assert.That(() => verwaltung.Hinzufuegen(new Rechteck("k1", 0, 0, 2, 3)),
-                Throws.ArgumentException);
-}
-```
-
-Die Regel „kein doppelter Name“ wird hier geprüft, ohne dass ein Dialog geöffnet oder ein Button geklickt wird – warum das so wertvoll ist, vertieft das Modul [Warum Unit-Tests?](/modules/unit_tests_motivation/unit_tests_motivation.md).
-
-Übung: Der Geometrieeditor soll eine Funktion „Alle Figuren um 10 nach rechts verschieben“ bekommen. Schreibe auf, welche Zeilen in welches Projekt kommen: Button und Handler, die Schleife über die Figuren, der Aufruf von `Verschieben`. Prüfe anschließend mit der Konsolen-Probe, ob deine Verteilung stimmt – und ob du die Funktion mit einem NUnit-Test absichern könntest.
+Übung: Das Spiel soll einen Spielstand speichern und laden können. Schreibe auf, was in welches Projekt kommt: das Interface für den Speicher, die Klasse, die tatsächlich in eine Datei schreibt, die Buttons „Speichern“ und „Laden“, die Methode, die den Zustand des Spielfelds einsammelt, und die Zeile, die entscheidet, in welche Datei geschrieben wird. Prüfe deine Verteilung mit der Konsolen-Probe – und überlege, welche der fünf Teile die Konsolenversion mitbenutzen könnte.
 {: .notice--info}
+
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 ## Weitere Quellen
 

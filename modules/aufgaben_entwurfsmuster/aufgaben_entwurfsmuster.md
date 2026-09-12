@@ -9,58 +9,83 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen — sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Entwurfsmustern ist die Mustererkennung wörtlich gemeint: Die Kunst besteht weniger darin, ein Muster zu implementieren, als darin, es in fremdem Code wiederzuerkennen, das passende auszuwählen – und zu merken, wenn eines fehl am Platz ist. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen — sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Entwurfsmustern ist die Mustererkennung wörtlich gemeint: Die Kunst besteht weniger darin, ein Muster zu implementieren, als darin, es in fremdem Code wiederzuerkennen, das passende auszuwählen – und zu merken, wenn eines fehl am Platz ist. Alle vier Aufgaben spielen im Adventure. Nimm dir für jede Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Mustererkennung
 
-Die folgenden vier Codeausschnitte stammen aus verschiedenen Projekten. Bestimme für jeden, welches Entwurfsmuster aus dieser Vorlesung er umsetzt – oder ob er nur so aussieht.
+Die folgenden fünf Ausschnitte stammen aus verschiedenen Ausbaustufen des Adventure. Bestimme für jeden, welches Entwurfsmuster aus dieser Vorlesung er umsetzt – oder ob er nur so aussieht.
 
 ```csharp
 // Ausschnitt A
-public class Protokoll
+public sealed class Spielkonfiguration
 {
-    private static readonly Lazy<Protokoll> halter = new(() => new Protokoll());
-    private Protokoll() { }
-    public static Protokoll Instanz => halter.Value;
-    public void Schreiben(string text) { /* ... */ }
+    private static readonly Lazy<Spielkonfiguration> halter = new(() => new Spielkonfiguration());
+    private Spielkonfiguration() { }
+    public static Spielkonfiguration Instanz => halter.Value;
+    public int Sichtweite { get; set; } = 5;
 }
 ```
 
 ```csharp
 // Ausschnitt B
-public class Menue : IMenueEintrag
+public sealed class Objektgruppe : IBauteil
 {
-    private readonly List<IMenueEintrag> eintraege = new();
-    public void Hinzufuegen(IMenueEintrag e) => eintraege.Add(e);
-    public void Anzeigen(int tiefe)
+    private readonly List<IBauteil> teile = new();
+    public void Hinzufuegen(IBauteil teil) => teile.Add(teil);
+
+    public void Verschieben(int dx, int dy)
     {
-        foreach (IMenueEintrag e in eintraege)
-            e.Anzeigen(tiefe + 1);
+        foreach (IBauteil teil in teile)
+            teil.Verschieben(dx, dy);
     }
 }
 ```
 
 ```csharp
 // Ausschnitt C
-public class KundenExport : IExportierbar
+public sealed class GamepadEingabe : IEingabe
 {
-    private readonly LegacyKundenDatei datei;
-    public KundenExport(LegacyKundenDatei datei) => this.datei = datei;
-    public string AlsJson() => JsonSerializer.Serialize(datei.LeseAlleZeilen());
+    private readonly Gamepad gamepad;                 // fremde Bibliothek
+    public GamepadEingabe(Gamepad gamepad) => this.gamepad = gamepad;
+
+    public Richtung? NaechsteRichtung() => gamepad.LiesStick() switch
+    {
+        StickLage.Hoch => Richtung.Oben,
+        StickLage.Runter => Richtung.Unten,
+        StickLage.Links => Richtung.Links,
+        StickLage.Rechts => Richtung.Rechts,
+        _ => null
+    };
 }
 ```
 
 ```csharp
 // Ausschnitt D
-public class Lager
+public class Spielfeld
 {
-    private readonly Dictionary<string, int> bestand = new();
-    public IEnumerable<string> Knapp(int grenze)
+    private readonly List<Gegner> gegner = new();
+
+    public IEnumerable<Gegner> Wachsame(int maxEntfernung)
     {
-        foreach (var (artikel, menge) in bestand)
-            if (menge < grenze)
-                yield return artikel;
+        foreach (Gegner g in gegner)
+            if (g.Position.Entfernung(Spieler.Position) <= maxEntfernung)
+                yield return g;
     }
+}
+```
+
+```csharp
+// Ausschnitt E
+public static class LevelParser
+{
+    private static Spielobjekt ObjektFuer(char zeichen, Position pos) => zeichen switch
+    {
+        '#' => new Wand(pos),
+        'D' => new Tuer(pos),
+        'T' => new Truhe(pos, wert: 100),
+        'W' => new Wache(pos),
+        _ => throw new ArgumentException($"Unbekanntes Zeichen '{zeichen}' bei {pos}.")
+    };
 }
 ```
 
@@ -74,217 +99,234 @@ Leitfragen:
 
 **Schritt 1 — Ausschnitt A: Singleton.**
 
-Die drei Erkennungsmerkmale sind vollständig da: privater Konstruktor, statisches Feld für die einzige Instanz, statische Zugriffs-Property. Das `Lazy<T>` verrät zusätzlich, dass die threadsichere Variante aus dem [Singleton-Modul](/modules/singleton/singleton.md) verwendet wird. Es fehlt `sealed` – eine geschachtelte Unterklasse könnte theoretisch weitere Instanzen erzeugen.
+Die drei Erkennungsmerkmale sind vollständig da: privater Konstruktor, statisches Feld für die einzige Instanz, statische Zugriffs-Property. Das `Lazy<T>` verrät zusätzlich, dass die threadsichere Variante aus dem [Singleton-Modul](/modules/singleton/singleton.md) verwendet wird, und `sealed` schließt Unterklassen aus. Was der Ausschnitt nicht zeigt, ist der Preis: Jede Klasse, die `Spielkonfiguration.Instanz.Sichtweite` liest, hat eine unsichtbare globale Abhängigkeit – im echten Adventure bekommt ein `Verfolger` seine Sichtweite stattdessen im Konstruktor.
 
 **Schritt 2 — Ausschnitt B: Composite.**
 
-Merkmal: Eine Klasse implementiert ein Interface *und* hält eine Liste desselben Interface-Typs, und ihre Operation besteht nur aus dem Weiterreichen an die Kinder. `Menue` ist das Kompositum, `IMenueEintrag` die Komponente. Die Blätter (etwa ein `Befehl : IMenueEintrag`) sind nicht zu sehen, müssen aber existieren, sonst würde die Rekursion nie enden. Dass `Hinzufuegen` nur in `Menue` steht, ist die LSP-freundliche Variante aus dem [Composite-Modul](/modules/composite/composite.md).
+Merkmal: Eine Klasse implementiert ein Interface *und* hält eine Liste desselben Interface-Typs, und ihre Operation besteht nur aus dem Weiterreichen an die Kinder. `Objektgruppe` ist das Kompositum, `IBauteil` die Komponente. Das Blatt (`Baustein`) ist nicht zu sehen, muss aber existieren, sonst würde die Rekursion nie enden. Dass `Hinzufuegen` nur in der `Objektgruppe` steht und nicht im Interface, ist die LSP-freundliche Variante aus dem [Composite-Modul](/modules/composite/composite.md).
 
 **Schritt 3 — Ausschnitt C: Objektadapter.**
 
-Merkmal: Die Klasse implementiert ein Ziel-Interface (`IExportierbar`), hält ein Objekt einer fremden Klasse (`LegacyKundenDatei`) als Feld und übersetzt in der Interface-Methode dessen Aufruf (`LeseAlleZeilen`) in die erwartete Form (`AlsJson`). Der Client, der `IExportierbar` verwendet, fehlt im Ausschnitt. Hier ist Vorsicht angebracht: Dieselbe Struktur – Interface plus Feld plus Weiterleitung – hat auch ein *Decorator* oder ein *Proxy*. Der Unterschied liegt darin, dass beim Adapter das Feld einen *anderen* Typ als das Interface hat (`LegacyKundenDatei` ist kein `IExportierbar`), während Decorator und Proxy dasselbe Interface wie ihr inneres Objekt implementieren. Der Typunterschied ist das entscheidende Indiz.
+Merkmal: Die Klasse implementiert ein Ziel-Interface (`IEingabe`), hält ein Objekt einer fremden Klasse (`Gamepad`) als Feld und übersetzt in der Interface-Methode dessen Aufruf (`LiesStick`) in die erwartete Form (`Richtung?`). Der Client, der nur `IEingabe` kennt – die Spielschleife –, fehlt im Ausschnitt. Hier ist Vorsicht angebracht: Dieselbe Struktur – Interface plus Feld plus Weiterleitung – hat auch ein *Decorator* oder ein *Proxy*. Der Unterschied liegt darin, dass beim Adapter das Feld einen *anderen* Typ als das Interface hat (`Gamepad` ist kein `IEingabe`), während Decorator und Proxy dasselbe Interface wie ihr inneres Objekt implementieren. Der Typunterschied ist das entscheidende Indiz.
 
 **Schritt 4 — Ausschnitt D: Iterator.**
 
-Merkmal: `yield return` in einer Methode mit Rückgabetyp `IEnumerable<T>`. Das ist ein *spezifischer Iterator* wie `Bereich(2, 7)` aus dem [Iterator-Modul](/modules/iterator/iterator.md): Der Client durchläuft die knappen Artikel per `foreach`, ohne zu wissen, dass dahinter ein Dictionary steckt. Die Enumerator-Klasse erzeugt der Compiler. Bemerkenswert ist, was *nicht* da ist: `Lager` implementiert `IEnumerable<T>` nicht – ein Iterator muss nicht die ganze Klasse durchlaufbar machen.
+Merkmal: `yield return` in einer Methode mit Rückgabetyp `IEnumerable<T>`. Das ist ein *spezifischer Iterator* wie `NachbarFelder` aus dem [Iterator-Modul](/modules/iterator/iterator.md): Der Client durchläuft die nahen Gegner per `foreach`, ohne zu wissen, dass dahinter eine `List<Gegner>` steckt. Die Enumerator-Klasse erzeugt der Compiler. Bemerkenswert ist, was *nicht* da ist: `Spielfeld` implementiert `IEnumerable<T>` nicht – ein Iterator muss nicht die ganze Klasse durchlaufbar machen.
+
+**Schritt 5 — Ausschnitt E: keines der fünf Muster.**
+
+Der Reflex „hier wird etwas umgewandelt, also Adapter“ trügt. Ein Adapter passt eine *Schnittstelle* an, hier wird aus einem Zeichen ein *neues Objekt* erzeugt – es gibt kein adaptiertes Objekt, das weiterlebt. `ObjektFuer` ist eine **Factory Method** (Erzeugungsmuster, nicht in dieser Vorlesung): eine Stelle, die entscheidet, welche konkrete Klasse hinter einem Zeichen steckt, während der Rest von `LevelParser` nur `Spielobjekt` kennt. Genau deshalb kostet eine neue Objektart genau eine Zeile.
 
 **Zentrale Designentscheidungen:**
 
 - **Struktur schlägt Namen:** Kein Ausschnitt enthält das Wort „Adapter“ oder „Composite“ im Klassennamen. Muster erkennt man an den Rollen und Beziehungen, nicht an der Benennung.
 - **Ähnliche Strukturen, verschiedene Muster:** Adapter, Decorator und Proxy sehen auf den ersten Blick gleich aus. Erst die Frage „welchen Typ hat das innere Objekt?“ trennt sie.
+- **Nicht jedes Umwandeln ist ein Adapter:** Wer Objekte *erzeugt*, baut eine Fabrik; wer Aufrufe *weiterleitet*, baut einen Adapter.
 - **Der Kontext gehört dazu:** Ein Muster besteht aus mehreren Rollen. Wer nur eine Klasse sieht, sollte benennen, welche Rollen er voraussetzt.
 
 </details>
 
 ## Aufgabe 2 — Abstraktion
 
-Entwirf ein Modell für ein Dateisystem. Es gibt Dateien mit einem Namen und einer Größe in Bytes und Ordner, die Dateien und weitere Ordner enthalten. Für jeden Eintrag soll sich die Größe abfragen lassen – bei einem Ordner ist das die Summe aller enthaltenen Einträge, beliebig tief. Außerdem soll sich jeder Eintrag eingerückt ausgeben lassen, so dass die Baumstruktur sichtbar wird.
+Level sollen sich künftig nicht nur aus Textkarten, sondern auch im Code aus Bauteilen zusammensetzen lassen: einzelne Wände und Truhen, daraus Räume, daraus ein ganzer Kerker. Ein Raum muss sich als *Ganzes* verschieben und auf ein `Spielfeld` setzen lassen, und zusätzlich soll sich für jedes Bauteil die **Ausdehnung** abfragen lassen – das kleinste Rechteck, in das es passt.
 
-- Welches Muster passt, und welche Rollen übernehmen Datei und Ordner?
-- Was gehört in die gemeinsame Schnittstelle, was nur in den Ordner?
-- Wie wird `Groesse()` für einen Ordner berechnet, ohne dass der Ordner wissen muss, wie tief er ist?
-- Was liefert ein leerer Ordner, und was passiert, wenn ein Ordner sich selbst enthält?
+- Welches Muster passt, und welche Rollen übernehmen Wand und Raum?
+- Warum ist `class Raum : Spielobjekt` hier der falsche Weg? Sieh dir dafür `Spielobjekt` und `Spielfeld.Hinzufuegen` an.
+- Was gehört in die gemeinsame Schnittstelle, was nur ins Kompositum?
+- Wie berechnet eine Gruppe ihre Ausdehnung, ohne zu wissen, wie tief sie verschachtelt ist – und was liefert eine leere Gruppe?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
 **Schritt 1 — Muster wählen:**
 
-Einzelobjekte (Dateien) und Gruppen (Ordner) sollen über dieselben Operationen `Groesse()` und `Ausgeben()` angesprochen werden, und Ordner können Ordner enthalten – eine rekursive Baumstruktur. Das ist das Composite-Muster: `IEintrag` ist die Komponente, `Datei` das Blatt, `Ordner` das Kompositum.
+Einzelne Bauteile und Gruppen sollen über dieselben Operationen angesprochen werden, und Gruppen können Gruppen enthalten – eine rekursive Baumstruktur. Das ist Composite: `IBauteil` ist die Komponente, `Baustein` das Blatt, `Objektgruppe` das Kompositum, und ein „Raum“ ist nur eine mit Wänden gefüllte `Objektgruppe`.
 
-**Schritt 2 — Schnittstelle festlegen:**
+**Schritt 2 — Warum kein `Raum : Spielobjekt`?**
 
-In das Interface gehört nur, was *jeder* Eintrag sinnvoll kann. `Hinzufuegen` gehört nicht dazu – eine Datei kann nichts aufnehmen, und eine Methode, die bei Dateien immer eine Exception wirft, würde das Substitutionsprinzip verletzen.
+`Spielobjekt` hat genau eine `Position` und genau ein `Symbol`; `StatischesObjekt` heißt ausdrücklich „bewegt sich nie“, und `Spielfeld.Hinzufuegen` legt statische Objekte in einem `Dictionary<Position, StatischesObjekt>` ab – ein Eintrag pro Rasterzelle. Ein Raum hat weder eine einzelne Zelle noch ein einzelnes Zeichen; er würde in das Dictionary nicht hineinpassen, und `Verschieben` gäbe es in der Basisklasse gar nicht. Die Komponente des Composite ist deshalb ein neues, eigenes Interface neben der bestehenden Hierarchie.
+
+**Schritt 3 — Schnittstelle festlegen:**
+
+In das Interface gehört nur, was *jedes* Bauteil sinnvoll kann. `Hinzufuegen` gehört nicht dazu – eine einzelne Wand kann nichts aufnehmen, und eine Methode, die dort immer eine Exception wirft, würde das Substitutionsprinzip verletzen.
 
 ```csharp
-public interface IEintrag
+public readonly record struct Ausdehnung(Position LinksOben, Position RechtsUnten);
+
+public interface IBauteil
 {
-    string Name { get; }
-    long Groesse();
-    void Ausgeben(int einrueckung);
+    void Verschieben(int dx, int dy);
+    void AufFeldSetzen(Spielfeld feld);
+    Ausdehnung Umriss();
 }
 ```
 
-**Schritt 3 — Blatt:**
+**Schritt 4 — Blatt:**
 
-Die Datei kennt ihre Größe direkt. Die Einrückung ist ein Parameter, damit der Aufrufer – der Ordner – die Tiefe vorgibt.
+Der `Baustein` merkt sich, *wo* und *was* gebaut werden soll. Das „was“ ist eine Fabrikfunktion, weil ein `StatischesObjekt` seine Position nach dem Erzeugen nicht mehr ändert – erzeugt wird also erst beim Setzen. Seine Ausdehnung ist ein Rechteck aus einer einzigen Zelle.
 
 ```csharp
-public class Datei : IEintrag
+public sealed class Baustein : IBauteil
 {
-    private readonly long bytes;
+    private readonly Func<Position, StatischesObjekt> erzeugen;
+    private Position position;
+
+    public Baustein(Position position, Func<Position, StatischesObjekt> erzeugen)
+    {
+        this.position = position;
+        this.erzeugen = erzeugen;
+    }
+
+    public void Verschieben(int dx, int dy) => position = new Position(position.X + dx, position.Y + dy);
+
+    public void AufFeldSetzen(Spielfeld feld) => feld.Hinzufuegen(erzeugen(position));
+
+    public Ausdehnung Umriss() => new(position, position);
+}
+```
+
+**Schritt 5 — Kompositum mit rekursivem Umriss:**
+
+Die Gruppe reicht `Verschieben` und `AufFeldSetzen` einfach durch. Für `Umriss` fragt sie jedes Kind nach dessen Rechteck und bildet das umschließende – ob ein Kind ein Baustein oder wieder eine Gruppe ist, spielt keine Rolle, weil `teil.Umriss()` im zweiten Fall dieselbe Methode eine Ebene tiefer aufruft.
+
+```csharp
+public sealed class Objektgruppe : IBauteil
+{
+    private readonly List<IBauteil> teile = new();
 
     public string Name { get; }
+    public Objektgruppe(string name) => Name = name;
 
-    public Datei(string name, long bytes)
+    public void Hinzufuegen(IBauteil teil)
     {
-        Name = name;
-        this.bytes = bytes;
+        if (ReferenceEquals(teil, this))
+            throw new ArgumentException("Eine Gruppe kann sich nicht selbst enthalten.");
+        teile.Add(teil);
     }
 
-    public long Groesse() => bytes;
-
-    public void Ausgeben(int einrueckung)
-        => Console.WriteLine($"{new string(' ', einrueckung)}{Name} ({bytes} B)");
-}
-```
-
-**Schritt 4 — Kompositum mit rekursiver Größe:**
-
-Der Ordner summiert die Größen seiner Einträge. Ob ein Eintrag eine Datei oder wieder ein Ordner ist, spielt keine Rolle: `eintrag.Groesse()` ruft im zweiten Fall dieselbe Methode eine Ebene tiefer auf. Die Rekursion endet bei den Dateien von selbst.
-
-```csharp
-public class Ordner : IEintrag
-{
-    private readonly List<IEintrag> eintraege = new();
-
-    public string Name { get; }
-
-    public Ordner(string name) => Name = name;
-
-    public void Hinzufuegen(IEintrag eintrag)
+    public void Verschieben(int dx, int dy)
     {
-        if (ReferenceEquals(eintrag, this))
-            throw new ArgumentException("Ein Ordner kann sich nicht selbst enthalten.");
-        eintraege.Add(eintrag);
+        foreach (IBauteil teil in teile) teil.Verschieben(dx, dy);
     }
 
-    public long Groesse() => eintraege.Sum(e => e.Groesse());
-
-    public void Ausgeben(int einrueckung)
+    public void AufFeldSetzen(Spielfeld feld)
     {
-        Console.WriteLine($"{new string(' ', einrueckung)}{Name}/ ({Groesse()} B)");
-        foreach (IEintrag e in eintraege)
-            e.Ausgeben(einrueckung + 2);
+        foreach (IBauteil teil in teile) teil.AufFeldSetzen(feld);
+    }
+
+    public Ausdehnung Umriss()
+    {
+        if (teile.Count == 0)
+            throw new InvalidOperationException("Eine leere Gruppe hat keinen Umriss.");
+
+        IEnumerable<Ausdehnung> kinder = teile.Select(t => t.Umriss());
+        return new Ausdehnung(
+            new Position(kinder.Min(a => a.LinksOben.X), kinder.Min(a => a.LinksOben.Y)),
+            new Position(kinder.Max(a => a.RechtsUnten.X), kinder.Max(a => a.RechtsUnten.Y)));
     }
 }
 ```
 
-**Schritt 5 — Verwenden:**
+**Schritt 6 — Verwenden:**
 
 ```csharp
-Ordner projekt = new("projekt");
-Ordner src = new("src");
-src.Hinzufuegen(new Datei("Figur.cs", 1200));
-src.Hinzufuegen(new Datei("Kreis.cs", 480));
-projekt.Hinzufuegen(src);
-projekt.Hinzufuegen(new Datei("README.md", 300));
+Objektgruppe kammer = new("Schatzkammer");
+for (int x = 0; x < 5; x++)
+    kammer.Hinzufuegen(new Baustein(new Position(x, 0), p => new Wand(p)));
+kammer.Hinzufuegen(new Baustein(new Position(2, 2), p => new Truhe(p, wert: 100)));
 
-projekt.Ausgeben(0);
-// projekt/ (1980 B)
-//   src/ (1680 B)
-//     Figur.cs (1200 B)
-//     Kreis.cs (480 B)
-//   README.md (300 B)
+Objektgruppe kerker = new("Kerker");
+kerker.Hinzufuegen(kammer);
+kerker.Verschieben(1, 1);
+
+Console.WriteLine(kerker.Umriss());
+// Ausdehnung { LinksOben = (1, 1), RechtsUnten = (5, 3) }
 ```
 
-Ein leerer Ordner liefert `Sum` über eine leere Liste, also `0` – ohne Sonderfall im Code.
+Ein Aufruf an der Wurzel hat sechs Bauteile auf zwei Ebenen verschoben. `kerker` kennt nur sein eines Kind und weiß nicht, wie tief der Baum ist.
 
 **Zentrale Designentscheidungen:**
 
-- **`Hinzufuegen` nur im Ordner:** Das Interface bleibt auf die Operationen beschränkt, die für Blatt und Kompositum gleichermaßen gelten.
-- **Rekursion ohne Tiefenwissen:** `Ordner.Groesse()` kennt nur seine direkten Kinder. Die Gesamttiefe ergibt sich aus der Verschachtelung der Aufrufe, nicht aus einer Schleife über alle Ebenen.
-- **Zyklen abfangen:** Der Selbstbezug ist der einfachste Zyklus; `Ausgeben` würde sonst endlos laufen. Indirekte Zyklen (A enthält B enthält A) fängt die Prüfung nicht – in einem echten Dateisystem ist das das Problem symbolischer Links.
-- **`long` statt `int`:** Dateigrößen überschreiten 2 GB schnell; die Summe eines Ordners erst recht.
+- **Neues Interface statt Vererbung:** Das Muster wird neben die bestehende `Spielobjekt`-Hierarchie gelegt, nicht hineingezwängt.
+- **`Hinzufuegen` nur im Kompositum:** Das Interface bleibt auf Operationen beschränkt, die für Blatt und Gruppe gleichermaßen gelten.
+- **Rekursion ohne Tiefenwissen:** Jede Gruppe kennt nur ihre direkten Kinder; die Gesamttiefe ergibt sich aus der Verschachtelung der Aufrufe.
+- **Leere Gruppe als Sonderfall:** Bei `AnzahlObjekte()` wäre `0` die natürliche Antwort, beim Umriss gibt es keine – ein leeres Rechteck bei (0, 0) wäre eine Lüge, deshalb die Exception.
+- **Zyklen abfangen:** `ReferenceEquals` fängt den direkten Selbstbezug. Indirekte Zyklen (A enthält B enthält A) fängt die Prüfung nicht und führen zu einer `StackOverflowException`.
 
 </details>
 
 ## Aufgabe 3 — Algorithmenentwurf
 
-Die folgende Iterator-Methode arbeitet mit den Figuren des Geometrieeditors (`Rechteck` und `Kreis` aus `examples/04_blazor/Geometrieeditor`). Sie soll nur Figuren liefern, deren Fläche mindestens `minFlaeche` ist – und von diesen nur jede zweite.
+Die folgende Iterator-Methode soll die Gegner liefern, die dem Helden nicht weiter als `reichweite` Felder entfernt sind (Manhattan-Entfernung über `Position.Entfernung`).
 
 ```csharp
-static IEnumerable<Figur> GrosseJedeZweite(List<Figur> figuren, double minFlaeche)
+static IEnumerable<Gegner> InSichtweite(List<Gegner> gegner, Position held, int reichweite)
 {
-    int treffer = 0;
-    foreach (Figur f in figuren)
+    foreach (Gegner g in gegner)
     {
-        Console.WriteLine($"  pruefe {f.Name}");
-        if (f.Flaeche < minFlaeche)
-            continue;
-        treffer++;
-        if (treffer % 2 == 0)
-            yield return f;
+        Console.WriteLine($"  pruefe {g.Name} bei {g.Position}");
+        if (g.Position.Entfernung(held) <= reichweite)
+            yield return g;
     }
 }
 
-List<Figur> figuren =
+Position held = new(1, 1);
+List<Gegner> gegner =
 [
-    new Rechteck("R1", 0, 0, 2, 3),
-    new Kreis("K1", 0, 0, 1),
-    new Rechteck("R2", 0, 0, 4, 4),
-    new Kreis("K2", 0, 0, 2),
-    new Rechteck("R3", 0, 0, 1, 1),
+    new Wache(new Position(3, 1)),
+    new Verfolger(new Position(8, 6)),
+    new Wache(new Position(1, 4)),
+    new Verfolger(new Position(2, 2)),
 ];
 
-IEnumerable<Figur> auswahl = GrosseJedeZweite(figuren, 5);
+IEnumerable<Gegner> nah = InSichtweite(gegner, held, 3);
 Console.WriteLine("Auswahl definiert");
-figuren.Add(new Kreis("K3", 0, 0, 3));
+gegner.Add(new Wache(new Position(1, 2)));
 
-foreach (Figur f in auswahl)
-    Console.WriteLine(f.Name);
+foreach (Gegner g in nah)
+    Console.WriteLine($"{g.Name} {g.Position}");
 ```
 
 - Sage die vollständige Konsolenausgabe voraus, Zeile für Zeile.
-- Erscheint `K3` in der Ausgabe, obwohl es erst *nach* der Definition von `auswahl` hinzugefügt wurde?
-- Was ändert sich, wenn die `foreach`-Schleife durch `Console.WriteLine(auswahl.First().Name)` ersetzt wird?
-- Was passiert, wenn man direkt hinter der Schleife noch `Console.WriteLine(auswahl.Count())` aufruft?
+- Erscheint die Wache bei (1, 2) in der Ausgabe, obwohl sie erst *nach* der Definition von `nah` hinzugefügt wurde?
+- Was ändert sich, wenn die `foreach`-Schleife durch `Console.WriteLine(nah.First().Name)` ersetzt wird?
+- Was passiert, wenn man direkt hinter der Schleife noch `Console.WriteLine(nah.Count())` aufruft – und was, wenn das `gegner.Add(...)` *innerhalb* der Schleife stünde?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Flächen berechnen:**
+**Schritt 1 — Entfernungen berechnen:**
 
-| Figur | Fläche | ≥ 5? |
-| :--- | :--- | :--- |
-| R1 (2 × 3) | 6 | ja |
-| K1 (r = 1) | 3,14 | nein |
-| R2 (4 × 4) | 16 | ja |
-| K2 (r = 2) | 12,57 | ja |
-| R3 (1 × 1) | 1 | nein |
-| K3 (r = 3) | 28,27 | ja |
+| Gegner | Position | Entfernung zu (1, 1) | ≤ 3? |
+| :--- | :--- | :--- | :--- |
+| Wache | (3, 1) | 2 + 0 = 2 | ja |
+| Verfolger | (8, 6) | 7 + 5 = 12 | nein |
+| Wache | (1, 4) | 0 + 3 = 3 | ja |
+| Verfolger | (2, 2) | 1 + 1 = 2 | ja |
+| Wache | (1, 2) | 0 + 1 = 1 | ja |
 
 **Schritt 2 — Verzögerte Ausführung erkennen:**
 
-`GrosseJedeZweite(figuren, 5)` führt *keine* Zeile des Rumpfs aus – die Methode enthält `yield`, also liefert sie nur ein Iterator-Objekt, das eine Referenz auf die Liste hält. Deshalb erscheint „Auswahl definiert“ als erste Zeile, ohne dass vorher „pruefe“ ausgegeben wird. Und deshalb gehört `K3` zur Iteration: Als die Schleife den Iterator startet, hat die Liste sechs Elemente.
+`InSichtweite(gegner, held, 3)` führt *keine* Zeile des Rumpfs aus – die Methode enthält `yield`, also liefert sie nur ein Iterator-Objekt, das eine Referenz auf die Liste hält. Deshalb erscheint „Auswahl definiert“ als erste Zeile, ohne dass vorher ein „pruefe“ ausgegeben wird. Und deshalb gehört die Wache bei (1, 2) zur Iteration: Als die Schleife den Iterator startet, hat die Liste fünf Elemente.
 
 **Schritt 3 — Ausgabe Schritt für Schritt:**
 
-Der Iterator läuft bei jedem `MoveNext()` bis zum nächsten `yield return`. Die Zählung `treffer` erhöht sich nur bei Figuren über der Grenze; geliefert wird bei geradem Zähler.
+Der Iterator läuft bei jedem `MoveNext()` bis zum nächsten `yield return`, danach übernimmt der Rumpf der `foreach`-Schleife wieder.
 
 ```
 Auswahl definiert
-  pruefe R1        → Treffer 1, kein yield
-  pruefe K1        → zu klein
-  pruefe R2        → Treffer 2, yield
-R2
-  pruefe K2        → Treffer 3, kein yield
-  pruefe R3        → zu klein
-  pruefe K3        → Treffer 4, yield
-K3
+  pruefe Wache bei (3, 1)
+Wache (3, 1)
+  pruefe Verfolger bei (8, 6)
+  pruefe Wache bei (1, 4)
+Wache (1, 4)
+  pruefe Verfolger bei (2, 2)
+Verfolger (2, 2)
+  pruefe Wache bei (1, 2)
+Wache (1, 2)
 ```
 
-Ohne die Kommentare rechts ist das die exakte Konsolenausgabe: neun Zeilen, davon zwei Figurennamen. Die Prüfzeilen und die Namen sind *verzahnt* – nicht erst alle Prüfungen, dann alle Namen. Das ist das elementweise Verhalten aus dem Modul [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
+Neun Zeilen, davon vier Gegner. Prüfzeilen und Treffer sind *verzahnt* – nicht erst alle Prüfungen, dann alle Namen. Das ist das elementweise Verhalten aus dem Modul [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
 
 **Schritt 4 — `First()`:**
 
@@ -292,159 +334,142 @@ Ohne die Kommentare rechts ist das die exakte Konsolenausgabe: neun Zeilen, davo
 
 ```
 Auswahl definiert
-  pruefe R1
-  pruefe K1
-  pruefe R2
-R2
+  pruefe Wache bei (3, 1)
+Wache
 ```
 
-`K2`, `R3` und `K3` werden nie geprüft. Das ist der praktische Nutzen der Faulheit: Bei einer Liste mit einer Million Figuren würde `First()` nach drei Prüfungen aufhören.
+Die übrigen vier Gegner werden nie geprüft. Das ist der praktische Nutzen der Faulheit: Bei einem Feld mit tausend Gegnern hört `First()` nach dem ersten Treffer auf.
 
 **Schritt 5 — `Count()` nach der Schleife:**
 
-`Count()` muss alle Elemente zählen und startet dafür einen *neuen* Enumerator – `GetEnumerator()` wird erneut aufgerufen, `treffer` beginnt wieder bei 0. Der komplette Rumpf läuft ein zweites Mal, alle sechs „pruefe“-Zeilen erscheinen erneut, und dann steht `2` in der Konsole. Wer das Ergebnis mehrfach braucht, sollte es einmal mit `ToList()` einsammeln.
+`Count()` muss alle Elemente zählen und startet dafür einen *neuen* Enumerator – der Rumpf läuft komplett ein zweites Mal, alle fünf „pruefe“-Zeilen erscheinen erneut, und danach steht `4` in der Konsole. Wer das Ergebnis mehrfach braucht, sollte es einmal mit `ToList()` einsammeln.
+
+**Schritt 6 — Ändern während der Iteration:**
+
+Stünde `gegner.Add(...)` *innerhalb* der `foreach`-Schleife, würde der nächste `MoveNext()`-Aufruf eine `InvalidOperationException` werfen („Collection was modified“). Der innere `foreach` über `gegner` merkt sich beim Start eine Versionsnummer der Liste; jedes `Add` erhöht sie. Änderungen *vor* dem Start sind dagegen harmlos, weil der Iterator die Liste erst dann anfasst.
 
 **Zentrale Designentscheidungen:**
 
 - **Der Aufruf einer Iterator-Methode ist kostenlos:** Er erzeugt nur das Iterator-Objekt. Arbeit passiert erst beim Durchlaufen – und bei jedem Durchlaufen erneut.
-- **Der Iterator sieht die Quelle zur Laufzeit:** Er hält eine Referenz auf `figuren`, keine Kopie. Änderungen *vor* dem Start sind sichtbar; Änderungen *während* der Iteration würden eine `InvalidOperationException` auslösen.
-- **Zustand lebt im Iterator:** `treffer` ist eine lokale Variable, die der Compiler in ein Feld der erzeugten Enumerator-Klasse verwandelt. Jeder neue Enumerator hat seinen eigenen Zähler.
+- **Der Iterator sieht die Quelle zur Laufzeit:** Er hält eine Referenz auf `gegner`, keine Kopie.
+- **Als Methode auf `Spielfeld` gehört die Sichtlinie dazu:** Eine echte `GegnerInSichtweite` würde zusätzlich `HatSichtlinie(g.Position, Spieler.Position)` prüfen – der teure Bresenham-Lauf passiert dann nur für die Gegner, die der Aufrufer wirklich abholt.
+- **Gleicher Effekt mit LINQ:** `gegner.Where(g => g.Position.Entfernung(held) <= reichweite)` verhält sich identisch, weil `Where` selbst eine Iterator-Methode ist. Das `Console.WriteLine` im Rumpf macht das Verhalten nur sichtbar.
 
 </details>
 
 ## Aufgabe 4 — Zerlegung
 
-Eine Kollegin hat für den Datenbankzugriff ein Singleton geschrieben und benutzt es überall:
+Ein Kommilitone findet es umständlich, das `Spielfeld` überall herumzureichen, und baut es zum Singleton um:
 
 ```csharp
-public sealed class Datenbank
+public sealed class Spielfeld
 {
-    private static readonly Lazy<Datenbank> halter = new(() => new Datenbank());
-    public static Datenbank Instanz => halter.Value;
+    private static readonly Lazy<Spielfeld> halter =
+        new(() => LevelParser.Parsen(new EingebauteLevelQuelle().Laden("Kerker")));
 
-    private Datenbank()
-    {
-        // baut eine echte Verbindung zum Datenbankserver auf
-    }
+    public static Spielfeld Instanz => halter.Value;
 
-    public List<string> LadeKundennamen() { /* SQL ... */ return new(); }
-    public void SpeichereKunde(string name) { /* SQL ... */ }
+    private Spielfeld(int breite, int hoehe, Spieler spieler) { /* ... */ }
+
+    public bool IstFrei(Position p) { /* ... */ }
+    public void SpielerZieht(Richtung richtung) { /* ... */ }
 }
 
-public class Kundenverwaltung
+public sealed class Wache : Gegner
 {
-    public int AnzahlKunden() => Datenbank.Instanz.LadeKundennamen().Count;
-
-    public void Anlegen(string name)
+    public override Richtung? NaechsterZug()          // kein Parameter mehr!
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name fehlt.");
-        Datenbank.Instanz.SpeichereKunde(name);
+        if (!Spielfeld.Instanz.IstFrei(Position.Verschoben(Laufrichtung)))
+            Laufrichtung = Umkehren(Laufrichtung);
+        return Spielfeld.Instanz.IstFrei(Position.Verschoben(Laufrichtung)) ? Laufrichtung : null;
     }
 }
 ```
 
-Jetzt soll `Kundenverwaltung` mit NUnit getestet werden – und jeder Test braucht plötzlich einen laufenden Datenbankserver. Ein Test, der prüft, dass `Anlegen("")` eine Exception wirft, funktioniert zwar, aber `AnzahlKunden()` liefert je nach Inhalt der echten Datenbank jedes Mal etwas anderes.
+Kurzfristig ist das bequem: `Gegner.NaechsterZug` braucht keinen Parameter mehr, und die Konsole kommt ohne Variable aus. Dann sollen die Tests aus Vorlesung 12 geschrieben werden – und nichts davon funktioniert mehr.
 
-- Warum lässt sich `Kundenverwaltung` in diesem Zustand nicht sinnvoll testen? Was genau steht im Weg?
-- Zerlege die Abhängigkeit: Welches Interface braucht `Kundenverwaltung`, und wer entscheidet, welche Implementierung dahintersteckt?
-- Wie sieht ein Test aus, der ohne Datenbank auskommt?
-- Ist `Datenbank` nach dem Umbau noch ein Singleton – und muss es das sein?
+- Welche konkreten Tests lassen sich mit dieser Version nicht mehr schreiben? Sieh dir an, wie `SpielfeldTests` seine Spielfelder baut.
+- Was passiert, wenn zwei Browser gleichzeitig `Adventure.Web` öffnen?
+- Zerlege die Abhängigkeit: Wer soll entscheiden, welches Spielfeld eine Wache benutzt?
+- `Adventure.Web/Program.cs` registriert die `ILevelQuelle` als Singleton – warum ist das in Ordnung, das `Spielfeld`-Singleton aber nicht?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
 **Schritt 1 — Das Problem benennen:**
 
-`Kundenverwaltung` verrät in ihrer Signatur nicht, dass sie eine Datenbank braucht – die Abhängigkeit ist im Methodenrumpf über `Datenbank.Instanz` fest verdrahtet. Ein Test kann diesen Aufruf nicht abfangen: Es gibt keine Stelle, an der man etwas anderes hineinreichen könnte. Der private Konstruktor verhindert sogar, dass man eine Test-Datenbank selbst erzeugt. Das sind die beiden Singleton-Nachteile „versteckte Abhängigkeit“ und „schwer testbar“ aus dem [Singleton-Modul](/modules/singleton/singleton.md) in Reinform.
-
-**Schritt 2 — Die Abhängigkeit hinter ein Interface legen:**
-
-`Kundenverwaltung` braucht nicht *die Datenbank*, sondern *irgendetwas, das Kunden laden und speichern kann*. Genau das beschreibt ein Interface – dieselbe Idee wie `IFigurSpeicher` im Geometrieeditor:
+`SpielfeldTests` baut für jeden Test ein winziges, exakt zugeschnittenes Level:
 
 ```csharp
-public interface IKundenSpeicher
+private static Spielfeld Feld(params string[] zeilen) => LevelParser.Parsen(new Level("t", zeilen));
+
+[Test] public void Wand_Blockiert()
 {
-    List<string> LadeKundennamen();
-    void SpeichereKunde(string name);
+    Spielfeld f = Feld("#####", "#@#..", "#####");
+    f.SpielerZieht(Richtung.Rechts);
+    Assert.That(f.Spieler.Position, Is.EqualTo(new Position(1, 1)));
 }
 ```
 
-**Schritt 3 — Die Implementierung übergeben statt holen:**
+Mit dem Singleton ist diese Zeile unmöglich: Der Konstruktor ist privat, `LevelParser.Parsen` kann kein Feld mehr erzeugen, und `Spielfeld.Instanz` liefert immer den großen eingebauten Kerker. Schlimmer ist der zweite Effekt: Alle Tests teilen sich *dasselbe* Objekt. Ein Test, der den Helden zum Ausgang laufen lässt, hinterlässt `Status == Gewonnen`, und der nächste Test bekommt ein beendetes Spiel – das Ergebnis hängt davon ab, in welcher Reihenfolge NUnit die Tests ausführt. Das sind exakt die Nachteile „versteckte Abhängigkeit“, „globaler Zustand“ und „schwer testbar“ aus dem [Singleton-Modul](/modules/singleton/singleton.md).
 
-`Kundenverwaltung` bekommt den Speicher im Konstruktor und spricht nur noch über das Interface. Wer die Verwaltung erzeugt, entscheidet, was dahintersteckt:
+In der Weboberfläche ist es kein Testproblem, sondern ein Fehler: Zwei Browsersitzungen spielen auf demselben Spielfeld. Der Held springt für beide hin und her, und wer zuerst den Ausgang erreicht, beendet das Spiel für alle.
+
+**Schritt 2 — Die Abhängigkeit sichtbar machen:**
+
+Eine Wache braucht nicht *das* Spielfeld, sondern *ein* Spielfeld – nämlich das, auf dem sie gerade steht. Die einfachste Form von Dependency Injection ist hier kein Konstruktor und kein Container, sondern schlicht ein Parameter. Genau so sieht die echte Signatur im Adventure aus:
 
 ```csharp
-public class Kundenverwaltung
+public abstract class Gegner : BeweglichesObjekt
 {
-    private readonly IKundenSpeicher speicher;
+    /// <summary>Liefert die Richtung für diese Runde oder null, wenn der Gegner stehen bleibt.</summary>
+    public abstract Richtung? NaechsterZug(Spielfeld feld);
+}
 
-    public Kundenverwaltung(IKundenSpeicher speicher)
+public sealed class Wache : Gegner
+{
+    public override Richtung? NaechsterZug(Spielfeld feld)
     {
-        this.speicher = speicher;
-    }
-
-    public int AnzahlKunden() => speicher.LadeKundennamen().Count;
-
-    public void Anlegen(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name fehlt.");
-        speicher.SpeichereKunde(name);
+        if (!feld.IstFrei(Position.Verschoben(Laufrichtung)))
+            Laufrichtung = Umkehren(Laufrichtung);
+        return feld.IstFrei(Position.Verschoben(Laufrichtung)) ? Laufrichtung : null;
     }
 }
 ```
 
-Die echte `Datenbank` implementiert das Interface und bekommt einen öffentlichen Konstruktor. Die Anwendung erzeugt beim Start *eine* Instanz und reicht sie an alle weiter, die sie brauchen – so wie `Program.cs` im Geometrieeditor den `JsonFigurSpeicher` für die `FigurenVerwaltung` registriert:
+Die Signatur verrät jetzt vollständig, was die Methode braucht. Und wer `Spielfeld.GegnerZiehen` liest, sieht, wer das Feld liefert: `g.NaechsterZug(this)` – das Feld reicht sich selbst herein.
+
+**Schritt 3 — Den Konstruktor zurückgeben:**
+
+`Spielfeld` wird wieder eine gewöhnliche Klasse mit `public Spielfeld(int breite, int hoehe, Spieler spieler)`, und `LevelParser.Parsen` erzeugt so viele Felder, wie jemand haben möchte. Wie viele es zur Laufzeit gibt, entscheidet der Aufrufer:
 
 ```csharp
-public sealed class Datenbank : IKundenSpeicher
-{
-    public Datenbank() { /* Verbindung aufbauen */ }
-    public List<string> LadeKundennamen() { /* SQL ... */ return new(); }
-    public void SpeichereKunde(string name) { /* SQL ... */ }
-}
+// Konsole: genau eines pro Programmlauf
+Spielfeld feld = LevelParser.Parsen(level);
 
-// beim Programmstart, einmal:
-IKundenSpeicher speicher = new Datenbank();
-Kundenverwaltung verwaltung = new(speicher);
+// Blazor: eines pro Komponente, also pro Browsersitzung
+private void NeuStarten() => feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
+
+// Test: eines pro Testmethode, frisch und winzig
+Spielfeld f = Feld("#####", "#@#..", "#####");
 ```
 
-**Schritt 4 — Ein Test ohne Datenbank:**
+Jeder Test beginnt damit in einem definierten Zustand und ist von den anderen unabhängig – die Voraussetzung dafür, dass ein roter Test etwas bedeutet.
 
-Für den Test schreibt man eine zweite Implementierung, die die Kunden nur in einer Liste hält – das Gegenstück zum `ArbeitsspeicherFigurSpeicher`:
+**Schritt 4 — Warum die `ILevelQuelle` ein Singleton sein darf:**
 
 ```csharp
-public class ArbeitsspeicherKundenSpeicher : IKundenSpeicher
-{
-    private readonly List<string> kunden = new();
-    public List<string> LadeKundennamen() => new(kunden);
-    public void SpeichereKunde(string name) => kunden.Add(name);
-}
-
-[Test]
-public void Anlegen_ErhoehtAnzahlKunden()
-{
-    Kundenverwaltung verwaltung = new(new ArbeitsspeicherKundenSpeicher());
-
-    verwaltung.Anlegen("Anna");
-    verwaltung.Anlegen("Ben");
-
-    Assert.That(verwaltung.AnzahlKunden(), Is.EqualTo(2));
-}
+builder.Services.AddSingleton<ILevelQuelle>(_ =>
+    new TextdateiLevelQuelle(Path.Combine(AppContext.BaseDirectory, "levels")));
 ```
 
-Der Test läuft in Millisekunden, braucht keinen Server und liefert bei jedem Lauf dasselbe Ergebnis, weil jeder Test mit einem frischen, leeren Speicher beginnt. Mehr zu NUnit kommt in Vorlesung 12.
-
-**Schritt 5 — Und das Singleton?**
-
-Nach dem Umbau ist `Datenbank` eine gewöhnliche Klasse. Dass es zur Laufzeit nur eine Verbindung gibt, stellt der Programmstart sicher, indem er nur einmal `new Datenbank()` aufruft – das Muster war nie nötig, um „nur eine Instanz“ zu erreichen. Wenn eine zweite Verbindung wirklich *technisch* falsch wäre, kann `Datenbank` intern weiterhin ein Singleton bleiben; entscheidend ist, dass `Kundenverwaltung` davon nichts weiß und nur das Interface sieht.
+Der Unterschied liegt im Zustand und in der Sichtbarkeit. Eine `TextdateiLevelQuelle` liest Dateien und ändert dabei nichts – zwei Sitzungen können sie gefahrlos teilen, und eine zweite Instanz wäre nur Verschwendung. Vor allem aber *holt* sich `Home.razor` die Quelle nicht mit `TextdateiLevelQuelle.Instanz`, sondern bekommt sie mit `@inject ILevelQuelle LevelQuelle` hineingereicht und sieht nur das Interface. Im Test steht dort eine `EingebauteLevelQuelle` oder eine eigene Testquelle. Einmaligkeit ist damit eine Entscheidung der *Anwendung*, keine Eigenschaft der Klasse – und das Spielfeld, das sich bei jedem Zug ändert, ist ohnehin nichts, was man teilen möchte.
 
 **Zentrale Designentscheidungen:**
 
-- **Abhängigkeiten in die Signatur:** Was eine Klasse braucht, steht im Konstruktor. Wer `Kundenverwaltung` liest, sieht sofort, dass sie einen `IKundenSpeicher` benötigt.
-- **Interface im Fachkonzept, Implementierung außen:** `IKundenSpeicher` gehört zur Geschäftslogik, `Datenbank` zur Datenhaltung – dieselbe Abhängigkeitsrichtung wie in der [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md).
-- **Einmaligkeit ist eine Entscheidung des Aufrufers:** Ob es eine oder zehn Instanzen gibt, entscheidet der Code, der `new` aufruft – nicht die Klasse selbst.
-- **Testdoubles statt echter Infrastruktur:** Eine Arbeitsspeicher-Implementierung des Interfaces ist die einfachste Form eines Testdoubles und reicht für die meisten Tests aus.
+- **Abhängigkeiten in die Signatur:** Was eine Methode braucht, steht in ihren Parametern. `NaechsterZug(Spielfeld feld)` ist selbsterklärend, `NaechsterZug()` mit verstecktem `Spielfeld.Instanz` nicht.
+- **Veränderlicher Zustand wird nicht geteilt:** Ein Singleton ist höchstens für zustandslose oder unveränderliche Dienste vertretbar. Spielstand, Sitzungsdaten und Warenkörbe gehören nie dazu.
+- **Einmaligkeit ist eine Entscheidung des Aufrufers:** Ob es ein oder zehn Spielfelder gibt, entscheidet der Code, der `new` aufruft – nicht die Klasse selbst.
+- **Testbarkeit ist ein Entwurfsindikator:** Wenn sich eine Klasse nur mit einem laufenden Server, einer echten Datei oder einem globalen Objekt testen lässt, stimmt meistens der Entwurf nicht – nicht der Test.
 
 </details>

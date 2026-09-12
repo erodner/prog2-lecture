@@ -9,150 +9,174 @@ toc: false
 classes: wide
 ---
 
-Stell dir einen Bauplan für „ein Gebäude“ vor: Er legt fest, dass es ein Fundament, Wände und ein Dach gibt – aber niemand kann nach diesem Plan bauen, weil er nicht sagt, ob es ein Einfamilienhaus oder eine Lagerhalle wird. Trotzdem ist der Plan nützlich: Jeder konkrete Bauplan muss diese Punkte ausfüllen. Genau das leistet eine **abstrakte Klasse** in C#. Sie fasst zusammen, was alle Unterklassen gemeinsam haben, schreibt vor, was jede Unterklasse selbst liefern muss, und lässt sich bewusst nicht instanziieren. In diesem Modul entsteht dabei die Klasse `Figur`, der Kern des Geometrieeditors, der uns durch die ganze Vorlesung begleiten wird.
+Stell dir einen Bauplan für „ein Gebäude“ vor: Er legt fest, dass es ein Fundament, Wände und ein Dach gibt – aber niemand kann nach diesem Plan bauen, weil er nicht sagt, ob es ein Einfamilienhaus oder eine Lagerhalle wird. Trotzdem ist der Plan nützlich: Jeder konkrete Bauplan muss diese Punkte ausfüllen. Genau das leistet eine **abstrakte Klasse** in C#. Sie fasst zusammen, was alle Unterklassen gemeinsam haben, schreibt vor, was jede Unterklasse selbst liefern muss, und lässt sich bewusst nicht instanziieren. In diesem Modul bauen wir damit die Klasse `Spielobjekt` aus unserem Dungeon-Spiel um – die Wurzel der Hierarchie, die uns bis zum Ende des Semesters begleitet.
 
-## Wir müssen nochmal über Copy&Paste reden
+## Das Problem mit `new Spielobjekt(...)`
 
-Angenommen, wir wollen in einem Zeichenprogramm Rechtecke, Kreise und Dreiecke verwalten. Jede Figur hat einen Namen und eine Position (`X` als Abstand vom linken, `Y` als Abstand vom oberen Rand), und jede kann verschoben werden. Ohne Vererbung sieht das schnell so aus:
-
-```csharp
-class Rechteck
-{
-    public string Name { get; set; }
-    public double X { get; set; }
-    public double Y { get; set; }
-    public double Breite { get; set; }
-    public double Hoehe { get; set; }
-
-    public void Verschieben(double dx, double dy) { X += dx; Y += dy; }
-}
-
-class Kreis
-{
-    public string Name { get; set; }
-    public double X { get; set; }
-    public double Y { get; set; }
-    public double Radius { get; set; }
-
-    public void Verschieben(double dx, double dy) { X += dx; Y += dy; }
-}
-```
-
-`Name`, `X`, `Y` und `Verschieben` sind zweimal identisch vorhanden – beim Dreieck dann ein drittes Mal. Aus der [Vererbung](/modules/vererbung_grundlagen/vererbung_grundlagen.md) kennen wir die Lösung: Gemeinsames wandert in eine Basisklasse `Figur`. Aber wie sieht diese Basisklasse aus? Was ist die Fläche einer „Figur“, die weder Rechteck noch Kreis ist? Es gibt keine sinnvolle Antwort – und genau das ist der Punkt, an dem eine normale Basisklasse nicht mehr reicht.
-
-## Die abstrakte Klasse `Figur`
-
-Mit dem Schlüsselwort `abstract` erklären wir eine Klasse zu einer reinen Verallgemeinerung: Sie beschreibt keine konkrete Figur, sondern nur, was alle Figuren gemeinsam haben. Und sie darf **abstrakte Methoden** enthalten – Methoden, die nur aus ihrer Signatur bestehen und keinen Rumpf haben.
+In der [letzten Vorlesung](/lectures/01/01.md) ist `Spielobjekt` als ganz normale Basisklasse entstanden: Alles, was auf dem Spielfeld liegt, hat einen Namen, eine Position, ein Zeichen für die Karte und die Information, ob man darüberlaufen darf.
 
 ```csharp
-public abstract class Figur
+public class Spielobjekt
 {
-    public string Name { get; set; }
-    public double X { get; set; }
-    public double Y { get; set; }
+    public string Name { get; }
+    public Position Position { get; protected set; }
 
-    protected Figur(string name, double x, double y)
+    public Spielobjekt(string name, Position position)
     {
         Name = name;
-        X = x;
-        Y = y;
+        Position = position;
     }
 
-    public abstract double Flaeche { get; }
-    public abstract double Umfang { get; }
-
-    public void Verschieben(double dx, double dy)
-    {
-        X += dx;
-        Y += dy;
-    }
+    public virtual char Symbol => '?';          // Notnagel!
+    public virtual bool IstPassierbar => false;
 }
 ```
 
-Zwei Dinge fallen auf. Erstens stehen hinter `Flaeche` und `Umfang` keine Berechnungen, nur ein `{ get; }` – die Basisklasse verspricht, dass es diese Properties gibt, überlässt die Berechnung aber den Unterklassen. Zweitens ist der Konstruktor `protected`: Er wird nur von abgeleiteten Klassen über `base(...)` aufgerufen, denn von außen kann ohnehin niemand eine `Figur` erzeugen. Das ist die Datei `Figur.cs` aus dem Geometrieeditor, hier nur um ein paar Zeilen gekürzt, die wir uns im nächsten Modul ansehen.
+Das `'?'` ist der wunde Punkt. Es steht da nur, weil ein `virtual`-Property einen Rumpf braucht – eine sinnvolle Antwort gibt es nicht, denn „irgendein Spielobjekt“ hat kein Zeichen. Schlimmer noch: Der Compiler erlaubt damit Code, der fachlich Unsinn ist.
 
-Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`. In der Originaldatei stehen über der Klasse zusätzlich einige `[JsonPolymorphic]`- und `[JsonDerivedType]`-Attribute – die brauchen wir erst in Vorlesung 09, wenn wir Figuren als JSON speichern, und lassen sie bis dahin weg.
+```csharp
+Spielobjekt ding = new Spielobjekt("Ding", new Position(3, 4));
+feld.Hinzufuegen(ding);   // liegt jetzt als '?' im Dungeon herum
+```
+
+Ein Objekt, das weder Wand noch Tür noch Trank ist, kann es im Spiel nicht geben. Und wenn jemand später eine neue Objektart schreibt und das `override` für `Symbol` vergisst, fällt das nicht beim Kompilieren auf – es erscheint einfach ein `?` auf der Karte. Beide Probleme lösen wir mit einem einzigen Schlüsselwort.
+
+## Die abstrakte Klasse `Spielobjekt`
+
+Mit `abstract` erklären wir eine Klasse zu einer reinen Verallgemeinerung: Sie beschreibt kein konkretes Objekt, sondern nur, was alle gemeinsam haben. Und sie darf **abstrakte Mitglieder** enthalten – Methoden oder Properties, die nur aus ihrer Signatur bestehen und keinen Rumpf haben.
+
+```csharp
+public abstract class Spielobjekt
+{
+    public string Name { get; }
+    public Position Position { get; protected set; }
+
+    protected Spielobjekt(string name, Position position)
+    {
+        Name = name;
+        Position = position;
+    }
+
+    /// <summary>Das Zeichen, mit dem das Objekt auf der Karte gezeichnet wird.</summary>
+    public abstract char Symbol { get; }
+
+    /// <summary>Darf ein bewegliches Objekt dieses Feld betreten?</summary>
+    public virtual bool IstPassierbar => false;
+
+    public virtual string Beschreibung() => $"{Name} bei {Position}";
+
+    public override string ToString() => Beschreibung();
+}
+```
+
+Zwei Dinge fallen auf. Erstens steht hinter `Symbol` keine Berechnung mehr, nur ein `{ get; }` – die Basisklasse verspricht, dass es dieses Property gibt, überlässt die Antwort aber den Unterklassen. Zweitens ist der Konstruktor `protected`: Er wird nur noch von abgeleiteten Klassen über `base(...)` aufgerufen, denn von außen kann ohnehin niemand ein `Spielobjekt` erzeugen. `IstPassierbar` und `Beschreibung()` bleiben dagegen `virtual`, weil „Wände blockieren, alles andere überschreibt bei Bedarf“ eine brauchbare Standardantwort ist – mehr dazu im [nächsten Modul](/modules/abstrakte_mitglieder/abstrakte_mitglieder.md).
+
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
 {: .notice--primary}
 
 ## Keine Objekte aus abstrakten Klassen
 
-Was passiert, wenn man trotzdem versucht, eine `Figur` zu erzeugen?
+Was passiert jetzt mit dem Codestück von oben?
 
 ```csharp
-Figur f = new Figur("Irgendwas", 0, 0);
-// error CS0144: Eine Instanz der abstrakten Klasse "Figur" kann nicht erstellt werden.
+Spielobjekt ding = new Spielobjekt("Ding", new Position(3, 4));
+// error CS0144: Eine Instanz der abstrakten Klasse "Spielobjekt" kann nicht erstellt werden.
 ```
 
-Der Compiler verweigert das – und das ist genau gewollt. Ein Objekt, das eine `Flaeche` verspricht, aber keine berechnen kann, wäre ein Widerspruch. Eine abstrakte Klasse ist ein Bauplan für Baupläne: Sie existiert nur, damit andere Klassen von ihr erben.
+Der Compiler verweigert das – und das ist genau gewollt. Aus einem Laufzeitproblem („warum steht da ein `?`“) ist ein Kompilierzeitfehler geworden. `Spielobjekt` existiert nur noch, damit andere Klassen von ihr erben; als Typ für Variablen, Parameter und Sammlungen bleibt sie uneingeschränkt erlaubt.
 
 Eine Klasse, die auch nur ein einziges abstraktes Mitglied enthält, muss selbst als `abstract` markiert sein. Umgekehrt darf eine abstrakte Klasse durchaus ohne abstrakte Mitglieder auskommen – dann drückt `abstract` nur aus, dass Instanzen keinen Sinn ergeben.
 {: .notice--warning}
 
-## Abgeleitete Klassen müssen liefern
+## Zwei abstrakte Zwischenklassen
 
-Wer von `Figur` erbt, übernimmt den Vertrag: Jede nicht-abstrakte Unterklasse **muss** alle abstrakten Mitglieder mit `override` implementieren. Vergisst man eines, kompiliert die Klasse nicht.
+Genau dieser Fall tritt in unserem Spiel sofort ein. Die Objekte zerfallen in zwei Gruppen: Manche liegen fest an ihrem Platz, andere laufen über die Karte. Diese Unterscheidung braucht das Spielfeld ständig – Wände werden in einem `Dictionary<Position, StatischesObjekt>` abgelegt, Gegner in einer Liste. Also bekommt sie zwei eigene Klassen:
 
 ```csharp
-public class Rechteck : Figur
+/// <summary>Objekte, die sich nie bewegen: Wände, Türen, Truhen, Gegenstände auf dem Boden.</summary>
+public abstract class StatischesObjekt : Spielobjekt
 {
-    public double Breite { get; set; }
-    public double Hoehe { get; set; }
-
-    public Rechteck(string name, double x, double y, double breite, double hoehe)
-        : base(name, x, y)
+    protected StatischesObjekt(string name, Position position) : base(name, position)
     {
-        Breite = breite;
-        Hoehe = hoehe;
     }
-
-    public override double Flaeche => Breite * Hoehe;
-    public override double Umfang => 2 * (Breite + Hoehe);
 }
 
-public class Kreis : Figur
+/// <summary>Objekte, die sich über das Spielfeld bewegen: der Spieler und alle Gegner.</summary>
+public abstract class BeweglichesObjekt : Spielobjekt
 {
-    public double Radius { get; set; }
-
-    public Kreis(string name, double x, double y, double radius)
-        : base(name, x, y)
+    protected BeweglichesObjekt(string name, Position position) : base(name, position)
     {
-        Radius = radius;
     }
 
-    public override double Flaeche => Math.PI * Radius * Radius;
-    public override double Umfang => 2 * Math.PI * Radius;
+    /// <summary>Versucht einen Schritt; bleibt stehen, wenn das Zielfeld nicht frei ist.</summary>
+    public bool Bewegen(Richtung richtung, Spielfeld feld)
+    {
+        Position ziel = Position.Verschoben(richtung);
+        if (!feld.IstFrei(ziel)) return false;
+        Position = ziel;
+        return true;
+    }
 }
 ```
 
-Das `override` ist dasselbe Schlüsselwort wie bei [`virtual`-Methoden](/modules/virtual_override/virtual_override.md) – nur dass es hier keine Wahl ist, sondern Pflicht. `Name`, `X`, `Y` und `Verschieben` erben beide Klassen unverändert; der Copy&Paste-Code ist verschwunden. Das `Dreieck` aus dem Geometrieeditor funktioniert nach demselben Muster mit drei Seitenlängen und dem Satz des Heron für die Fläche.
+`StatischesObjekt` enthält nichts als einen Konstruktor und ist trotzdem `abstract` – sie ist eine reine Einordnung, und „ein statisches Objekt“ ohne genauere Art gibt es nicht. `BeweglichesObjekt` bringt zusätzlich echten Code mit, den sich Spieler und Gegner teilen. Beide erben das abstrakte `Symbol` weiter, ohne es zu implementieren: Eine abstrakte Klasse darf einen abstrakten Vertrag an ihre Erben durchreichen.
+
+## Abgeleitete Klassen müssen liefern
+
+Erst die konkreten Klassen am Ende der Kette lösen das Versprechen ein. Jede nicht-abstrakte Unterklasse **muss** alle geerbten abstrakten Mitglieder mit `override` implementieren – vergisst man eines, kompiliert die Klasse nicht.
+
+```csharp
+public sealed class Wand : StatischesObjekt
+{
+    public Wand(Position position) : base("Wand", position) { }
+
+    public override char Symbol => '#';
+}
+
+public sealed class Ausgang : StatischesObjekt
+{
+    public Ausgang(Position position) : base("Ausgang", position) { }
+
+    public override char Symbol => 'E';
+    public override bool IstPassierbar => true;
+}
+```
+
+Das `override` ist dasselbe Schlüsselwort wie bei [`virtual`-Methoden](/modules/virtual_override/virtual_override.md) – nur dass es hier keine Wahl ist, sondern Pflicht. Schön sichtbar wird der Unterschied an `Ausgang`: `Symbol` **muss** überschrieben werden, `IstPassierbar` **darf** überschrieben werden, weil man durch den Ausgang hindurchlaufen können soll. Die `Wand` verzichtet darauf und erbt die Standardantwort `false`. Und `sealed` sorgt dafür, dass an dieser Stelle Schluss ist – von einer Wand muss niemand mehr erben.
 
 ## Polymorphie mit abstrakten Klassen
 
-Der eigentliche Gewinn zeigt sich, sobald wir verschiedene Figuren gemeinsam behandeln. Als Kompilierzeittyp ist `Figur` völlig in Ordnung – nur `new Figur(...)` ist verboten:
+Der Gewinn zeigt sich, sobald das Spielfeld alle Objekte gemeinsam behandelt. Beim Zeichnen der Karte fragt es jedes Feld nach dem Objekt, das dort liegt, und holt sich dessen `Symbol`:
 
 ```csharp
-List<Figur> figuren = new()
+public string AlsText()
 {
-    new Rechteck("R1", 0, 0, 4, 3),
-    new Kreis("K1", 10, 10, 1),
-    new Dreieck("D1", 5, 5, 3, 4, 5)
-};
-
-foreach (Figur f in figuren)
-{
-    f.Verschieben(1, 1);
-    Console.WriteLine($"{f.Name}: Fläche {f.Flaeche:F2}, Umfang {f.Umfang:F2}");
+    StringBuilder sb = new();
+    for (int y = 0; y < Hoehe; y++)
+    {
+        for (int x = 0; x < Breite; x++)
+        {
+            sb.Append(ObjektAn(new Position(x, y))?.Symbol ?? '.');
+        }
+        sb.AppendLine();
+    }
+    return sb.ToString();
 }
-// R1: Fläche 12,00, Umfang 14,00
-// K1: Fläche 3,14, Umfang 6,28
-// D1: Fläche 6,00, Umfang 12,00
 ```
 
-Die Schleife weiß nicht, welche konkrete Figur sie gerade in der Hand hat. Trotzdem liefert `f.Flaeche` jedes Mal das richtige Ergebnis, weil – wie beim [Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) besprochen – die Implementierung des tatsächlichen Objekts aufgerufen wird. Eine abstrakte Methode ist damit automatisch polymorph; ein `virtual` braucht sie nicht.
+`ObjektAn` liefert ein `Spielobjekt?` – welche Art dahintersteckt, weiß die Schleife nicht. Trotzdem erscheint für eine Wand ein `#`, für den Spieler ein `@` und für eine offene Tür ein `/`, weil – wie beim [Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) besprochen – die Implementierung des tatsächlichen Objekts aufgerufen wird. Eine abstrakte Methode ist damit automatisch polymorph; ein zusätzliches `virtual` braucht sie nicht.
 
-Genau diese `List<Figur>` ist das Herz des Geometrieeditors: Die Klasse `FigurenVerwaltung` hält eine solche Liste, summiert Flächen und sucht Figuren nach Namen – ohne je zu wissen, ob es sich um Rechtecke oder Kreise handelt. In den nächsten Vorlesungen bekommt sie eine grafische Oberfläche, eine Datei zum Speichern und Unit-Tests.
+```
+####################
+#@.....#...........#
+#......#.....W.....#
+#..k...#...........#
+#......D...........#
+```
 
-Übung: Ergänze ein `abstract void Zeichnen()` in `Figur` und implementiere es in `Rechteck` und `Kreis` so, dass jeweils eine Zeile wie `Zeichne Rechteck R1` in einer anderen `ConsoleColor` erscheint (`Console.ForegroundColor` setzen, danach `Console.ResetColor()`). Was passiert mit `Dreieck`, wenn du dort das `override` vergisst?
+Der entscheidende Punkt: Das `?` kann in dieser Ausgabe nicht mehr auftauchen. Der Compiler hat jede Objektart gezwungen, sich für ein Zeichen zu entscheiden – und jede neue Objektart, die wir in den nächsten Modulen ergänzen, wird beim Kompilieren daran erinnert.
+
+Übung: Ergänze eine Klasse `Statue : StatischesObjekt` mit dem Symbol `'S'`, die nicht passierbar ist. Lass zuerst das `override` bei `Symbol` weg und lies die Fehlermeldung genau. Versuche danach, `StatischesObjekt` direkt zu instanziieren, und vergleiche die Fehlernummer mit CS0144. Welche der beiden Fehlermeldungen hättest du bei der alten, nicht-abstrakten Version aus Vorlesung 01 bekommen?
 {: .notice--info}
 
 ## Weitere Quellen

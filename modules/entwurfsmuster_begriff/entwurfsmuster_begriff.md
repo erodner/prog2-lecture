@@ -21,7 +21,7 @@ Ein **Entwurfsmuster** (*Design Pattern*) ist eine wiederverwendbare, bewährte 
 
 Ein Muster ist also keine Bibliothek und kein Codeschnipsel. Es ist eine *Idee*, die man kennen und im richtigen Moment anwenden muss. Genau deshalb enthält die Beschreibung eines Musters immer mehr als nur Code: einen Namen, das Problem, die Lösung mit den beteiligten Klassen, Beispiele und – ganz wichtig – die Vor- und Nachteile. Nach diesem Schema sind auch die fünf Module dieser Vorlesung aufgebaut.
 
-Entwurfsmuster wirken **im Kleinen**: Sie lösen ein Problem innerhalb eines Bausteins und betreffen typischerweise zwei bis fünf zusammenarbeitende Klassen. Die Gesamtstruktur eines Systems – etwa die [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md) aus Vorlesung 04 – bezeichnet man dagegen als *Architekturmuster*. Beide Ebenen ergänzen sich: Innerhalb einer Schicht setzt man Entwurfsmuster ein.
+Entwurfsmuster wirken **im Kleinen**: Sie lösen ein Problem innerhalb eines Bausteins und betreffen typischerweise zwei bis fünf zusammenarbeitende Klassen. Die Gesamtstruktur eines Systems – etwa die [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md) aus Vorlesung 04, die `Adventure.Web` und `Adventure.Konsole` von `Adventure.Kern` trennt – bezeichnet man dagegen als *Architekturmuster*. Beide Ebenen ergänzen sich: Innerhalb einer Schicht setzt man Entwurfsmuster ein.
 {: .notice--primary}
 
 ## Warum Muster? Ein gemeinsames Vokabular
@@ -30,7 +30,7 @@ Der praktische Nutzen von Entwurfsmustern liegt nicht nur in der Lösung selbst,
 
 > „Ich habe eine Klasse gebaut, die eine Liste von Objekten hält, die alle ein Interface mit einer Methode `Aktualisieren` implementieren, und wenn sich mein Wert ändert, gehe ich die Liste durch und rufe bei jedem die Methode auf …“
 
-> „Die Messstation ist ein Observer-Subjekt.“
+> „Der Spieler ist ein Observer-Subjekt.“
 
 Beide Sätze beschreiben dasselbe Design. Der zweite braucht fünf Worte, und jede Kollegin, die das Muster kennt, weiß sofort, welche Klassen es gibt, wie sie zusammenhängen und wo die typischen Fallstricke liegen. Muster sind damit eine Art Fachsprache – wie „Welle“ und „Lager“ im Maschinenbau. Ein zweiter Vorteil: Wer ein Muster erkennt, kann fremden Code viel schneller lesen. Sieht man in einer Klasse einen privaten Konstruktor und eine statische Property `Instanz`, muss man den Rest nicht mehr entziffern – das ist ein Singleton, und man weiß, was einen erwartet.
 
@@ -60,19 +60,34 @@ Die Gang of Four hat ihre 23 Muster nach der Frage sortiert, *welche Art* von Pr
 | | | Template Method |
 | | | Visitor |
 
-Die fünf fett gedruckten Muster behandeln wir in dieser Vorlesung. Sie sind so ausgewählt, dass jede Kategorie vertreten ist und dass wir alle davon bereits *benutzt* haben, ohne sie beim Namen zu nennen: `foreach` funktioniert nur dank des Iterator-Musters, jedes `event` aus dem Modul [Ereignisse](/modules/ereignisse/ereignisse.md) ist ein Observer, und der HTML-DOM bzw. der Komponentenbaum von Blazor ist ein Composite.
+Die fünf fett gedruckten Muster behandeln wir in dieser Vorlesung. Sie sind so ausgewählt, dass jede Kategorie vertreten ist – und dass wir die meisten davon bereits *benutzt* haben, ohne sie beim Namen zu nennen.
 
-Einige weitere Muster aus der Tabelle kennst du in Ansätzen ebenfalls schon. **Strategy** – ein austauschbarer Algorithmus hinter einem Interface – ist genau das, was wir mit `IComparer<T>` im Modul [`IComparable<T>` und Sortieren](/modules/icomparable_sortieren/icomparable_sortieren.md) gemacht haben, und in schlanker Form ist jeder `Func<T, bool>`-Parameter eine Strategie. **Template Method** steckt in der Klasse `Figur` des Geometrieeditors: `Beschreibung()` ist in der Basisklasse fertig, ruft aber die abstrakte Property `Flaeche` auf, die jede Unterklasse selbst ausfüllt.
+## Die Muster im Adventure
+
+Das durchgehende Beispiel dieses Kurses ist dafür eine Fundgrube. Fast jedes Muster dieser Vorlesung steckt schon irgendwo im Spiel, und die restlichen ergänzen wir in den folgenden Modulen:
+
+| Muster | Wo es im Adventure steckt |
+| :--- | :--- |
+| **Iterator** | `Spielfeld.AlleObjekte` liefert mit `yield return` erst die statischen Objekte, dann die Gegner, dann den Spieler. `Inventar<T>` implementiert `IEnumerable<T>`, damit `foreach` über die Gegenstände läuft. |
+| **Observer** | `Spieler.SchatzGefunden` und `Spielfeld.RundeBeendet`: Die Konsole piept, die Statusleiste zeichnet neu – und der Kern kennt keinen von beiden. |
+| **Adapter** | Fehlt noch: Konsole und Blazor übersetzen `ConsoleKey` bzw. `KeyboardEventArgs.Key` jeweils selbst in eine `Richtung`. Wir bauen daraus ein Interface `IEingabe`. |
+| **Composite** | Fehlt noch: Ein `Raum` als Gruppe von Wänden, die sich wie ein einzelnes Bauteil verschieben und aufs Feld setzen lässt. |
+| **Singleton** | Bewusst nicht verwendet: Sichtweite und Startleben stehen im Konstruktor von `Verfolger` bzw. als `const` in `Spieler`. Wir bauen im Singleton-Modul eine `Spielkonfiguration` – und diskutieren, warum sie mehr schadet als nützt. |
+| **Strategy** | `Gegner.NaechsterZug` ist ein austauschbarer Algorithmus hinter einer abstrakten Methode – und in der Delegat-Variante aus [Vorlesung 07](/lectures/07/07.md) ist jeder `Func<Spielfeld, Gegner, Richtung?>` eine Strategie. |
+| **Template Method** | `Spielfeld.SpielerZieht` legt den Ablauf einer Runde fest – erst der Held, dann alle Gegner, dann die Meldung – und überlässt den variablen Schritt den Gegnerklassen. |
+| **Factory Method** | `LevelParser.ObjektFuer(char, Position)` entscheidet, welche Klasse hinter einem Zeichen der Textkarte steckt. Der Rest des Parsers kennt nur `Spielobjekt`. |
+
+Dass wir diese Lösungen gefunden haben, ohne die Muster zu kennen, ist typisch: Gute Entwürfe konvergieren. Der Nutzen des Katalogs ist, dass man sie beim nächsten Mal *schneller* findet und mit einem Wort benennen kann.
 {: .notice--primary}
 
 ## Muster sind kein Selbstzweck
 
-Wer Entwurfsmuster gerade erst gelernt hat, neigt dazu, sie überall einzubauen – ein Phänomen, das so verbreitet ist, dass es einen eigenen Namen hat: *Patternitis*. Das Ergebnis sind Programme mit einer `FigurFactory`, einem `FigurenVerwaltungSingleton` und drei Adaptern, wo ein einziges `new Kreis(...)` gereicht hätte. Jedes Muster bringt zusätzliche Klassen und Indirektionen mit, und jede davon muss gelesen, verstanden und gewartet werden.
+Wer Entwurfsmuster gerade erst gelernt hat, neigt dazu, sie überall einzubauen – ein Phänomen, das so verbreitet ist, dass es einen eigenen Namen hat: *Patternitis*. Das Ergebnis sind Programme mit einer `SpielobjektFactory`, einem `SpielfeldSingleton` und drei Adaptern, wo ein einziges `new Wand(position)` gereicht hätte. Jedes Muster bringt zusätzliche Klassen und Indirektionen mit, und jede davon muss gelesen, verstanden und gewartet werden.
 
 Die richtige Reihenfolge ist deshalb immer: Erst das Problem verstehen, dann prüfen, ob es *wirklich* dem Problem eines Musters entspricht, und erst dann das Muster einsetzen. Ein Muster ist nur dann eine gute Lösung, wenn man das Problem auch tatsächlich hat. Im Zweifel: Die einfachste Lösung, die funktioniert – und ein Muster erst, wenn der Code danach verlangt.
 {: .notice--warning}
 
-Übung: Öffne den Geometrieeditor aus Vorlesung 04 (`examples/04_blazor/Geometrieeditor`) und suche nach Stellen, an denen bereits Entwurfsmuster stecken – auch aus der Tabelle oben, nicht nur die fünf fetten. Tipp: Schau dir an, wie `FigurenVerwaltung` an ihren `IFigurSpeicher` kommt, und wie `Figur.Beschreibung()` mit `Flaeche` zusammenspielt.
+Übung: Öffne das Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`) und suche nach Stellen, an denen bereits Entwurfsmuster stecken – auch solche aus der Tabelle, die wir nicht behandeln. Tipp: Schau dir an, wie `Adventure.Web/Program.cs` die `ILevelQuelle` registriert und wie `Home.razor` sie über `@inject` bekommt. Welches Problem löst das, und welches Muster ist das nicht ganz?
 {: .notice--info}
 
 ## Weitere Quellen

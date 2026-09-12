@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Bisher begann jedes unserer Programme mit `Console.WriteLine`. Heute beginnt es mit einer Seite im Browser – und trotzdem schreiben wir ausschließlich C#. Damit das gelingt, müssen ein paar Dinge zusammenspielen, die uns bei Konsolenprogrammen erspart blieben: ein Webserver, der auf Anfragen wartet, ein HTML-Grundgerüst, das der Browser anzeigt, und eine Verbindung zwischen beiden, über die Klicks in die eine und neue Seiteninhalte in die andere Richtung wandern. Das klingt nach viel, aber die Projektvorlage von Blazor legt fast alles davon für uns an. In diesem Modul erzeugen wir das Projekt `HalloBlazor`, sehen uns die erzeugten Dateien an und verstehen dann Zeile für Zeile, wie eine Seite mit Eingabefeld, Button und Ausgabe funktioniert.
+Bisher begann jedes unserer Programme mit `Console.WriteLine` – auch das Adventure. Heute beginnt es mit einer Seite im Browser, und trotzdem schreiben wir ausschließlich C#. Damit das gelingt, müssen ein paar Dinge zusammenspielen, die uns bei Konsolenprogrammen erspart blieben: ein Webserver, der auf Anfragen wartet, ein HTML-Grundgerüst, das der Browser anzeigt, und eine Verbindung zwischen beiden, über die Klicks in die eine und neue Seiteninhalte in die andere Richtung wandern. Das klingt nach viel, aber die Projektvorlage von Blazor legt fast alles davon für uns an. Weil man den Aufbau am besten an etwas ganz Kleinem versteht, legen wir zuerst ein Wegwerf-Projekt an, tippen darin eine Seite mit Eingabefeld, Button und Ausgabe – und übertragen das Gelernte danach auf `Adventure.Web`.
 
 ## Projekt anlegen und starten
 
@@ -28,7 +28,7 @@ Interactive Server heißt: Dein C#-Code läuft auf dem Server, also in dem Proze
 
 ## Der Aufbau des Projekts
 
-Die Vorlage erzeugt mehr Dateien als eine Konsolen-App, aber nur eine Handvoll ist für uns wichtig:
+Die Vorlage erzeugt mehr Dateien als eine Konsolen-App, aber nur eine Handvoll ist für uns wichtig – und genau dieselben Dateien finden wir später in `Adventure.Web` wieder:
 
 | Datei | Aufgabe |
 | :--- | :--- |
@@ -36,15 +36,13 @@ Die Vorlage erzeugt mehr Dateien als eine Konsolen-App, aber nur eine Handvoll i
 | `Components/App.razor` | HTML-Grundgerüst der Seite (`<html>`, `<head>`, `<body>`) |
 | `Components/Routes.razor` | Ordnet Adressen (`/`, `/about`) den Seiten zu |
 | `Components/Layout/MainLayout.razor` | Rahmen, der um jede Seite gelegt wird |
-| `Components/Pages/Home.razor` | Unsere Startseite – hier arbeiten wir |
+| `Components/Pages/Home.razor` | Die Startseite – hier arbeiten wir |
 | `Components/_Imports.razor` | `@using`-Zeilen, die für alle Razor-Dateien gelten |
 | `wwwroot/app.css` | Stylesheet der App |
 
 Der Reihe nach: `Program.cs` ist eine Top-Level-Statements-Datei wie bei einer Konsolen-App, nur dass sie keinen Ablauf beschreibt, sondern einen Server aufsetzt:
 
 ```csharp
-using HalloBlazor.Components;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -72,18 +70,18 @@ Das Skript `blazor.web.js` ist das einzige JavaScript, das wir je brauchen – e
 
 Damit sind wir bei `Home.razor`, der einzigen Datei, die wir in diesem Modul selbst verändern. Eine `.razor`-Datei besteht aus zwei Teilen: oben **Markup** (HTML mit eingestreuten `@`-Ausdrücken), unten ein `@code`-Block mit gewöhnlichem C#. Beim Kompilieren wird aus jeder Razor-Datei **eine C#-Klasse** – bei `Home.razor` die Klasse `Home`. Das Markup wird zu einer Methode, die das HTML erzeugt, der `@code`-Block liefert Felder und Methoden dieser Klasse.
 
-Ältere Frameworks haben Aussehen und Verhalten auf zwei Dateien verteilt: eine vom Designer erzeugte Datei mit den Steuerelementen und eine Code-Behind-Datei mit den Handlern. Razor legt beides in eine Datei, hält es aber genauso sauber getrennt: Das Markup beschreibt, *was* zu sehen ist, der `@code`-Block, *was passiert*. Hier die vollständige Startseite von `HalloBlazor`:
+Ältere Frameworks haben Aussehen und Verhalten auf zwei Dateien verteilt: eine vom Designer erzeugte Datei mit den Steuerelementen und eine Code-Behind-Datei mit den Handlern. Razor legt beides in eine Datei, hält es aber genauso sauber getrennt: Das Markup beschreibt, *was* zu sehen ist, der `@code`-Block, *was passiert*. Lösche den erzeugten Inhalt von `Home.razor` und tippe diese Seite ab – sie ist absichtlich winzig und hat nichts mit dem Spiel zu tun:
 
 ```razor
 @page "/"
 
-<PageTitle>Hallo Blazor</PageTitle>
+<PageTitle>Erste Seite</PageTitle>
 
-<h1>Hallo Blazor</h1>
+<h1>Erste Seite</h1>
 
-<p>Wie heißt du?</p>
+<p>Wie heißt dein Held?</p>
 <input @bind="name" placeholder="Name eingeben" />
-<button @onclick="Begruessen">Begrüßen</button>
+<button @onclick="Begruessen">Los</button>
 
 <p class="ausgabe">@ausgabe</p>
 
@@ -95,8 +93,8 @@ Damit sind wir bei `Home.razor`, der einzigen Datei, die wir in diesem Modul sel
     private void Begruessen()
     {
         anzahlKlicks++;
-        string wer = string.IsNullOrWhiteSpace(name) ? "Unbekannte:r" : name;
-        ausgabe = $"Hallo, {wer}! (Klick Nr. {anzahlKlicks})";
+        string wer = string.IsNullOrWhiteSpace(name) ? "Namenlose:r" : name;
+        ausgabe = $"Willkommen im Kerker, {wer}! (Klick Nr. {anzahlKlicks})";
     }
 }
 ```
@@ -105,21 +103,48 @@ Gehen wir die Datei von oben nach unten durch. `@page "/"` macht aus der Kompone
 
 Interessant wird es bei `<input @bind="name" />`. Das Attribut `@bind` verbindet das Eingabefeld mit dem Feld `name` aus dem `@code`-Block in beide Richtungen: Der Anfangswert des Feldes erscheint im Textfeld, und sobald der Benutzer das Feld verlässt, landet der eingegebene Text in `name`. `<button @onclick="Begruessen">` registriert die Methode `Begruessen` als Ereignisbehandler für den Klick – wir schreiben die Methode, aufgerufen wird sie von Blazor. Und `@ausgabe` in der letzten Markup-Zeile fügt den aktuellen Wert des Feldes `ausgabe` als Text in den Absatz ein.
 
-Im `@code`-Block stehen drei private Felder und eine Methode – ganz gewöhnlicher C#-Code, so wie wir ihn seit [Klassen und Objekten](https://www.erodner.de/prog-lecture/modules/klassen/klassen/) schreiben. `Begruessen` zählt den Klick, prüft mit `string.IsNullOrWhiteSpace`, ob überhaupt ein Name eingegeben wurde, und setzt `ausgabe` neu. Auffällig ist, was fehlt: Nirgends steht „schreibe `ausgabe` jetzt in den Absatz“. Das erledigt Blazor.
+Im `@code`-Block stehen drei private Felder und eine Methode – ganz gewöhnlicher C#-Code, so wie wir ihn seit [Klassen und Objekten](https://www.erodner.de/prog-lecture/modules/klassen/klassen/) schreiben. Auffällig ist, was fehlt: Nirgends steht „schreibe `ausgabe` jetzt in den Absatz“. Das erledigt Blazor.
 
 ## Was beim Klick passiert
 
-Verfolgen wir einen Klick vom Anfang bis zum Ende. Der Benutzer tippt „Anna“ in das Textfeld und klickt auf „Begrüßen“. Der Browser meldet über die SignalR-Verbindung an den Server: „Feld verlassen, neuer Text ‚Anna‘“ und dann „Button geklickt“. Auf dem Server setzt Blazor daraufhin `name = "Anna"` und ruft `Begruessen()` auf. Nach dem Handler rendert Blazor die Komponente neu, das heißt, es erzeugt das HTML aus dem Markup noch einmal – diesmal mit dem neuen Wert von `@ausgabe` – und vergleicht es mit dem vorherigen Stand. Nur die Unterschiede werden an den Browser geschickt, der sie in die angezeigte Seite einbaut. Für den Benutzer sieht es aus, als hätte sich der Absatz „von selbst“ geändert.
+Verfolgen wir einen Klick vom Anfang bis zum Ende. Der Benutzer tippt „Alrik“ in das Textfeld und klickt auf „Los“. Der Browser meldet über die SignalR-Verbindung an den Server: „Feld verlassen, neuer Text ‚Alrik‘“ und dann „Button geklickt“. Auf dem Server setzt Blazor daraufhin `name = "Alrik"` und ruft `Begruessen()` auf. Nach dem Handler rendert Blazor die Komponente neu, das heißt, es erzeugt das HTML aus dem Markup noch einmal – diesmal mit dem neuen Wert von `@ausgabe` – und vergleicht es mit dem vorherigen Stand. Nur die Unterschiede werden an den Browser geschickt, der sie in die angezeigte Seite einbaut. Für den Benutzer sieht es aus, als hätte sich der Absatz „von selbst“ geändert.
 
 Dieser Zyklus – Ereignis, Handler, neu rendern, Unterschiede übertragen – ist das Grundmuster jeder Blazor-Anwendung. Wir schreiben nur den mittleren Schritt. Wie Blazor entscheidet, wann neu gerendert wird, und was `@bind` dabei genau tut, sehen wir uns in [Datenbindung und Render-Zyklus](/modules/blazor_datenbindung/blazor_datenbindung.md) genauer an.
 
 Hot Reload hat Grenzen: Änderungen am Markup und an Methodenrümpfen übernimmt `dotnet watch` sofort, aber neue Felder, geänderte Signaturen oder Änderungen in `Program.cs` erfordern einen Neustart. Wenn sich die Seite trotz Speichern nicht ändert, hilft in der Konsole von `dotnet watch` die Taste `Strg+R` für einen vollständigen Neustart.
 {: .notice--warning}
 
-Übung: Erweitere `Home.razor` um ein zweites Eingabefeld für das Alter und lasse `Begruessen` ausgeben, in welchem Jahr die Person 100 wird. Ändere anschließend den Methodennamen im `@onclick`-Attribut absichtlich falsch und beobachte, wo und wann der Fehler auftaucht.
+## Vom Wegwerf-Projekt zum Spiel
+
+Das Wegwerf-Projekt hat seinen Zweck erfüllt; ab jetzt arbeiten wir im Projekt `Adventure.Web`, das mit genau demselben Befehl entstanden ist. Zwei Unterschiede gibt es. Erstens verweist es auf den Spielkern und auf die Datenschicht, und zweitens registriert seine `Program.cs` eine Zeile mehr:
+
+```csharp
+using Adventure.Daten;
+using Adventure.Kern;
+using Adventure.Web.Components;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+// Die eine Stelle, an der entschieden wird, woher die Level kommen.
+builder.Services.AddSingleton<ILevelQuelle, EingebauteLevelQuelle>();
+
+var app = builder.Build();
+// ...
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+app.Run();
+```
+
+Diese eine Zeile ist der Ort, an dem später die Schichten zusammenkommen: Die Seite fragt nur nach einem `ILevelQuelle`, und `Program.cs` entscheidet, welche Klasse das liefert. Wie dieser Mechanismus heißt und warum er so wichtig ist, behandelt [Schichten mit Blazor umsetzen](/modules/schichten_mit_blazor/schichten_mit_blazor.md). Auch das `MainLayout` ist gewachsen: Es bekommt eine Kopfzeile mit dem Titel `Adventure`, damit jede Seite denselben Rahmen hat.
+
+Übung: Erweitere deine `Home.razor` um ein zweites Eingabefeld für die Anzahl der Lebenspunkte und lasse `Begruessen` zusätzlich so viele Herzsymbole `♥` ausgeben, wie eingegeben wurden (`new string('♥', anzahl)`). Ändere anschließend den Methodennamen im `@onclick`-Attribut absichtlich falsch und beobachte, wo und wann der Fehler auftaucht – zur Laufzeit oder beim Kompilieren?
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository unter `examples/04_blazor/HalloBlazor`.
+Das vollständige Spielprojekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 ## Weitere Quellen
 

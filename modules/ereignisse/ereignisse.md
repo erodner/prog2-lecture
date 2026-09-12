@@ -27,37 +27,35 @@ class SturzErkennung
 }
 ```
 
-Die `SturzErkennung` kennt alle drei Empfänger namentlich, erzeugt sie selbst und ruft sie in fester Reihenfolge auf. Kommt ein vierter Empfänger dazu (eine Protokolldatei etwa), muss der Sensor geändert werden. Soll in der Nacht der Alarmton stumm bleiben, muss der Sensor das entscheiden. Sender und Empfänger sind fest miteinander verdrahtet – dabei sollte der Sensor nur eine Aufgabe haben: Stürze erkennen. **Ereignisse** (*events*) drehen die Abhängigkeit um: Der Sender *veröffentlicht*, dass etwas passiert ist, und wer sich dafür interessiert, *registriert* sich beim Sender. Der Sender kennt seine Empfänger nicht mehr – er kennt nur noch die Signatur, die sie erfüllen müssen. Das ist die Idee des Observer-Musters, und Ereignisse sind die eingebaute C#-Umsetzung davon.
+Die `SturzErkennung` kennt alle drei Empfänger namentlich, erzeugt sie selbst und ruft sie in fester Reihenfolge auf. Kommt ein vierter Empfänger dazu (eine Protokolldatei etwa), muss der Sensor geändert werden. Soll in der Nacht der Alarmton stumm bleiben, muss der Sensor das entscheiden. Sender und Empfänger sind fest miteinander verdrahtet – dabei sollte der Sensor nur eine Aufgabe haben: Stürze erkennen. **Ereignisse** (*events*) drehen die Abhängigkeit um: Der Sender *veröffentlicht*, dass etwas passiert ist, und wer sich dafür interessiert, *registriert* sich beim Sender. Der Sender kennt seine Empfänger nicht mehr – er kennt nur noch die Signatur, die sie erfüllen müssen.
+
+Im Adventure steckt genau dieses Problem in der Klasse `Spieler`. Wenn der Held einen Schatz aufhebt, soll die Konsole einen Ton ausgeben, die Weboberfläche ihre Punkteanzeige aktualisieren und ein Erfolgssystem mitzählen. Der Spieler darf von keinem dieser drei etwas wissen – `Adventure.Kern` kennt weder `Console` noch Blazor, das war die Abhängigkeitsrichtung aus der [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md).
 
 ## Von der Delegatvariablen zum `event`
 
 Technisch ist ein Ereignis ein [Multicast-Delegat](/modules/delegaten/delegaten.md): Empfänger hängen ihre Methoden mit `+=` an, der Sender ruft den Delegaten auf. Man könnte also einfach ein öffentliches Delegatfeld anlegen – aber dann darf *jeder* damit alles tun:
 
 ```csharp
-class Cafe
+public class Spieler : BeweglichesObjekt
 {
-    public EventHandler? FreirundeAngekuendigt;   // öffentliches Feld – riskant
+    public EventHandler<SchatzEventArgs>? SchatzGefunden;   // öffentliches Feld – riskant
 }
 
-Cafe cafe = new();
-cafe.FreirundeAngekuendigt = null;                        // löscht alle anderen Gäste
-cafe.FreirundeAngekuendigt?.Invoke(cafe, EventArgs.Empty); // ein Gast kündigt selbst eine Freirunde an
+feld.Spieler.SchatzGefunden = null;                          // löscht alle anderen Zuhörer
+feld.Spieler.SchatzGefunden?.Invoke(feld.Spieler, irgendwas); // die Oberfläche jubelt ohne Schatz
 ```
 
 Das Schlüsselwort `event` vor der Deklaration schließt genau diese beiden Türen: Von außen sind nur noch `+=` und `-=` erlaubt. Zuweisen und Auslösen kann ausschließlich die Klasse, in der das Ereignis deklariert ist:
 
 ```csharp
-class Cafe
-{
-    public event EventHandler? FreirundeAngekuendigt;   // Ereignis
-}
+public event EventHandler<SchatzEventArgs>? SchatzGefunden;   // Ereignis
 
-cafe.FreirundeAngekuendigt = null;          // Fehler CS0070: nur += oder -= erlaubt
-cafe.FreirundeAngekuendigt?.Invoke(...);    // Fehler CS0070: Aufruf nur innerhalb von Cafe
-cafe.FreirundeAngekuendigt += FreirundeEmpfangen;   // erlaubt
+feld.Spieler.SchatzGefunden = null;          // Fehler CS0070: nur += oder -= erlaubt
+feld.Spieler.SchatzGefunden?.Invoke(...);    // Fehler CS0070: Aufruf nur innerhalb von Spieler
+feld.Spieler.SchatzGefunden += SchatzGemeldet;   // erlaubt
 ```
 
-Ein Ereignis wird immer von genau *einem* Objekt ausgelöst – dem Café. Registrieren können sich *beliebig viele* – alle Gäste an den Tischen.
+Ein Ereignis wird immer von genau *einem* Objekt ausgelöst – dem Spieler. Registrieren können sich *beliebig viele*: die Konsole, die Statusleiste, ein Protokoll.
 
 ## Die .NET-Konvention: `EventHandler` und `EventArgs`
 
@@ -68,114 +66,145 @@ public delegate void EventHandler(object? sender, EventArgs e);
 public delegate void EventHandler<TEventArgs>(object? sender, TEventArgs e);
 ```
 
-Der Rückgabetyp ist immer `void`. Der erste Parameter `sender` ist das Objekt, das das Ereignis ausgelöst hat – so kann eine Behandlungsmethode, die an mehreren Cafés registriert ist, unterscheiden, in welchem gerade eine Freirunde angekündigt wird. Der zweite Parameter transportiert die Ereignisdaten. Gibt es keine, verwendet man `EventHandler` und übergibt `EventArgs.Empty`. Gibt es welche, schreibt man eine eigene Klasse, die von `EventArgs` erbt, und nutzt die generische Variante. Das Café soll ein bestimmtes Getränk gratis ausgeben:
+Der Rückgabetyp ist immer `void`. Der erste Parameter `sender` ist das Objekt, das das Ereignis ausgelöst hat – so kann eine Behandlungsmethode, die an mehreren Spielern registriert ist, unterscheiden, wer gerade einen Schatz gefunden hat. Der zweite Parameter transportiert die Ereignisdaten. Gibt es keine, verwendet man `EventHandler` und übergibt `EventArgs.Empty`. Gibt es welche, schreibt man eine eigene Klasse, die von `EventArgs` erbt, und nutzt die generische Variante. Im Adventure sind das der gefundene Schatz und der neue Punktestand:
 
 ```csharp
-enum GetraenkArt { Heiss, Kalt }
-
-class FreirundeEventArgs : EventArgs
+public class SchatzEventArgs : EventArgs
 {
-    public GetraenkArt Art { get; }
+    public Schatz Schatz { get; }
+    public int Punkte { get; }
 
-    public FreirundeEventArgs(GetraenkArt art)
+    public SchatzEventArgs(Schatz schatz, int punkte)
     {
-        Art = art;
+        Schatz = schatz;
+        Punkte = punkte;
     }
 }
 ```
 
-Die Property hat bewusst keinen Setter: Ereignisdaten beschreiben, was passiert *ist*, und sollten von den Empfängern nicht verändert werden – sonst sieht der nächste Gast in der Liste andere Daten als der erste.
+Die Properties haben bewusst keinen Setter: Ereignisdaten beschreiben, was passiert *ist*, und sollten von den Empfängern nicht verändert werden – sonst sieht der zweite Zuhörer in der Liste andere Daten als der erste.
 
-## Der Sender: das Café
+## Der Sender: der Spieler
 
-Nun kann das Café sein Ereignis mit dem passenden Typ deklarieren und auslösen. Das Auslösen kapselt man in einer geschützten Methode mit dem Präfix `On`:
+Nun kann `Spieler` sein Ereignis deklarieren und an der einen Stelle auslösen, an der ein Schatz tatsächlich eingesammelt wird:
 
 ```csharp
-class Cafe
+public class Spieler : BeweglichesObjekt
 {
-    public event EventHandler<FreirundeEventArgs>? FreirundeAngekuendigt;
+    public int Punkte { get; private set; }
 
-    public void FreirundeAusgeben(GetraenkArt art)
-    {
-        Console.WriteLine($"Café: Eine Freirunde {art} für alle!");
-        OnFreirundeAngekuendigt(new FreirundeEventArgs(art));
-    }
+    /// <summary>Wird ausgelöst, wenn der Spieler einen Schatz findet – z. B. für die Anzeige.</summary>
+    public event EventHandler<SchatzEventArgs>? SchatzGefunden;
 
-    protected virtual void OnFreirundeAngekuendigt(FreirundeEventArgs e)
+    public void SchatzEinsammeln(Schatz schatz)
     {
-        FreirundeAngekuendigt?.Invoke(this, e);
+        Punkte += schatz.Wert;
+        SchatzGefunden?.Invoke(this, new SchatzEventArgs(schatz, Punkte));
     }
 }
 ```
 
-Das `?.Invoke` ist Pflicht: Solange sich niemand registriert hat, ist das Ereignis `null`, und ein direkter Aufruf würde abstürzen – ein leeres Café soll trotzdem eine Freirunde ausgeben dürfen. Als `sender` übergibt das Café `this`. Dass `OnFreirundeAngekuendigt` `protected virtual` ist, hat einen Grund aus [Vorlesung 01](/lectures/01/01.md): Eine abgeleitete Klasse `Eiscafe` kann die Methode überschreiben und vor oder nach dem Auslösen noch etwas tun, ohne das Ereignis selbst anzufassen.
+Das `?.Invoke` ist Pflicht: Solange sich niemand registriert hat, ist das Ereignis `null`, und ein direkter Aufruf würde abstürzen – auch ein Spiel ohne Oberfläche muss Schätze einsammeln dürfen. Als `sender` übergibt der Spieler `this`. Wichtig ist die Reihenfolge im Rumpf: Erst wird `Punkte` erhöht, dann wird gemeldet. Ein Empfänger, der `sender` befragt, sieht so bereits den neuen Zustand.
 
-## Die Empfänger: die Gäste
-
-Ein Gast registriert sich beim Betreten und meldet sich beim Verlassen wieder ab. Die Behandlungsmethode muss exakt zur Signatur von `EventHandler<FreirundeEventArgs>` passen:
+Ausgelöst wird das Ganze durch die Spielregeln, ohne dass dort ein `event` auftaucht. `Schatz.Aufheben` ist die Methode, die `Spielfeld.SpielerZieht` aufruft, sobald der Held über ein `$` läuft:
 
 ```csharp
-class Gast
+public override string Aufheben(Spieler spieler)
 {
-    public string Name { get; }
+    spieler.SchatzEinsammeln(this);
+    return $"{spieler.Name} findet einen Schatz im Wert von {Wert}!";
+}
+```
 
-    public Gast(string name)
+In größeren Projekten kapselt man das Auslösen zusätzlich in einer Methode mit dem Präfix `On`, die `protected virtual` ist – `protected OnSchatzGefunden(SchatzEventArgs e)`. Der Grund stammt aus [Vorlesung 01](/lectures/01/01.md): Eine abgeleitete Klasse kann die Methode überschreiben und vor oder nach dem Auslösen noch etwas tun, ohne das Ereignis selbst anzufassen. Bei einer `sealed`-Klasse oder einem Ereignis mit genau einer Auslösestelle ist das unnötige Zeremonie.
+{: .notice--primary}
+
+## Die Empfänger: Konsole und Oberfläche
+
+Ein Empfänger registriert eine Methode, die exakt zur Signatur von `EventHandler<SchatzEventArgs>` passt. Die Konsolenversion tut das in einer einzigen Zeile, direkt nachdem das Spielfeld gebaut wurde:
+
+```csharp
+Spielfeld feld = LevelParser.Parsen(level);
+
+feld.Spieler.SchatzGefunden += (sender, e) => Console.Beep();
+```
+
+Der Kern piept nicht selbst – er meldet nur. Dass daraus ein Ton wird, entscheidet `Adventure.Konsole`, und zwar in einem Lambda mit zwei Parametern, dessen Typen der Compiler aus dem Ereignistyp erschließt. Die Weboberfläche wird sich an dasselbe Ereignis hängen, aber etwas völlig anderes tun: Sie lässt die `Statusleiste` neu zeichnen. Wie das in Blazor aussieht, sehen wir im Modul [Observer](/modules/observer/observer.md) in der nächsten Vorlesung. Ein dritter Zuhörer könnte mitschreiben, ohne dass Kern, Konsole oder Web davon erfahren:
+
+```csharp
+List<string> erfolge = [];
+feld.Spieler.SchatzGefunden += (sender, e) =>
+    erfolge.Add($"{((Spieler)sender!).Name}: {e.Schatz.Wert} Punkte, jetzt {e.Punkte}");
+```
+
+## Ein zweites Ereignis: `RundeBeendet`
+
+Nicht nur der Spieler meldet sich, auch das Spielfeld. Eine Runde besteht aus dem Zug des Helden und den Zügen aller Gegner; wenn sie vorbei ist, hat sich fast alles auf der Karte verändert, und jede Anzeige muss neu gezeichnet werden:
+
+```csharp
+public class RundeEventArgs : EventArgs
+{
+    public int Runde { get; }
+    public string Meldung { get; }
+
+    public RundeEventArgs(int runde, string meldung)
     {
-        Name = name;
+        Runde = runde;
+        Meldung = meldung;
     }
+}
 
-    public void Betreten(Cafe cafe) => cafe.FreirundeAngekuendigt += FreirundeEmpfangen;
-    public void Verlassen(Cafe cafe) => cafe.FreirundeAngekuendigt -= FreirundeEmpfangen;
+public class Spielfeld
+{
+    /// <summary>Wird nach jeder Runde ausgelöst – die Oberfläche zeichnet dann neu.</summary>
+    public event EventHandler<RundeEventArgs>? RundeBeendet;
 
-    private void FreirundeEmpfangen(object? sender, FreirundeEventArgs e)
+    public void SpielerZieht(Richtung richtung)
     {
-        string reaktion = e.Art == GetraenkArt.Heiss ? "nimmt gern einen Cappuccino" : "nimmt gern eine Limo";
-        Console.WriteLine($"{Name} {reaktion}.");
+        // ... Spieler zieht, Gegner ziehen, Meldung wird zusammengebaut ...
+        LetzteMeldung = meldung.ToString().Trim();
+        RundeBeendet?.Invoke(this, new RundeEventArgs(Runde, LetzteMeldung));
     }
 }
 ```
 
-Auch hier steht `FreirundeEmpfangen` ohne Klammern hinter `+=` – es wird die Methode registriert, nicht ihr Ergebnis. `FreirundeEmpfangen` darf `private` sein: Das Café ruft sie nicht über ihren Namen auf, sondern über den Delegaten, und der hat die Referenz beim Registrieren bekommen. Jetzt das Zusammenspiel:
+`RundeBeendet` steht am **Ende** von `SpielerZieht`, nach der Zuweisung an `LetzteMeldung`. Das ist kein Zufall: Ein Ereignis meldet einen abgeschlossenen Zustand. Würde es mittendrin ausgelöst, sähen die Empfänger ein halb gezogenes Spielfeld, in dem der Held schon steht, die Gegner aber noch nicht. Mehrere Zuhörer nebeneinander sind dabei der Normalfall:
 
 ```csharp
-Cafe cafe = new();
-Gast anna = new("Anna");
-Gast ben = new("Ben");
-
-anna.Betreten(cafe);
-ben.Betreten(cafe);
-cafe.FreirundeAusgeben(GetraenkArt.Heiss);
-// Café: Eine Freirunde Heiss für alle!
-// Anna nimmt gern einen Cappuccino.
-// Ben nimmt gern einen Cappuccino.
-
-anna.Verlassen(cafe);
-cafe.FreirundeAusgeben(GetraenkArt.Kalt);
-// Café: Eine Freirunde Kalt für alle!
-// Ben nimmt gern eine Limo.
+feld.RundeBeendet += (sender, e) => Console.WriteLine($"Runde {e.Runde}: {e.Meldung}");
+feld.RundeBeendet += (sender, e) => protokoll.Add(e.Meldung);
 ```
 
-Das Café hat keine Ahnung, wer Anna und Ben sind. Es hat nicht einmal eine Liste von Gästen – die steckt im Delegaten. Käme morgen eine Klasse `Stammgast` oder `Cafekatze` hinzu, die auf Freirunden reagiert, müsste an `Cafe` nichts geändert werden. Das ist genau die lose Kopplung, die dem Sturzsensor gefehlt hat.
+Das Spielfeld hat keine Ahnung, wer da zuhört. Es hat nicht einmal eine Liste von Empfängern – die steckt im Delegaten. Käme morgen eine Klasse `Erfolgsverwaltung` oder ein Netzwerkclient hinzu, müsste an `Spielfeld` nichts geändert werden. Das ist genau die lose Kopplung, die dem Sturzsensor gefehlt hat.
 
-Wer sich registriert, sollte sich auch wieder abmelden. Solange `ben.FreirundeEmpfangen` im Delegaten des Cafés hängt, hält das Café eine Referenz auf `ben` – und der [Garbage Collector](/modules/garbage_collection/garbage_collection.md) kann das Objekt nicht freigeben, selbst wenn es sonst nirgends mehr gebraucht wird. Bei langlebigen Sendern (ein Hauptfenster, ein Sensor, der die ganze Programmlaufzeit existiert) und vielen kurzlebigen Empfängern ist das ein klassisches Speicherleck. Lambdas lassen sich nicht mit `-=` abmelden, weil man keine Referenz darauf hat – für Ereignisse, von denen man sich wieder trennen will, sind benannte Methoden die richtige Wahl.
+Wer sich registriert, sollte sich auch wieder abmelden. Solange eine Methode im Delegaten des Spielfelds hängt, hält das Spielfeld eine Referenz auf ihr Objekt – und der [Garbage Collector](/modules/garbage_collection/garbage_collection.md) kann es nicht freigeben, selbst wenn es sonst nirgends mehr gebraucht wird. Bei einem langlebigen Sender und vielen kurzlebigen Empfängern (Dialoge, Anzeigen) ist das ein klassisches Speicherleck. Und Vorsicht bei der Konsolenversion: Nach `F9` (Spielstand laden) entsteht ein *neues* `Spielfeld` mit einem neuen `Spieler`, weshalb `Program.cs` `SchatzGefunden` dort erneut abonniert. Wer stattdessen dasselbe Objekt zweimal abonniert, hört den Ton doppelt – und Lambdas lassen sich nicht mit `-=` abmelden, weil man keine Referenz darauf hat.
 {: .notice--warning}
 
-## Der `Click`-Handler aus Vorlesung 04
+## Der Tastendruck aus Vorlesung 04
 
-Damit ist auch klar, was in [Blazor](/modules/blazor_ereignisse/blazor_ereignisse.md) hinter `@onclick="Begruessen"` steckt. Der Button löst ein Klick-Ereignis aus, und das Razor-Attribut ist nur eine Kurzschreibweise für das, was wir eben von Hand gemacht haben: Blazor registriert unsere Methode als Empfänger. Wer die Details des Klicks braucht, nimmt sie als Parameter entgegen:
+Damit ist auch klar, was in [Blazor](/modules/blazor_ereignisse/blazor_ereignisse.md) hinter `@onkeydown="TasteGedrueckt"` steckt. Das Spielfeld-`div` löst ein Tastenereignis aus, und das Razor-Attribut ist nur eine Kurzschreibweise für das, was wir eben von Hand gemacht haben: Blazor registriert unsere Methode als Empfänger. Die Details des Tastendrucks kommen als Parameter:
 
 ```csharp
-// in Home.razor: <button @onclick="Begruessen">Begrüßen</button>
-
-private void Begruessen(MouseEventArgs e)
+private void TasteGedrueckt(KeyboardEventArgs e)
 {
-    // e enthält Details zum Klick, etwa die Mausposition
+    Richtung? richtung = e.Key switch
+    {
+        "ArrowUp" or "w" or "W" => Richtung.Oben,
+        // ...
+        _ => null
+    };
+    if (richtung is Richtung r)
+    {
+        feld.SpielerZieht(r);   // danach rendert Blazor die Komponente automatisch neu
+    }
 }
 ```
 
-Der Button ist das Café, die Komponente ist der Gast, `MouseEventArgs` sind die Getränkedaten. Einen `sender`-Parameter gibt es in Blazor nicht, und wer die Ereignisdaten nicht braucht, lässt den Parameter einfach weg – so wie in Vorlesung 04. Das Muster dahinter – ein Sender veröffentlicht, viele Empfänger registrieren sich – ist so grundlegend, dass es einen eigenen Namen hat: das [Observer-Muster](/modules/observer/observer.md), das wir in Vorlesung 08 als eines der klassischen Entwurfsmuster genauer anschauen.
+Das `div` ist der Sender, die Komponente der Empfänger, `KeyboardEventArgs` sind die Ereignisdaten – dieselben drei Rollen wie beim Schatz. Einen `sender`-Parameter gibt es in Blazor nicht, und wer die Ereignisdaten nicht braucht, lässt den Parameter einfach weg. Das Muster dahinter – ein Sender veröffentlicht, viele Empfänger registrieren sich – ist so grundlegend, dass es einen eigenen Namen hat: das [Observer-Muster](/modules/observer/observer.md), das wir in Vorlesung 08 als eines der klassischen Entwurfsmuster genauer anschauen.
 
-Übung: Ergänze das Café um ein zweites Ereignis `Ladenschluss` ohne Zusatzdaten (Typ `EventHandler`). Schreibe eine Klasse `Taxizentrale`, die sich für `Ladenschluss` registriert und beim Auslösen die Namen aller Gäste ausgibt, die sich zuvor bei *ihr* angemeldet haben. Was muss die Taxizentrale wissen, was das Café nicht wissen darf?
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+
+Übung: Ergänze `Spielfeld` um ein Ereignis `SpielBeendet` ohne Zusatzdaten (Typ `EventHandler`), das ausgelöst wird, sobald `Status` von `Laeuft` auf `Gewonnen` oder `Verloren` wechselt. Registriere in der Konsolenversion einen Empfänger, der die Endabrechnung ausgibt, und einen zweiten, der den Spielstand automatisch speichert. An welcher Stelle in `SpielerZieht` muss das Ereignis ausgelöst werden, damit `Status` und `LetzteMeldung` beide schon stimmen – und warum darf der Speicher-Empfänger den Sender nicht kennen?
 {: .notice--info}
 
 ## Weitere Quellen

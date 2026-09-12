@@ -9,198 +9,202 @@ toc: false
 classes: wide
 ---
 
-Mit `File` und Streams können wir Text und Bytes auf die Platte bringen. Aber unsere Programme arbeiten nicht mit Text, sondern mit Objekten: einem `Rechteck` mit Breite und Höhe, einer `List<Figur>`, einem Adressbuch voller `Kontakt`-Objekte mit verschachtelten Adressen. Diese Objekte Feld für Feld von Hand in Zeilen zu schreiben und beim Lesen wieder zusammenzusetzen, ist mühsam und fehleranfällig. **Serialisierung** nimmt uns das ab: Ein Objektgraph wird in eine flache Darstellung verwandelt – wie ein Möbelstück, das für den Umzug zerlegt und in Kartons verpackt wird –, und die **Deserialisierung** baut daraus wieder das Original. Das mit Abstand wichtigste Format dafür ist heute JSON.
+Mit `File` und Streams können wir Text und Bytes auf die Platte bringen. Aber unsere Programme arbeiten nicht mit Text, sondern mit Objekten: einem `Spieler` mit Lebenspunkten, Punkten und Inventar, einem `Spielfeld` voller Türen, Truhen und Gegner. Diese Objekte Feld für Feld von Hand in Zeilen zu schreiben und beim Lesen wieder zusammenzusetzen, ist mühsam und fehleranfällig. **Serialisierung** nimmt uns das ab: Ein Objektgraph wird in eine flache Darstellung verwandelt – wie ein Möbelstück, das für den Umzug zerlegt und in Kartons verpackt wird –, und die **Deserialisierung** baut daraus wieder das Original. Das mit Abstand wichtigste Format dafür ist heute JSON. Am Ende dieses Moduls kann unser Adventure mit F5 speichern und mit F9 weiterspielen.
 
 ## JSON in einer Minute
 
 JSON (*JavaScript Object Notation*) ist ein Textformat, das nur wenige Bausteine kennt: Objekte in `{}` mit `"name": wert`-Paaren, Arrays in `[]`, Zeichenketten, Zahlen, `true`/`false` und `null`. Weil es so einfach ist, kann praktisch jede Programmiersprache es lesen und schreiben – und Menschen können es im Editor prüfen:
 
 ```json
-{
-  "Name": "k1",
-  "X": 10,
-  "Y": 5,
-  "Radius": 2.5,
-  "Tags": ["rund", "klein"],
-  "Kommentar": null
-}
+{ "LevelName": "kerker", "Lebenspunkte": 2,
+  "Inventar": ["Schlüssel"], "IstFertig": false, "Bestzeit": null }
 ```
 
 Die Ähnlichkeit zu einem C#-Objekt mit Properties ist kein Zufall. Genau diese Übersetzung – Property-Name wird zum Schlüssel, Property-Wert wird zum Wert – übernimmt in .NET der Namensraum `System.Text.Json`.
 
+## Warum wir das Spielfeld *nicht* serialisieren
+
+Der naheliegende Gedanke wäre, einfach das ganze `Spielfeld` in eine Datei zu schreiben. Das geht schief, und zwar aus mehreren Richtungen gleichzeitig: `Spielfeld` hält ein `Dictionary<Position, StatischesObjekt>` mit einem *abstrakten* Werttyp, `StatischesObjekt` hat keinen parameterlosen Konstruktor, eine `Truhe` verweist auf ihren `Schatz`, und das Ereignis `RundeBeendet` zeigt auf Handler, die es nach dem Laden gar nicht mehr gibt. Selbst wenn man all das mit Attributen erzwingen könnte, wäre die Datei ein Abbild unserer heutigen Klassenstruktur – jede Umbenennung einer Klasse würde alte Spielstände unbrauchbar machen.
+
+Deshalb speichern wir nicht das Spiel, sondern **das, was man braucht, um es fortzusetzen**: das Level, in dem gespielt wird, plus alle Abweichungen vom Ausgangszustand. Die Klasse `Spielstand` in `Adventure.Kern` ist genau diese Liste:
+
+```csharp
+/// <summary>
+/// Alles, was man braucht, um ein laufendes Spiel später fortzusetzen.
+/// Bewusst nur Daten, keine Logik – so lässt es sich als JSON speichern.
+/// </summary>
+public class Spielstand
+{
+    public string LevelName { get; set; } = "";
+    public int Runde { get; set; }
+    public Position SpielerPosition { get; set; }
+    public int Lebenspunkte { get; set; }
+    public int Punkte { get; set; }
+    public List<string> Inventar { get; set; } = new();
+    public List<Position> EntfernteGegenstaende { get; set; } = new();
+    public List<Position> OffeneTueren { get; set; } = new();
+    public List<Position> GeoeffneteTruhen { get; set; } = new();
+    public List<Position> GegnerPositionen { get; set; } = new();
+}
+```
+
+Drei Entwurfsentscheidungen stecken darin. Erstens: **keine Logik**. Die Klasse hat keine Methode, keine Prüfung, keinen Konstruktor – sie ist eine Transportkiste, deren einziger Zweck der Weg durch die Datei ist. Zweitens: **öffentliche `get`- und `set`-Zugriffe** an jeder Property. `System.Text.Json` schreibt nur öffentliche Properties und braucht beim Laden eine Möglichkeit, sie zu setzen; ein `private set` wie bei `Spieler.Lebenspunkte` bliebe beim Deserialisieren leer. Drittens: **Positionen statt Objektverweise**. Statt „diese Tür ist offen“ steht in der Datei „die Tür auf Feld (7, 4) ist offen“ – das überlebt jede Umbenennung im Kern und ist beim Lesen sofort verständlich.
+
+Ein solcher Spielstand ist genau das, was das Entwurfsmuster *Memento* beschreibt: ein Schnappschuss des Zustands, den das Objekt selbst erzeugt und wieder einspielt – bei uns mit `Spielfeld.Erfassen(levelName, level)` und `Spielfeld.Wiederherstellen(level, stand)`.
+
 ## `Serialize` und `Deserialize<T>`
 
-Die statische Klasse `JsonSerializer` erledigt beide Richtungen mit je einem Aufruf. Wir nehmen den `Kreis` aus dem Geometrieeditor, den wir seit [Vorlesung 02](/lectures/02/02.md) kennen:
+Die statische Klasse `JsonSerializer` erledigt beide Richtungen mit je einem Aufruf:
 
 ```csharp
-Kreis kreis = new Kreis("k1", 10, 5, 2.5);
+Spielstand stand = feld.Erfassen("kerker", level);
+string json = JsonSerializer.Serialize(stand);
+// {"LevelName":"kerker","Runde":31,"SpielerPosition":{"X":15,"Y":7}, ... }
 
-string json = JsonSerializer.Serialize(kreis);
-Console.WriteLine(json);
-// {"Radius":2.5,"Flaeche":19.634954084936208,"Umfang":15.707963267948966,"Name":"k1","X":10,"Y":5}
-
-Kreis? kopie = JsonSerializer.Deserialize<Kreis>(json);
-Console.WriteLine(kopie?.Beschreibung()); // k1 bei (10, 5) mit Fläche 19,63 (r = 2,5)
+Spielstand? zurueck = JsonSerializer.Deserialize<Spielstand>(json);
+Console.WriteLine(zurueck?.Punkte);   // 100
 ```
 
-`Serialize` liefert einen `string`, den man mit `File.WriteAllText` speichern kann; `Deserialize<T>` bekommt den Typ als generischen Parameter, weil der Text allein nicht verrät, welche Klasse er beschreibt. Der Rückgabetyp ist `Kreis?` – aus dem JSON-Literal `null` würde nämlich `null` entstehen.
+`Serialize` liefert einen `string`, den man mit `File.WriteAllText` speichern kann; `Deserialize<T>` bekommt den Typ als generischen Parameter, weil der Text allein nicht verrät, welche Klasse er beschreibt. Der Rückgabetyp ist `Spielstand?` – aus dem JSON-Literal `null` würde nämlich `null` entstehen.
 
-Zwei Dinge fallen an der Ausgabe auf. Erstens tauchen `Flaeche` und `Umfang` auf, obwohl sie nur berechnet werden: Der Serialisierer schreibt **alle öffentlichen Properties**, auch die nur lesbaren; beim Laden werden sie schlicht ignoriert. Zweitens stehen die Properties der abgeleiteten Klasse vor denen der Basisklasse – für JSON spielt die Reihenfolge keine Rolle. Private Felder werden nie serialisiert; was gespeichert werden soll, muss eine öffentliche Property sein.
+Die einzeilige Ausgabe ist für Maschinen gedacht. Für Dateien, die Menschen öffnen, konfiguriert man den Serialisierer über `JsonSerializerOptions`, und `WriteIndented = true` sorgt für Zeilenumbrüche und Einrückung. So sieht ein echter Spielstand aus, nachdem der Held den Schlüssel geholt, die Tür aufgeschlossen und die Truhe geplündert hat:
 
-## Konstruktoren und Property-Namen
-
-Wie erzeugt `Deserialize` überhaupt einen `Kreis`, der gar keinen parameterlosen Konstruktor hat? `System.Text.Json` sucht den öffentlichen Konstruktor und ordnet jeden Parameter anhand seines Namens einer Property zu (Groß-/Kleinschreibung spielt dabei keine Rolle). Das funktioniert nur, wenn die Namen zusammenpassen – deshalb steht im `Dreieck` des Geometrieeditors dieser Kommentar:
-
-```csharp
-// Die Parameternamen entsprechen den Property-Namen – das braucht System.Text.Json beim Laden.
-public Dreieck(string name, double x, double y, double seiteA, double seiteB, double seiteC)
-    : base(name, x, y)
+```json
 {
-    if (seiteA + seiteB <= seiteC || seiteA + seiteC <= seiteB || seiteB + seiteC <= seiteA)
+  "LevelName": "kerker",
+  "Runde": 31,
+  "SpielerPosition": {
+    "X": 15,
+    "Y": 7
+  },
+  "Lebenspunkte": 2,
+  "Punkte": 100,
+  "Inventar": [],
+  "EntfernteGegenstaende": [
     {
-        throw new ArgumentException("Die Seitenlängen ergeben kein Dreieck.");
+      "X": 3,
+      "Y": 3
     }
-    ...
+  ],
+  "OffeneTueren": [
+    {
+      "X": 7,
+      "Y": 4
+    }
+  ],
+  "GeoeffneteTruhen": [
+    {
+      "X": 15,
+      "Y": 6
+    }
+  ],
+  "GegnerPositionen": [
+    {
+      "X": 13,
+      "Y": 2
+    },
+    {
+      "X": 11,
+      "Y": 5
+    }
+  ]
 }
 ```
 
-Hieße der Parameter `a` statt `seiteA`, könnte der Serialisierer ihn keiner Property zuordnen und würde beim Laden eine Ausnahme werfen. Der Konstruktor bringt einen zweiten Vorteil: Seine Validierung läuft auch beim Deserialisieren. Ein JSON mit den Seiten 1, 1 und 5 endet mit der `ArgumentException` aus dem Konstruktor – ein unmögliches Dreieck kann also auch über den Umweg Datei nicht entstehen.
+Man kann die Datei lesen wie einen Bericht: Runde 31, der Held steht auf (15, 7) mit zwei von drei Lebenspunkten und 100 Punkten, sein Inventar ist leer (der Schlüssel wurde für die Tür verbraucht und liegt deshalb auch nicht mehr auf (3, 3)), die Tür auf (7, 4) ist offen, die Truhe auf (15, 6) geplündert, und die beiden Gegner stehen auf (13, 2) und (11, 5).
 
-## Optionen und Attribute
+Interessant ist, was mit `Position` passiert. Der Typ ist ein `readonly record struct` mit den Properties `X` und `Y` – und genau die schreibt der Serialisierer als verschachteltes JSON-Objekt. Beim Laden findet er den Konstruktor `Position(int X, int Y)`, ordnet jeden Parameter anhand seines **Namens** einer Property zu (Groß-/Kleinschreibung spielt keine Rolle) und ruft ihn auf. Dass Positionen dadurch pro Eintrag vier Zeilen brauchen, ist der Preis der Lesbarkeit; ein eigener Konverter könnte daraus `"15,7"` machen.
 
-Die einzeilige Ausgabe ist für Maschinen gedacht. Für Dateien, die Menschen öffnen, konfiguriert man den Serialisierer über `JsonSerializerOptions`. Dasselbe Objekt muss man dann auch beim Deserialisieren übergeben:
+## Attribute: Namen ändern, Properties auslassen
+
+Wenn ein Name im JSON anders lauten soll als in C# – etwa weil eine fremde API ihn vorgibt – oder eine Property gar nicht gespeichert werden soll, helfen Attribute aus `System.Text.Json.Serialization`:
 
 ```csharp
-JsonSerializerOptions optionen = new()
-{
-    WriteIndented = true,
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-};
+[JsonPropertyName("level")]
+public string LevelName { get; set; } = "";
 
-Console.WriteLine(JsonSerializer.Serialize(kreis, optionen));
-// {
-//   "radius": 2.5,
-//   "flaeche": 19.634954084936208,
-//   ...
-//   "name": "k1",
-//   "x": 10,
-//   "y": 5
-// }
+[JsonIgnore]
+public DateTime Gespeichert { get; set; } = DateTime.Now;
+// {"level":"kerker","Runde":31, ... }   – "Gespeichert" taucht nicht auf
 ```
 
-`WriteIndented` sorgt für Zeilenumbrüche und Einrückung, `PropertyNamingPolicy` übersetzt die C#-üblichen PascalCase-Namen in das in JSON-APIs übliche camelCase. Wenn ein einzelner Name im JSON ganz anders lauten soll – etwa weil eine fremde API ihn vorgibt – oder eine Property gar nicht gespeichert werden soll, helfen Attribute aus `System.Text.Json.Serialization`:
+`[JsonPropertyName]` hat Vorrang vor jeder `PropertyNamingPolicy` (etwa `JsonNamingPolicy.CamelCase`, die alle Namen in das in Web-APIs übliche `levelName` übersetzt). `[JsonIgnore]` ist die richtige Wahl für alles, was nicht in eine Datei gehört: berechnete Zwischenergebnisse, Passwörter oder Referenzen zurück auf ein Elternobjekt, die sonst zu einer Endlosschleife beim Serialisieren führen würden.
+
+## Ausblick: Polymorphie mit `[JsonPolymorphic]`
+
+Was wäre, wenn wir doch einmal eine `List<Spielobjekt>` mit Wänden, Türen und Truhen durcheinander speichern wollten? Beim Laden stünde der Serialisierer vor einem Problem: `Spielobjekt` ist abstrakt, und aus `{"Name":"Tür","Position":{"X":7,"Y":4}}` allein kann er nicht wissen, dass eine `Tuer` gemeint ist. Die Lösung ist ein **Diskriminator** – ein zusätzliches Feld, das den konkreten Typ benennt:
 
 ```csharp
-class Kontakt
-{
-    public string Name { get; set; } = "";
-
-    [JsonPropertyName("e_mail")]
-    public string Email { get; set; } = "";
-
-    [JsonIgnore]
-    public string Passwort { get; set; } = "";
-}
-
-Console.WriteLine(JsonSerializer.Serialize(new Kontakt { Name = "Ada", Email = "ada@example.org", Passwort = "geheim" }));
-// {"Name":"Ada","e_mail":"ada@example.org"}
-```
-
-`[JsonPropertyName]` hat Vorrang vor jeder `PropertyNamingPolicy`. `[JsonIgnore]` ist die richtige Wahl für alles, was nicht in eine Datei gehört – Passwörter, Zwischenergebnisse oder Referenzen zurück auf ein Elternobjekt, die sonst zu einer Endlosschleife beim Serialisieren führen würden.
-
-## Polymorphie: Figuren gemischt speichern
-
-Der Geometrieeditor verwaltet keine `Kreis`-Liste, sondern eine `List<Figur>` mit Rechtecken, Kreisen und Dreiecken durcheinander. Beim Laden steht der Serialisierer vor einem Problem: `Figur` ist abstrakt, und aus `{"Name":"k1","X":10,"Y":5,"Radius":2.5}` allein kann er nicht wissen, dass ein `Kreis` gemeint ist. Die Lösung ist ein **Diskriminator** – ein zusätzliches Feld, das den konkreten Typ benennt. In `Figur.cs` ist er so deklariert:
-
-```csharp
-// Damit System.Text.Json abstrakte Figuren speichern und wieder laden kann,
-// bekommt jede abgeleitete Klasse einen Namen im JSON ("typ": "kreis").
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "typ")]
-[JsonDerivedType(typeof(Rechteck), "rechteck")]
-[JsonDerivedType(typeof(Kreis), "kreis")]
-[JsonDerivedType(typeof(Dreieck), "dreieck")]
-public abstract class Figur
-{
-    ...
-}
+[JsonDerivedType(typeof(Wand), "wand")]
+[JsonDerivedType(typeof(Tuer), "tuer")]
+public abstract class StatischesObjekt : Spielobjekt { /* ... */ }
+// [ { "typ": "tuer", "Name": "Tür", ... }, { "typ": "wand", ... } ]
 ```
 
-`[JsonPolymorphic]` schaltet die Unterstützung ein und legt den Namen des Feldes fest; je ein `[JsonDerivedType]` verknüpft eine Unterklasse mit ihrem Kürzel. Die Kürzel sind bewusst kurze Strings und keine .NET-Typnamen – so bleibt die Datei lesbar, und man kann Klassen später umbenennen, ohne alte Dateien zu verlieren. Serialisiert man nun über den **Basistyp**, erscheint das Feld ganz vorn:
+Die Kürzel sind bewusst kurze Strings und keine .NET-Typnamen – so bleibt die Datei lesbar, und man kann Klassen später umbenennen, ohne alte Dateien zu verlieren. Der Diskriminator muss die **erste** Property jedes Objekts sein; fehlt er, bricht `Deserialize` mit einer `NotSupportedException` ab.
 
-```csharp
-List<Figur> figuren = [new Rechteck("r1", 0, 0, 4, 3), new Kreis("k1", 10, 5, 2.5)];
-Console.WriteLine(JsonSerializer.Serialize(figuren, new JsonSerializerOptions { WriteIndented = true }));
-// [
-//   {
-//     "typ": "rechteck",
-//     "Breite": 4,
-//     "Hoehe": 3,
-//     ...
-//   },
-//   {
-//     "typ": "kreis",
-//     "Radius": 2.5,
-//     ...
-//   }
-// ]
-
-List<Figur> geladen = JsonSerializer.Deserialize<List<Figur>>(json)!;
-Console.WriteLine(geladen[1].GetType().Name); // Kreis
-```
-
-Beim Laden liest der Serialisierer zuerst `typ`, wählt die passende Klasse und ruft deren Konstruktor auf. Das Ergebnis ist eine Liste mit den richtigen Laufzeittypen, sodass `Flaeche` wieder virtuell aufgelöst wird – genau wie in [Vorlesung 01](/lectures/01/01.md) besprochen.
-
-Der Diskriminator muss die **erste** Property jedes Objekts sein. Fehlt `typ` oder steht es weiter hinten, bricht `Deserialize` mit einer `NotSupportedException` ab. Wer eine JSON-Datei von Hand schreibt oder bearbeitet, muss also nicht nur die Property-Namen treffen, sondern auch diese Reihenfolge einhalten. Das Serialisieren über eine Variable vom Typ `Kreis` statt `Figur` erzeugt übrigens *kein* `typ`-Feld – Polymorphie greift nur, wenn der deklarierte Typ die Basisklasse ist.
+Unser Spiel braucht das nicht, und das ist eine bewusste Entscheidung: Ein Spielstand voller serialisierter Spielobjekte wäre um ein Vielfaches größer, würde Konstruktoren und `sealed`-Klassen gegen sich haben und bei jeder Änderung im Kern kaputtgehen. Level + Abweichungen ist die robustere Darstellung.
 {: .notice--warning}
 
-## `JsonFigurSpeicher`: Datenhaltung für den Geometrieeditor
+## `JsonSpielstandSpeicher`: Datenhaltung für das Spiel
 
-Damit haben wir alles für einen Speicher, der den Geometrieeditor über das Programmende hinaus retten kann. Im Modul [Schichten mit Blazor](/modules/schichten_mit_blazor/schichten_mit_blazor.md) hat das Fachkonzept mit `IFigurSpeicher` festgelegt, *was* ein Speicher können muss – `Speichern` und `Laden` –, ohne sich für das *Wie* zu interessieren. Der `ArbeitsspeicherFigurSpeicher` war die erste Umsetzung; hier ist die zweite, gekürzt aus `Geometrieeditor.Datenhaltung/JsonFigurSpeicher.cs`:
+Damit haben wir alles für einen Speicher, der das Spiel über das Programmende hinaus rettet. `Adventure.Kern` legt mit dem Interface fest, *was* ein Speicher können muss, ohne sich für das *Wie* zu interessieren:
 
 ```csharp
-public class JsonFigurSpeicher : IFigurSpeicher
+/// <summary>Wo Spielstände landen (Datei, Browser, Datenbank), ist dem Spiel egal.</summary>
+public interface ISpielstandSpeicher
 {
+    void Speichern(Spielstand spielstand);
+    Spielstand? Laden();
+}
+```
+
+Die Umsetzung in `Adventure.Daten` besteht dann aus je einem Serialisierer- und einem Dateiaufruf:
+
+```csharp
+public class JsonSpielstandSpeicher : ISpielstandSpeicher
+{
+    private static readonly JsonSerializerOptions optionen = new() { WriteIndented = true };
     private readonly string pfad;
 
-    private static readonly JsonSerializerOptions optionen = new()
-    {
-        WriteIndented = true
-    };
+    public JsonSpielstandSpeicher(string pfad) => this.pfad = pfad;
 
-    public JsonFigurSpeicher(string pfad)
+    public void Speichern(Spielstand spielstand)
     {
-        this.pfad = pfad;
+        File.WriteAllText(pfad, JsonSerializer.Serialize(spielstand, optionen));
     }
 
-    public void Speichern(IEnumerable<Figur> figuren)
+    public Spielstand? Laden()
     {
-        string json = JsonSerializer.Serialize(figuren, optionen);
-        File.WriteAllText(pfad, json);
-    }
-
-    public List<Figur> Laden()
-    {
-        if (!File.Exists(pfad))
-        {
-            return new List<Figur>();
-        }
-        string json = File.ReadAllText(pfad);
-        return JsonSerializer.Deserialize<List<Figur>>(json, optionen) ?? new List<Figur>();
+        if (!File.Exists(pfad)) return null;
+        return JsonSerializer.Deserialize<Spielstand>(File.ReadAllText(pfad), optionen);
     }
 }
 ```
 
-Die ganze Klasse besteht aus einem `Serialize`- und einem `Deserialize`-Aufruf plus dem Dateizugriff aus dem Modul [Dateien und Verzeichnisse](/modules/dateien_verzeichnisse/dateien_verzeichnisse.md). Die Polymorphie-Attribute an `Figur` erledigen den Rest. Die Optionen liegen in einem `static readonly`-Feld, weil `JsonSerializerOptions` intern Metadaten über die Typen aufbaut und deren Wiederverwendung deutlich schneller ist als ein neues Objekt pro Aufruf.
+`Laden` liefert `null`, wenn es noch keine Datei gibt – „kein Spielstand vorhanden“ ist kein Fehler, sondern der Normalfall beim ersten Start. Die Optionen liegen in einem `static readonly`-Feld, weil `JsonSerializerOptions` intern Metadaten über die Typen aufbaut und deren Wiederverwendung deutlich schneller ist als ein neues Objekt pro Aufruf.
 
-Der Clou steckt in einer einzigen Zeile der GUI-Schicht, in der `Program.cs` von `Geometrieeditor.Web`:
+In `Adventure.Konsole/Program.cs` hängen daran nur noch zwei Tasten – hier ohne die Hinweismeldungen, die der Spieler danach zu sehen bekommt:
 
 ```csharp
-builder.Services.AddScoped<IFigurSpeicher>(_ => new JsonFigurSpeicher("figuren.json"));
+ISpielstandSpeicher speicher = new JsonSpielstandSpeicher("spielstand.json");
+// ...
+if (taste == ConsoleKey.F5) speicher.Speichern(feld.Erfassen(levelName, level));
+
+if (taste == ConsoleKey.F9 && speicher.Laden() is Spielstand stand)
+{
+    levelName = stand.LevelName;
+    level = levelQuelle.Laden(levelName);     // das Level kommt aus der ILevelQuelle …
+    feld = Spielfeld.Wiederherstellen(level, stand);   // … die Abweichungen aus dem Spielstand
+}
 ```
 
-Vorher stand hier `new ArbeitsspeicherFigurSpeicher()`. Keine Seite, kein Dialog und keine Zeile in `FigurenVerwaltung` musste angepasst werden – das ist der versprochene Lohn der Schichtenarchitektur: Die Datenhaltung lässt sich austauschen, ohne dass die Oberfläche davon erfährt. Das vollständige Projekt findest du im Repository unter `examples/04_blazor/Geometrieeditor`; die Tests in `Geometrieeditor.Tests/JsonFigurSpeicherTests.cs` prüfen genau, dass nach Speichern und Laden die konkreten Typen erhalten bleiben.
+Weil die Spielschleife nur `ISpielstandSpeicher` kennt, ließe sich die JSON-Datei jederzeit gegen eine Datenbank oder den `localStorage` des Browsers austauschen, ohne eine Zeile im Kern zu ändern – derselbe Lohn der Schichtenarchitektur, den wir schon bei `ILevelQuelle` gesehen haben.
 
-Übung: Öffne die vom Geometrieeditor erzeugte `figuren.json` im Editor, ändere bei einem Dreieck `SeiteC` auf `100` und starte das Programm neu. Welche Ausnahme siehst du, und in welcher Schicht sollte sie abgefangen werden – in `JsonFigurSpeicher`, in `FigurenVerwaltung` oder im Fenster?
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v09-daten`).
+
+Übung: Speichere ein Spiel mit F5, öffne `spielstand.json` im Editor und setze `Lebenspunkte` auf `99`. Lade mit F9 – wie viele Lebenspunkte hat der Held, und in welcher Methode wird das begrenzt? Entferne anschließend eine Position aus `OffeneTueren` und überlege, warum das Spiel danach trotzdem läuft, während ein `"Runde": "viele"` eine `JsonException` auslöst.
 {: .notice--info}
 
 ## Weitere Quellen

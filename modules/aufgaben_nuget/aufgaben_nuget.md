@@ -13,9 +13,9 @@ Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch
 
 ## Aufgabe 1 — Mustererkennung
 
-Für den Geometrieeditor braucht ihr eine Bibliothek, die Polygone schneidet und Flächen berechnet. Die App soll später als geschlossenes Produkt an einen Kunden verkauft werden. Auf nuget.org findet ihr zwei Kandidaten (fiktiv):
+Die Verfolger im Adventure sollen künftig nicht mehr stur auf den Spieler zulaufen, sondern Wände umgehen. Ihr braucht dafür eine Bibliothek für Wegfindung auf einem Gitter (A*). Das fertige Spiel soll später als geschlossenes Produkt an einen Kunden verkauft werden. Auf nuget.org findet ihr zwei Kandidaten (fiktiv):
 
-| | `PolygonKit` | `Polygon.Kit` |
+| | `GridPathKit` | `Grid.PathKit` |
 | :--- | :--- | :--- |
 | Aktuelle Version | 2.3.0 | 5.0.0-preview.4 |
 | Letztes Release | vor 4 Jahren | vor 9 Tagen |
@@ -24,7 +24,7 @@ Für den Geometrieeditor braucht ihr eine Bibliothek, die Polygone schneidet und
 | Lizenz | MIT | GPL-3.0 |
 | Abhängigkeiten | keine | `Newtonsoft.Json 13.0.3`, `System.Drawing.Common 8.0.0` |
 | Quellcode | GitHub, Repository archiviert (schreibgeschützt), 3 offene Issues | GitHub, 140 offene Issues, letzter Commit gestern |
-| Autor | `polygonkit` (Reserved prefix) | `dev_4711` |
+| Autor | `gridpathkit` (Reserved prefix) | `dev_4711` |
 
 Welche Signale sprechen für, welche gegen jedes Paket? Trefft eine Entscheidung und begründet sie – oder begründet, warum ihr keines der beiden nehmt.
 
@@ -33,19 +33,19 @@ Welche Signale sprechen für, welche gegen jedes Paket? Trefft eine Entscheidung
 
 **Schritt 1 — Ausschlusskriterien zuerst:**
 
-Bevor man Downloads vergleicht, prüft man, was ein Paket sofort disqualifiziert. `Polygon.Kit` steht unter **GPL-3.0**: Wer es in seine App einbindet, muss die App selbst unter der GPL veröffentlichen – für ein geschlossenes Kundenprodukt ist das ausgeschlossen, egal wie gut der Code ist. Dazu kommt, dass `5.0.0-preview.4` eine Vorabversion ist, deren Schnittstelle sich bis zur stabilen 5.0.0 noch ändern darf.
+Bevor man Downloads vergleicht, prüft man, was ein Paket sofort disqualifiziert. `Grid.PathKit` steht unter **GPL-3.0**: Wer es in seine App einbindet, muss die App selbst unter der GPL veröffentlichen – für ein geschlossenes Kundenprodukt ist das ausgeschlossen, egal wie gut der Code ist. Dazu kommt, dass `5.0.0-preview.4` eine Vorabversion ist, deren Schnittstelle sich bis zur stabilen 5.0.0 noch ändern darf.
 
-**Schritt 2 — Die Signale von `PolygonKit` einordnen:**
+**Schritt 2 — Die Signale von `GridPathKit` einordnen:**
 
-Das Paket ist seit vier Jahren unverändert und das Repository archiviert – niemand wird dort eine Sicherheitslücke schließen. Aber: Es hat **keine Abhängigkeiten**, also keinen Baum, in dem eine Lücke stecken könnte, die MIT-Lizenz erlaubt jede Nutzung, und 12.000 Downloads in sechs Wochen zeigen, dass es trotz Alter noch produktiv eingesetzt wird. Drei offene Issues bei 1,8 Millionen Downloads bedeuten, dass es im Wesentlichen fertig ist – Geometrie ändert sich nicht. Ein reines Rechenpaket ohne Netzwerk- oder Dateizugriff ist ein deutlich geringeres Risiko als eine Bibliothek, die Eingaben von außen verarbeitet.
+Das Paket ist seit vier Jahren unverändert und das Repository archiviert – niemand wird dort eine Sicherheitslücke schließen. Aber: Es hat **keine Abhängigkeiten**, also keinen Baum, in dem eine Lücke stecken könnte, die MIT-Lizenz erlaubt jede Nutzung, und 12.000 Downloads in sechs Wochen zeigen, dass es trotz Alter noch produktiv eingesetzt wird. Drei offene Issues bei 1,8 Millionen Downloads bedeuten, dass es im Wesentlichen fertig ist – der A*-Algorithmus ändert sich nicht. Ein reines Rechenpaket ohne Netzwerk- oder Dateizugriff ist ein deutlich geringeres Risiko als eine Bibliothek, die Eingaben von außen verarbeitet.
 
 **Schritt 3 — Das Namensmuster erkennen:**
 
-`Polygon.Kit` sieht dem etablierten `PolygonKit` zum Verwechseln ähnlich, kommt von einem anonymen Autor ohne Reserved prefix und zieht `Newtonsoft.Json` sowie `System.Drawing.Common` mit – zwei Abhängigkeiten, die ein Polygon-Rechner nicht braucht. Das muss kein Angriff sein, ist aber genau das Muster, das man bei Typosquatting sieht.
+`Grid.PathKit` sieht dem etablierten `GridPathKit` zum Verwechseln ähnlich, kommt von einem anonymen Autor ohne Reserved prefix und zieht `Newtonsoft.Json` sowie `System.Drawing.Common` mit – zwei Abhängigkeiten, die ein Wegfinder auf einem Gitter nicht braucht. Das muss kein Angriff sein, ist aber genau das Muster, das man bei Typosquatting sieht.
 
 **Schritt 4 — Entscheidung:**
 
-`PolygonKit` in Version 2.3.0, mit einem Vermerk im Projekt, dass das Paket nicht mehr gepflegt wird. Da der Quellcode unter MIT offen liegt, kann das Team ihn im Notfall forken und selbst weiterpflegen – das ist der eigentliche Wert einer freizügigen Lizenz. Alternativ prüft man, ob die benötigten zwei Operationen in ein paar hundert Zeilen selbst zu schreiben sind; dann wäre auch das eine legitime Wahl.
+`GridPathKit` in Version 2.3.0, mit einem Vermerk im Projekt, dass das Paket nicht mehr gepflegt wird. Da der Quellcode unter MIT offen liegt, kann das Team ihn im Notfall forken und selbst weiterpflegen – das ist der eigentliche Wert einer freizügigen Lizenz. Alternativ prüft man, ob A* auf einem Gitter in ein paar hundert Zeilen selbst zu schreiben ist – für ein Spielfeld mit ein paar hundert Feldern durchaus realistisch; dann wäre auch das eine legitime Wahl.
 
 **Zentrale Designentscheidungen:**
 
@@ -57,7 +57,7 @@ Das Paket ist seit vier Jahren unverändert und das Repository archiviert – ni
 
 ## Aufgabe 2 — Zerlegung
 
-Eine Kommilitonin schickt euch folgende `.csproj` eines Blazor-Projekts, das seine Figuren in SQLite ablegen und mit NLog loggen soll. Lest sie Zeile für Zeile:
+Eine Kommilitonin hat `Adventure.Web` erweitert: Spielstände sollen künftig in einer SQLite-Datenbank statt in einer JSON-Datei landen, und geloggt werden soll mit NLog. Sie schickt euch ihre `.csproj`. Lest sie Zeile für Zeile:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
@@ -75,7 +75,8 @@ Eine Kommilitonin schickt euch folgende `.csproj` eines Blazor-Projekts, das sei
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Geometrieeditor.Fachkonzept\Geometrieeditor.Fachkonzept.csproj" />
+    <ProjectReference Include="..\Adventure.Kern\Adventure.Kern.csproj" />
+    <ProjectReference Include="..\Adventure.Daten\Adventure.Daten.csproj" />
   </ItemGroup>
 
 </Project>
@@ -91,7 +92,7 @@ Eine Kommilitonin schickt euch folgende `.csproj` eines Blazor-Projekts, das sei
 
 **Schritt 1 — Direkte und transitive Abhängigkeiten trennen:**
 
-Direkt stehen fünf Pakete in der Datei: drei `Microsoft.EntityFrameworkCore.*`-Pakete, `NLog` und `CsvHelper`. Dazu kommt die Projektreferenz auf das Fachkonzept – das ist kein Paket, sondern Code aus derselben Solution. Blazor selbst taucht nirgends auf: Es steckt im Shared Framework `Microsoft.AspNetCore.App`, das `Sdk="Microsoft.NET.Sdk.Web"` automatisch einbindet. Transitiv kommen über EF Core unter anderem `Microsoft.Data.Sqlite.Core`, `SQLitePCLRaw.bundle_e_sqlite3` mit seinen nativen SQLite-Bibliotheken pro Betriebssystem, `Microsoft.Extensions.Caching.Memory` und `Microsoft.Extensions.Logging.Abstractions` dazu – `dotnet list package --include-transitive` zeigt sie. Auffällig: `Microsoft.EntityFrameworkCore.Sqlite` steht auf `10.0.2`, die anderen auf `10.0.0`. Das baut zwar, weil `Microsoft.EntityFrameworkCore.Sqlite 10.0.2` intern mindestens `10.0.2` der beiden anderen verlangt und NuGet dann die höhere Version nimmt, aber die Zahl in der Datei stimmt dann nicht mehr mit dem überein, was tatsächlich verwendet wird. Besser alle drei auf dieselbe Version.
+Direkt stehen fünf Pakete in der Datei: drei `Microsoft.EntityFrameworkCore.*`-Pakete, `NLog` und `CsvHelper`. Dazu kommen die beiden Projektreferenzen auf `Adventure.Kern` und `Adventure.Daten` – das sind keine Pakete, sondern Code aus derselben Solution. Blazor selbst taucht nirgends auf: Es steckt im Shared Framework `Microsoft.AspNetCore.App`, das `Sdk="Microsoft.NET.Sdk.Web"` automatisch einbindet. Transitiv kommen über EF Core unter anderem `Microsoft.Data.Sqlite.Core`, `SQLitePCLRaw.bundle_e_sqlite3` mit seinen nativen SQLite-Bibliotheken pro Betriebssystem, `Microsoft.Extensions.Caching.Memory` und `Microsoft.Extensions.Logging.Abstractions` dazu – `dotnet list package --include-transitive` zeigt sie. Auffällig: `Microsoft.EntityFrameworkCore.Sqlite` steht auf `10.0.2`, die anderen auf `10.0.0`. Das baut zwar, weil `Microsoft.EntityFrameworkCore.Sqlite 10.0.2` intern mindestens `10.0.2` der beiden anderen verlangt und NuGet dann die höhere Version nimmt, aber die Zahl in der Datei stimmt dann nicht mehr mit dem überein, was tatsächlich verwendet wird. Besser alle drei auf dieselbe Version.
 
 **Schritt 2 — Die Wildcard-Version:**
 
@@ -226,11 +227,11 @@ Der `string`-Vergleich macht zwei Fehler: `6.10.0` rutscht vor `6.2.0`, und die 
 
 ## Aufgabe 4 — Abstraktion
 
-Der Geometrieeditor soll Logging bekommen. Er besteht aus den drei Schichten Fachkonzept, Datenhaltung und GUI (siehe [Schichten-Architektur](/modules/schichten_architektur/schichten_architektur.md)); die GUI ist das ausführbare Projekt.
+Das Adventure soll Logging bekommen. Es besteht aus den drei Schichten `Adventure.Kern` (Spielregeln), `Adventure.Daten` (Level laden, Spielstände speichern) und `Adventure.Web` (Blazor-Oberfläche, das ausführbare Projekt) – siehe [Schichten-Architektur](/modules/schichten_architektur/schichten_architektur.md).
 
-- Welche Schicht loggt welche Ereignisse, und mit welchem Level? Nenne je Schicht zwei konkrete Beispiele aus dem vorhandenen Code (`FigurenVerwaltung`, `JsonFigurSpeicher`, `Home.razor`).
+- Welche Schicht loggt welche Ereignisse, und mit welchem Level? Nenne je Schicht zwei konkrete Beispiele aus dem vorhandenen Code (`Spielfeld`, `JsonSpielstandSpeicher`, `Home.razor`).
 - In welche Projekte kommt die `PackageReference` auf NLog, in welches die `nlog.config`?
-- Das Fachkonzept soll nicht wissen, welche Logging-Bibliothek die Anwendung verwendet. Wie erreicht man das, ohne auf Logging zu verzichten?
+- `Adventure.Kern` soll nicht wissen, welche Logging-Bibliothek die Anwendung verwendet. Wie erreicht man das, ohne auf Logging zu verzichten?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -239,59 +240,63 @@ Der Geometrieeditor soll Logging bekommen. Er besteht aus den drei Schichten Fac
 
 Jede Schicht loggt, was sie selbst weiß, und nichts, was eine andere besser weiß:
 
-- **Fachkonzept** kennt Geschäftsregeln: `Info` beim Hinzufügen einer Figur („Figur 'Kreis1' hinzugefügt“), `Warn` bei einer Regelverletzung wie einem doppelten Namen in `Hinzufuegen`. Es kennt keine Dateien und keine Fenster.
-- **Datenhaltung** kennt Pfade und Formate: `Debug` mit Dateipfad und Anzahl der Figuren beim Speichern und Laden, `Error` mit der Exception, wenn `File.WriteAllText` fehlschlägt oder das JSON ungültig ist.
-- **GUI** kennt Benutzeraktionen: `Info` beim Start und Beenden der Anwendung, `Debug` für Klicks, `Error` mit Exception, wenn ein Fehler dem Benutzer als Dialog angezeigt wird – das ist die Stelle, die die Exception wirklich behandelt, also loggt sie hier genau einmal.
+- **`Adventure.Kern`** kennt die Spielregeln: `Info`, wenn eine Runde etwas Bemerkenswertes bringt („Runde 14: Schlüssel eingesammelt“, „Tür aufgeschlossen“), `Warn`, wenn `SpielerZieht` einen Zug bekommt, obwohl `Status` nicht mehr `Laeuft` ist – ein Aufruf, der auf einen Fehler in der Oberfläche hindeutet. Der Kern kennt weder Dateien noch Browser und loggt deshalb auch keine Pfade und keine Tastendrücke.
+- **`Adventure.Daten`** kennt Pfade und Formate: `Debug` mit Dateiname und Feldgröße, wenn `TextdateiLevelQuelle` ein Level eingelesen hat, `Error` mitsamt Exception, wenn `JsonSpielstandSpeicher.Speichern` an `File.WriteAllText` scheitert oder das JSON beim Laden ungültig ist. Bei `HttpLevelQuelle` kommt `Warn` bei einem fehlgeschlagenen Abruf dazu.
+- **`Adventure.Web`** kennt Benutzeraktionen: `Info` beim Start und beim Wechsel des Levels über die Auswahlliste in `Home.razor`, `Debug` für jeden Tastendruck in `TasteGedrueckt`, `Error` mit Exception, wenn ein Fehler dem Spieler als Dialog angezeigt wird – das ist die Stelle, die die Exception wirklich behandelt, also loggt sie hier genau einmal.
 
 **Schritt 2 — Paket und Konfiguration verteilen:**
 
-Die `nlog.config` gehört ausschließlich in `Geometrieeditor.Web`, denn nur das ausführbare Projekt hat einen Ausgabeordner, aus dem NLog sie beim Start liest. Die `PackageReference` auf NLog braucht jedes Projekt, das `LogManager` aufruft – bei einem naiven Ansatz also alle drei. Damit die Dateischicht ausführlicher loggt als der Rest, nutzt man Logger-Namen in den Regeln:
+Die `nlog.config` gehört ausschließlich in `Adventure.Web`, denn nur das ausführbare Projekt hat einen Ausgabeordner, aus dem NLog sie beim Start liest – und nur dort wird entschieden, wohin die Meldungen gehen. Die `PackageReference` auf NLog braucht jedes Projekt, das `LogManager` aufruft – bei einem naiven Ansatz also alle drei. Damit die Datenschicht ausführlicher loggt als der Rest, nutzt man die Logger-Namen, die ja den Namensräumen entsprechen:
 
 ```xml
 <rules>
-  <logger name="Geometrieeditor.Datenhaltung.*" minlevel="Debug" writeTo="datei" />
+  <logger name="Adventure.Daten.*" minlevel="Debug" writeTo="datei" />
   <logger name="*" minlevel="Info" writeTo="datei" />
 </rules>
 ```
 
-**Schritt 3 — Die Abhängigkeit im Fachkonzept vermeiden:**
+**Schritt 3 — Die Abhängigkeit im Kern vermeiden:**
 
-Das Fachkonzept referenziert bisher kein einziges Paket – genau das macht es leicht testbar und wiederverwendbar. Eine `PackageReference` auf NLog würde es an eine konkrete Bibliothek binden. Die Lösung ist dieselbe wie bei `IFigurSpeicher`: eine Schnittstelle statt einer Implementierung. Das Paket `Microsoft.Extensions.Logging.Abstractions` enthält nur das Interface `ILogger<T>`, und das Fachkonzept bekommt den Logger über den Konstruktor gereicht:
+`Adventure.Kern` referenziert bisher kein einziges Paket und kein einziges anderes Projekt – genau das macht es leicht testbar und wiederverwendbar. Eine `PackageReference` auf NLog würde die Spielregeln an eine konkrete Bibliothek binden. Die Lösung ist dieselbe wie bei `ILevelQuelle` und `ISpielstandSpeicher`: eine Schnittstelle statt einer Implementierung. Das Paket `Microsoft.Extensions.Logging.Abstractions` enthält nur das Interface `ILogger<T>` und keine Zeile Logging-Code, und der Kern bekommt den Logger über den Konstruktor gereicht:
 
 ```csharp
 using Microsoft.Extensions.Logging;
 
-public class FigurenVerwaltung
-{
-    private readonly List<Figur> figuren = new();
-    private readonly IFigurSpeicher speicher;
-    private readonly ILogger<FigurenVerwaltung> logger;
+namespace Adventure.Kern;
 
-    public FigurenVerwaltung(IFigurSpeicher speicher, ILogger<FigurenVerwaltung> logger)
+public class Spielfeld
+{
+    private readonly ILogger<Spielfeld> logger;
+
+    public Spielfeld(int breite, int hoehe, Spieler spieler, ILogger<Spielfeld> logger)
     {
-        this.speicher = speicher;
+        Breite = breite;
+        Hoehe = hoehe;
+        Spieler = spieler;
         this.logger = logger;
     }
 
-    public void Hinzufuegen(Figur figur)
+    public void SpielerZieht(Richtung richtung)
     {
-        if (figuren.Any(f => f.Name == figur.Name))
+        if (Status != Spielstatus.Laeuft)
         {
-            logger.LogWarning("Figur mit Namen {Name} existiert bereits.", figur.Name);
-            throw new ArgumentException($"Es gibt bereits eine Figur mit dem Namen '{figur.Name}'.");
+            logger.LogWarning("Zug nach {Richtung} ignoriert, das Spiel ist {Status}.", richtung, Status);
+            return;
         }
-        figuren.Add(figur);
-        logger.LogInformation("Figur {Name} hinzugefügt, jetzt {Anzahl} Figuren.", figur.Name, figuren.Count);
+
+        Runde++;
+        // ... erst zieht der Spieler, dann alle Gegner ...
+        logger.LogInformation("Runde {Runde}: {Meldung}", Runde, LetzteMeldung);
     }
 }
 ```
 
-Die GUI entscheidet, was hinter `ILogger<T>` steckt: Mit dem Brückenpaket `NLog.Extensions.Logging` erzeugt sie einen echten NLog-Logger und übergibt ihn, in den Tests reicht `NullLogger<FigurenVerwaltung>.Instance`, der alles verwirft.
+`Adventure.Web` entscheidet, was hinter `ILogger<T>` steckt: Mit dem Brückenpaket `NLog.Extensions.Logging` registriert es NLog als Anbieter, und die Abhängigkeitsinjektion, die dort ohnehin schon `ILevelQuelle` liefert, reicht den passenden Logger in den Konstruktor. In `Adventure.Tests` genügt `NullLogger<Spielfeld>.Instance`, der alles verwirft – kein Log, keine Datei, kein Zeitstempel im Testlauf.
 
 **Zentrale Designentscheidungen:**
 
-- **Jede Schicht loggt ihr eigenes Wissen:** Pfade in der Datenhaltung, Regeln im Fachkonzept, Benutzeraktionen in der GUI – so steht jede Information genau einmal im Log.
-- **Konfiguration liegt beim ausführbaren Projekt**, weil nur dort entschieden wird, wohin Meldungen gehen.
-- **Das Fachkonzept hängt nur von Abstraktionen ab** – dasselbe Prinzip wie bei `IFigurSpeicher`, jetzt für das Logging. Welche Bibliothek loggt, ist eine Entscheidung der Anwendung, nicht der Fachlogik.
+- **Jede Schicht loggt ihr eigenes Wissen:** Pfade in `Adventure.Daten`, Spielregeln in `Adventure.Kern`, Benutzeraktionen in `Adventure.Web` – so steht jede Information genau einmal im Log.
+- **Konfiguration liegt beim ausführbaren Projekt**, weil nur dort entschieden wird, wohin Meldungen gehen. Eine `nlog.config` in `Adventure.Kern` würde nie gelesen.
+- **Der Kern hängt nur von Abstraktionen ab** – dasselbe Prinzip wie bei `ILevelQuelle`, jetzt für das Logging. `Microsoft.Extensions.Logging.Abstractions` ist zwar auch ein Paket, aber eines, das nur Schnittstellen enthält. Welche Bibliothek am Ende schreibt, ist eine Entscheidung der Anwendung, nicht der Spielregeln.
 
 </details>

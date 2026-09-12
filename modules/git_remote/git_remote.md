@@ -13,28 +13,31 @@ Bis jetzt lebt unser Repository nur auf einem Rechner. Das schützt vor versehen
 
 ## Ein Remote-Repository klonen
 
-Der häufigste Einstieg ist nicht `git init`, sondern `git clone`: Ein Projekt existiert bereits auf dem Server, und du holst dir eine vollständige Kopie samt Historie. Die URL findest du auf der Projektseite unter „Clone“:
+Der häufigste Einstieg ist nicht `git init`, sondern `git clone`: Ein Projekt existiert bereits auf dem Server, und du holst dir eine vollständige Kopie samt Historie. Die URL findest du auf der Projektseite unter „Clone“ bzw. „Code“. Probier es gleich mit dem Repository zum Spiel dieser Vorlesung aus – es liegt öffentlich auf GitHub, du brauchst dafür keinen Zugang:
 
 ```bash
-git clone git@gitlab.f2.htw-berlin.de:gruppe/geometrieeditor.git
-# Cloning into 'geometrieeditor'...
-# remote: Enumerating objects: 87, done.
-# Receiving objects: 100% (87/87), 24.10 KiB, done.
-cd geometrieeditor
+git clone https://github.com/erodner/prog2-adventure.git
+# Cloning into 'prog2-adventure'...
+# remote: Enumerating objects: 105, done.
+# remote: Counting objects: 100% (105/105), done.
+# Receiving objects: 100% (105/105), 36.36 KiB | 2.02 MiB/s, done.
+# Resolving deltas: 100% (29/29), done.
+cd prog2-adventure
 git remote -v
-# origin  git@gitlab.f2.htw-berlin.de:gruppe/geometrieeditor.git (fetch)
-# origin  git@gitlab.f2.htw-berlin.de:gruppe/geometrieeditor.git (push)
+# origin  https://github.com/erodner/prog2-adventure.git (fetch)
+# origin  https://github.com/erodner/prog2-adventure.git (push)
+dotnet run --project Adventure.Konsole
 ```
 
-`git clone` hat automatisch ein Remote namens `origin` eingerichtet, das auf die Quelle zeigt. `origin` ist nur ein Name, so wie `main` ein Name für einen Branch ist – man könnte ihn ändern, tut es aber praktisch nie.
+`git clone` hat automatisch ein Remote namens `origin` eingerichtet, das auf die Quelle zeigt. `origin` ist nur ein Name, so wie `main` ein Name für einen Branch ist – man könnte ihn ändern, tut es aber praktisch nie. Mitgekommen ist die **gesamte** Historie: Mit `git log --oneline` siehst du jeden Vorlesungsstand, und mit `git checkout v02-interfaces` springst du auf den Stand, den wir gerade besprochen haben.
 
 Hat man umgekehrt schon ein lokales Repository wie in [Erste Schritte mit Git](/modules/git_erste_schritte/git_erste_schritte.md), legt man auf dem GitLab ein **leeres** Projekt an (ohne README, sonst gibt es gleich zwei unterschiedliche erste Commits) und verbindet beide von Hand:
 
 ```bash
-git remote add origin git@gitlab.f2.htw-berlin.de:gruppe/geometrieeditor.git
+git remote add origin git@gitlab.f2.htw-berlin.de:gruppe/adventure.git
 git push -u origin main
 # Enumerating objects: 24, done.
-# To gitlab.f2.htw-berlin.de:gruppe/geometrieeditor.git
+# To gitlab.f2.htw-berlin.de:gruppe/adventure.git
 #  * [new branch]      main -> main
 # branch 'main' set up to track 'origin/main'.
 ```
@@ -65,14 +68,14 @@ Drei Befehle bewegen Commits zwischen deinem Repository und dem Remote. `git pus
 
 ```bash
 git fetch
-# From gitlab.f2.htw-berlin.de:gruppe/geometrieeditor
+# From gitlab.f2.htw-berlin.de:gruppe/adventure
 #    a1f9c3e..e4b7d10  main       -> origin/main
 git log --oneline main..origin/main       # was ist neu auf dem Server?
-# e4b7d10 Kreis: Umfang mit 2·π·r berechnen
+# e4b7d10 Wache: beim Anstoßen umdrehen statt stehen bleiben
 git pull
 # Updating a1f9c3e..e4b7d10
 # Fast-forward
-#  Geometrieeditor.Fachkonzept/Kreis.cs | 2 +-
+#  Adventure.Kern/Gegner.cs | 4 +++-
 ```
 
 Im Alltag reicht meist `git pull`; `git fetch` ist der vorsichtige Weg, wenn man erst sehen will, was die anderen getan haben. Das „Fast-forward“ in der Ausgabe bedeutet, dass dein `main` einfach auf den neuen Commit vorgespult wurde, weil du selbst nichts geändert hattest – die andere Variante lernen wir in [Branches und Merges](/modules/git_branching/git_branching.md) kennen.
@@ -85,8 +88,8 @@ Der Rhythmus im Team ist immer derselbe: **erst holen, dann arbeiten, dann teile
 git pull                                  # 1. aktuellen Stand holen
 # ... in der IDE arbeiten ...
 git status                                # 2. was habe ich geändert?
-git add Geometrieeditor.Fachkonzept/Dreieck.cs
-git commit -m "Dreieck: Umfang aus drei Seitenlängen berechnen"
+git add Adventure.Kern/Truhe.cs
+git commit -m "Truhe: Inhalt erst nach dem Öffnen verraten"
 git push                                  # 3. Commits zum Server
 ```
 
@@ -95,7 +98,7 @@ Wer morgens pullt und abends pusht, hat selten Probleme. Wer eine Woche lang lok
 ```bash
 git push
 # ! [rejected]        main -> main (fetch first)
-# error: failed to push some refs to 'gitlab.f2.htw-berlin.de:gruppe/geometrieeditor.git'
+# error: failed to push some refs to 'gitlab.f2.htw-berlin.de:gruppe/adventure.git'
 # hint: Updates were rejected because the remote contains work that you do not
 # hint: have locally. ... Integrate the remote changes (e.g. 'git pull ...')
 ```
@@ -107,9 +110,9 @@ Niemals `git push --force` auf `main`, um eine abgelehnte Übertragung zu erzwin
 
 ## Was ins Remote gehört
 
-Das GitLab ist ein Ort für Quelltexte, Projektdateien und Dokumentation im Textformat – nicht für Build-Ausgaben, große Datensätze, Videos oder das Abgabe-PDF. Solche Dateien lassen die Größe des Repositorys bei jeder Änderung wachsen, und jeder Klon lädt die gesamte Historie herunter. Ein `README.md` mit Bauanleitung und eine `LICENSE` sollten dagegen von Anfang an dabei sein; das GitLab bietet beim Anlegen des Projekts Vorlagen für beides.
+Das GitLab ist ein Ort für Quelltexte, Projektdateien und Dokumentation im Textformat – auch die Leveldateien des Spiels sind reiner Text und gehören dazu. Nicht ins Repository gehören Build-Ausgaben, gespeicherte Spielstände, große Datensätze, Videos oder das Abgabe-PDF. Solche Dateien lassen die Größe des Repositorys bei jeder Änderung wachsen, und jeder Klon lädt die gesamte Historie herunter. Ein `README.md` mit Bauanleitung und eine `LICENSE` sollten dagegen von Anfang an dabei sein; das GitLab bietet beim Anlegen des Projekts Vorlagen für beides.
 
-Übung: Lege auf dem GitLab ein leeres Projekt an, verbinde es mit deinem Repository aus dem letzten Modul und pushe. Klone das Projekt anschließend in einen zweiten Ordner, ändere dort die `README.md`, committe und pushe. Versuche dann, aus dem ersten Ordner eine andere Änderung zu pushen – welche Meldung erhältst du, und wie löst du sie auf?
+Übung: Klone zuerst `https://github.com/erodner/prog2-adventure.git` und sieh dir die Historie mit `git log --oneline` an. Lege danach auf dem GitLab ein leeres Projekt für dein eigenes Adventure an, verbinde es mit deinem Repository aus dem letzten Modul und pushe. Klone dein Projekt anschließend in einen zweiten Ordner, ändere dort die `README.md`, committe und pushe. Versuche dann, aus dem ersten Ordner eine andere Änderung zu pushen – welche Meldung erhältst du, und wie löst du sie auf?
 {: .notice--info}
 
 ## Weitere Quellen

@@ -9,16 +9,16 @@ toc: false
 classes: wide
 ---
 
-Mit `new` erzeugen wir ständig neue Objekte – Roboter, Brüche, Listen. Jedes davon belegt Speicher. Aber wann wird dieser Speicher wieder frei? In Sprachen wie C oder C++ muss das Programm selbst daran denken und jedes Objekt explizit freigeben; vergisst man es, läuft der Speicher voll, gibt man zu früh frei, greift man auf Speicher zu, der jemand anderem gehört. In C# gibt es weder `delete` noch `free`. Stattdessen übernimmt die Laufzeitumgebung das Aufräumen: der **Garbage Collector** (GC). Man muss ihn nicht bedienen, aber man sollte verstehen, wie er arbeitet – sonst sucht man irgendwann an der falschen Stelle nach einem Speicherproblem.
+Mit `new` erzeugen wir ständig neue Objekte – Wände, Spielobjekte, Listen, Zeichenketten. Jedes davon belegt Speicher. Aber wann wird dieser Speicher wieder frei? In Sprachen wie C oder C++ muss das Programm selbst daran denken und jedes Objekt explizit freigeben; vergisst man es, läuft der Speicher voll, gibt man zu früh frei, greift man auf Speicher zu, der jemand anderem gehört. In C# gibt es weder `delete` noch `free`. Stattdessen übernimmt die Laufzeitumgebung das Aufräumen: der **Garbage Collector** (GC). Man muss ihn nicht bedienen, aber man sollte verstehen, wie er arbeitet – sonst sucht man irgendwann an der falschen Stelle nach einem Speicherproblem.
 
 ## Objekte leben auf dem Heap
 
 Aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/werttypen_referenztypen/werttypen_referenztypen/) wissen wir: Ein Objekt einer Klasse liegt auf dem **Heap**, die Variable enthält nur eine **Referenz** darauf. Was passiert, wenn die letzte Referenz verschwindet?
 
 ```csharp
-Roboter r = new Roboter("Robbi");   // Objekt 1 auf dem Heap, r zeigt darauf
-r = new Roboter("Wischi");       // Objekt 2 – Objekt 1 hat keine Referenz mehr
-r = null;                        // auch Objekt 2 ist nun unerreichbar
+Spielobjekt? o = new Wand(new Position(5, 2));   // Objekt 1 auf dem Heap, o zeigt darauf
+o = new Wand(new Position(5, 3));                // Objekt 2 – Objekt 1 hat keine Referenz mehr
+o = null;                                        // auch Objekt 2 ist nun unerreichbar
 ```
 
 Objekt 1 existiert nach der zweiten Zeile noch im Speicher, aber niemand kann es mehr benutzen: Es gibt keinen Weg mehr dorthin. Solche Objekte sind **Müll** (*garbage*). Genau diese sucht der Garbage Collector und gibt ihren Speicher frei. Das Gleiche gilt für Objekte, deren Variable am Ende einer Methode oder eines Blocks aus dem Gültigkeitsbereich fällt.
@@ -27,32 +27,55 @@ Objekt 1 existiert nach der zweiten Zeile noch im Speicher, aber niemand kann es
 
 Der GC zählt nicht mit, wie viele Referenzen ein Objekt hat. Er stellt eine andere Frage: **Ist das Objekt von einer Wurzel aus erreichbar?** Wurzeln (*roots*) sind alle Stellen, an denen ein laufendes Programm Referenzen halten kann: lokale Variablen und Parameter der gerade aktiven Methoden auf dem Stack sowie statische Felder. Von dort aus folgt der GC allen Referenzen – Feld für Feld, Listenelement für Listenelement – und markiert alles, was er erreicht. Was danach unmarkiert ist, wird freigegeben.
 
-```csharp
-Fabrikhalle halle = new Fabrikhalle();
-halle.Maschinenpark.Add(new Roboter("Robbi"));    // erreichbar über halle → Maschinenpark → [0]
+Im Spiel lässt sich diese Kette gut verfolgen. Solange das Spielfeld erreichbar ist, ist auch jedes Objekt darauf erreichbar:
 
-Roboter a = new Roboter("A");
-Roboter b = new Roboter("B");
-a.Partner = b;
-b.Partner = a;                              // a und b zeigen aufeinander
-a = null;
-b = null;                                  // trotzdem Müll: keine Wurzel erreicht sie
+```csharp
+Spielfeld feld = new Spielfeld(10, 6, held);
+feld.Hinzufuegen(new Wand(new Position(5, 2)));
+// erreichbar über: feld → objekte (List<Spielobjekt>) → [0]
 ```
 
-Das zweite Beispiel zeigt einen entscheidenden Vorteil: Zwei Objekte, die sich gegenseitig referenzieren, würden bei einer reinen Referenzzählung nie freigegeben werden. Für den erreichbarkeitsbasierten GC sind sie schlicht Müll, weil keine Wurzel mehr zu ihnen führt.
+Die Wand hat keine eigene Variable – trotzdem darf der GC sie nicht anfassen, weil ein Weg von der lokalen Variablen `feld` zu ihr führt. Spannend wird es, wenn ein Objekt das Spielfeld verlässt. Sobald wir eine Methode ergänzen, die ein Objekt aus der Liste entfernt (etwa wenn der Held einen Schlüssel aufsammelt oder eine Tür verschwindet), reißt diese Kette:
 
-Ein **Speicherleck** in C# entsteht also nicht durch vergessenes Freigeben, sondern durch vergessene Referenzen: ein statisches `List<Roboter>`, in das man immer nur hinzufügt, oder ein Ereignis-Abonnement, das nie gelöst wird (dazu mehr in [Vorlesung 07](/lectures/07/07.md)). Solange irgendeine Wurzel das Objekt erreicht, darf der GC es nicht anfassen.
+```csharp
+public void Entfernen(Spielobjekt objekt)
+{
+    objekte.Remove(objekt);
+}
+
+feld.Entfernen(feld.ObjektAn(new Position(5, 2))!);
+// keine Wurzel führt mehr zu dieser Wand – sie ist Müll
+```
+
+Wir müssen die Wand nicht löschen und dürfen es auch gar nicht. Es genügt, sie aus der Liste zu nehmen: Sie ist ab diesem Moment unerreichbar, und irgendwann räumt der GC sie weg. Wann genau, weiß niemand – und es spielt für die Korrektheit des Programms keine Rolle.
+
+Auch **Referenzkreise** sind für den GC kein Problem. Stell dir vor, wir geben dem Spieler zusätzlich ein Feld `Welt`, damit er ohne Parameter weiß, wo er steht – dann zeigen Spielfeld und Spieler aufeinander:
+
+```csharp
+static void EinePartie()
+{
+    Spieler held = new Spieler("Held", new Position(1, 1));
+    Spielfeld feld = new Spielfeld(10, 6, held);   // feld kennt den Helden ...
+    held.Welt = feld;                              // ... und der Held das Feld
+    feld.Hinzufuegen(new Wand(new Position(5, 2)));
+    // ... spielen ...
+}   // beide Variablen fallen weg – Held, Spielfeld und Wand sind Müll
+```
+
+Zwei Objekte, die sich gegenseitig referenzieren, würden bei einer reinen Referenzzählung nie freigegeben werden: Jedes hält den Zähler des anderen über null. Für den erreichbarkeitsbasierten GC sind sie schlicht Müll, weil nach dem Ende der Methode keine Wurzel mehr zu ihnen führt.
+
+Ein **Speicherleck** in C# entsteht also nicht durch vergessenes Freigeben, sondern durch vergessene Referenzen: eine statische `List<Spielobjekt>`, in die man immer nur hinzufügt, oder ein Ereignis-Abonnement, das nie gelöst wird (dazu mehr in [Vorlesung 07](/lectures/07/07.md)). Solange irgendeine Wurzel das Objekt erreicht, darf der GC es nicht anfassen.
 {: .notice--warning}
 
 ## Generationen
 
-Alle Objekte bei jeder Aufräumaktion zu durchsuchen wäre teuer. Der .NET-GC nutzt deshalb eine Beobachtung, die für die meisten Programme gilt: **Die meisten Objekte sterben jung.** Ein `Bruch` als Zwischenergebnis, ein `string` für eine Ausgabe – nach wenigen Millisekunden braucht sie niemand mehr. Der Heap ist darum in drei **Generationen** aufgeteilt:
+Alle Objekte bei jeder Aufräumaktion zu durchsuchen wäre teuer. Der .NET-GC nutzt deshalb eine Beobachtung, die für die meisten Programme gilt: **Die meisten Objekte sterben jung.** Ein `string`, den `AlsText()` in jeder Runde neu zusammenbaut, ein Zwischenergebnis in einer Schleife – nach wenigen Millisekunden braucht sie niemand mehr. Der Heap ist darum in drei **Generationen** aufgeteilt:
 
 - **Generation 0:** Hier landen alle neuen Objekte. Sie wird sehr häufig und sehr schnell aufgeräumt, weil sie klein ist und der Großteil der Objekte bereits Müll ist.
 - **Generation 1:** Objekte, die eine Aufräumaktion in Generation 0 überlebt haben. Ein Puffer zwischen kurz- und langlebig.
-- **Generation 2:** Langlebige Objekte – etwa die `FigurenVerwaltung` im Geometrieeditor, die das ganze Programm über existiert. Diese Generation wird selten durchsucht.
+- **Generation 2:** Langlebige Objekte – etwa das `Spielfeld` und seine Wände, die vom Start bis zum Spielende existieren. Diese Generation wird selten durchsucht.
 
-Für dich als Entwickler ist das im Alltag unsichtbar. Es erklärt aber, warum kurzlebige Objekte in .NET praktisch nichts kosten, während sehr viele *langlebige* Objekte mit vielen Referenzen die selteneren, aber teuren Generation-2-Sammlungen verlängern.
+Für dich als Entwickler ist das im Alltag unsichtbar. Es erklärt aber, warum die vielen kurzlebigen Zeichenketten der Konsolenausgabe in .NET praktisch nichts kosten, während sehr viele *langlebige* Objekte mit vielen Referenzen die selteneren, aber teuren Generation-2-Sammlungen verlängern.
 
 ## Kein `delete`, kein `GC.Collect()`
 
@@ -63,7 +86,7 @@ long vorher = GC.GetTotalMemory(forceFullCollection: true);
 
 for (int i = 0; i < 100_000; i++)
 {
-    Roboter r = new Roboter($"Roboter {i}");    // nach jedem Durchlauf unerreichbar
+    Wand w = new Wand(new Position(i % 10, i % 6));   // nach jedem Durchlauf unerreichbar
 }
 
 long mittendrin = GC.GetTotalMemory(forceFullCollection: false);
@@ -77,16 +100,16 @@ Console.WriteLine($"Nachher:    {nachher / 1024} KB");
 // Nachher:    85 KB
 ```
 
-`GC.GetTotalMemory(true)` wartet auf eine vollständige Sammlung und liefert dann den belegten Speicher. Die 100.000 Roboter sind danach vollständig verschwunden, obwohl nirgends etwas freigegeben wurde. Der Wert „mittendrin“ zeigt, dass der GC nicht sofort nach jedem Durchlauf aufräumt, sondern erst, wenn es sich lohnt.
+`GC.GetTotalMemory(true)` wartet auf eine vollständige Sammlung und liefert dann den belegten Speicher. Die 100.000 Wände sind danach vollständig verschwunden, obwohl nirgends etwas freigegeben wurde. Der Wert „mittendrin“ zeigt, dass der GC nicht sofort nach jedem Durchlauf aufräumt, sondern erst, wenn es sich lohnt.
 
 ## Finalizer und `IDisposable`
 
-Der GC kümmert sich um **verwalteten** Speicher – also um Objekte, die mit `new` in .NET erzeugt wurden. Manche Objekte halten aber Ressourcen außerhalb der Laufzeitumgebung: eine geöffnete Datei, eine Netzwerkverbindung, ein Fensterhandle des Betriebssystems. Von diesen weiß der GC nichts. Eine Klasse kann dafür einen **Finalizer** (`~Roboter() { ... }`) definieren, der vor der Freigabe aufgerufen wird – aber man weiß nie, *wann* das passiert, vielleicht erst Minuten später oder beim Programmende. Für Dateien und Verbindungen ist das unbrauchbar. Der richtige Weg ist das Interface `IDisposable` zusammen mit der `using`-Anweisung, die Ressourcen **deterministisch** freigibt, sobald man sie nicht mehr braucht. Das schauen wir uns in [Vorlesung 09](/modules/idisposable_using/idisposable_using.md) genau an, wenn wir mit Dateien und Streams arbeiten.
+Der GC kümmert sich um **verwalteten** Speicher – also um Objekte, die mit `new` in .NET erzeugt wurden. Manche Objekte halten aber Ressourcen außerhalb der Laufzeitumgebung: eine geöffnete Datei, eine Netzwerkverbindung, ein Fensterhandle des Betriebssystems. Von diesen weiß der GC nichts. Eine Klasse kann dafür einen **Finalizer** (`~Spielfeld() { ... }`) definieren, der vor der Freigabe aufgerufen wird – aber man weiß nie, *wann* das passiert, vielleicht erst Minuten später oder beim Programmende. Für Dateien und Verbindungen ist das unbrauchbar. Der richtige Weg ist das Interface `IDisposable` zusammen mit der `using`-Anweisung, die Ressourcen **deterministisch** freigibt, sobald man sie nicht mehr braucht. Das schauen wir uns in [Vorlesung 09](/modules/idisposable_using/idisposable_using.md) genau an, wenn wir Spielstände in Dateien schreiben.
 
 Im Zweifel: Vertraue dem Garbage Collector. Schreibe keine Finalizer, rufe nicht `GC.Collect()` auf, und setze Variablen nicht reflexartig auf `null` – der GC erkennt selbst, wenn eine lokale Variable nicht mehr gebraucht wird. Achte stattdessen darauf, keine Referenzen auf Objekte zu horten, die du nicht mehr brauchst.
 {: .notice--primary}
 
-Übung: Ein Programm hält alle jemals erzeugten Roboter in einem statischen Feld `static List<Roboter> alleRoboter`, damit `Roboter` im Konstruktor die Gesamtzahl mitzählen kann. Warum ist das ein Speicherleck, obwohl es in C# kein `delete` gibt? Wie könntest du die Anzahl zählen, ohne die Objekte am Leben zu halten?
+Übung: Ein Programm soll mitzählen, wie viele Spielobjekte im Laufe einer Partie erzeugt wurden, und legt dafür jedes neue Objekt im Konstruktor von `Spielobjekt` in ein statisches Feld `static List<Spielobjekt> alleObjekte`. Warum ist das ein Speicherleck, obwohl es in C# kein `delete` gibt – und warum hilft `feld.Entfernen(...)` hier nicht mehr? Wie könntest du die Anzahl zählen, ohne die Objekte am Leben zu halten?
 {: .notice--info}
 
 ## Weitere Quellen

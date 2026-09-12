@@ -13,14 +13,14 @@ In den letzten beiden Modulen stand vor fast jedem `FileStream` und `StreamReade
 
 ## Warum der Garbage Collector hier nicht hilft
 
-Im Modul [Garbage Collection](/modules/garbage_collection/garbage_collection.md) haben wir gesehen: Der GC gibt den Speicher von Objekten frei, die von keiner Wurzel mehr erreichbar sind – aber wann er das tut, entscheidet er selbst. Für ein paar Kilobyte Objektspeicher ist das egal. Ein Datei-Handle, eine Datenbankverbindung oder ein Netzwerk-Socket sind aber **nicht-verwaltete Ressourcen** (*unmanaged resources*): Sie gehören dem Betriebssystem, der GC weiß nichts über sie, und solange der Handle offen ist, bleibt die Datei gesperrt und der Schreibpuffer ungeleert. Das lässt sich leicht vorführen:
+Im Modul [Garbage Collection](/modules/garbage_collection/garbage_collection.md) haben wir gesehen: Der GC gibt den Speicher von Objekten frei, die von keiner Wurzel mehr erreichbar sind – aber wann er das tut, entscheidet er selbst. Für ein paar Kilobyte Objektspeicher ist das egal. Ein Datei-Handle, eine Datenbankverbindung oder ein Netzwerk-Socket sind aber **nicht-verwaltete Ressourcen** (*unmanaged resources*): Sie gehören dem Betriebssystem, der GC weiß nichts über sie, und solange der Handle offen ist, bleibt die Datei gesperrt und der Schreibpuffer ungeleert. Das lässt sich mit einem Spielstand leicht vorführen:
 
 ```csharp
-string pfad = Path.Combine(Path.GetTempPath(), "gesperrt.txt");
+string pfad = Path.Combine(Path.GetTempPath(), "spielstand.json");
 
 FileStream erster = File.OpenWrite(pfad);
-erster.Write(Encoding.UTF8.GetBytes("Hallo"));
-Console.WriteLine(new FileInfo(pfad).Length);   // 0 – "Hallo" steckt noch im Puffer!
+erster.Write(Encoding.UTF8.GetBytes("{\"Punkte\":100}"));
+Console.WriteLine(new FileInfo(pfad).Length);   // 0 – der Spielstand steckt noch im Puffer!
 
 try
 {
@@ -29,11 +29,11 @@ try
 catch (IOException ex)
 {
     Console.WriteLine(ex.Message);
-    // The process cannot access the file '.../gesperrt.txt' because it is being used by another process.
+    // The process cannot access the file '.../spielstand.json' because it is being used by another process.
 }
 ```
 
-Der zweite Zugriff scheitert, obwohl `erster` längst nicht mehr gebraucht wird. `erster = null` würde daran nichts ändern: Der GC läuft vielleicht erst in einer Minute, vielleicht erst beim Programmende – und bis dahin bleibt die Datei gesperrt und die fünf Bytes liegen im Arbeitsspeicher statt auf der Platte. Erst ein Aufruf von `erster.Dispose()` gibt den Handle zurück, leert den Puffer und macht den Weg frei. Genau dieses **deterministische** Aufräumen – zu einem Zeitpunkt, den der Code bestimmt – ist die Aufgabe von `IDisposable`.
+Der zweite Zugriff scheitert, obwohl `erster` längst nicht mehr gebraucht wird. `erster = null` würde daran nichts ändern: Der GC läuft vielleicht erst in einer Minute, vielleicht erst beim Programmende – und bis dahin bleibt die Datei gesperrt und die Bytes liegen im Arbeitsspeicher statt auf der Platte. Genau so verliert man einen Spielstand, obwohl das Programm „gespeichert“ gemeldet hat. Erst ein Aufruf von `erster.Dispose()` gibt den Handle zurück, leert den Puffer und macht den Weg frei. Dieses **deterministische** Aufräumen – zu einem Zeitpunkt, den der Code bestimmt – ist die Aufgabe von `IDisposable`.
 
 ## Das Interface `IDisposable`
 
@@ -55,29 +55,29 @@ Man könnte `Dispose()` nun einfach von Hand aufrufen. Das Problem: Wenn zwische
 Ein `using`-Block umschließt die Lebensdauer eines Objekts: Es wird im Kopf erzeugt und am Ende des Blocks garantiert freigegeben – auch wenn im Block eine Ausnahme auftritt:
 
 ```csharp
-using (StreamReader reader = File.OpenText(pfad))
+using (StreamReader leser = File.OpenText(pfad))
 {
-    while (reader.ReadLine() is string zeile)
+    while (leser.ReadLine() is string zeile)
     {
         Console.WriteLine(zeile);
     }
-}   // hier wird reader.Dispose() aufgerufen – immer
+}   // hier wird leser.Dispose() aufgerufen – immer
 ```
 
 Das ist kein Zauber, sondern reine Bequemlichkeit: Der Compiler übersetzt den Block in genau das `try`/`finally`, das man sonst selbst schreiben müsste. Der `null`-Test ist nötig, weil die Initialisierung selbst `null` liefern könnte:
 
 ```csharp
-StreamReader reader = File.OpenText(pfad);
+StreamReader leser = File.OpenText(pfad);
 try
 {
-    while (reader.ReadLine() is string zeile)
+    while (leser.ReadLine() is string zeile)
     {
         Console.WriteLine(zeile);
     }
 }
 finally
 {
-    if (reader != null) reader.Dispose();
+    if (leser != null) leser.Dispose();
 }
 ```
 
@@ -85,57 +85,74 @@ Zwischen den beiden Versionen gibt es keinen Unterschied im Verhalten – aber d
 
 ## Die `using`-Deklaration
 
-Seit C# 8 geht es noch knapper: Eine **`using`-Deklaration** hat keinen eigenen Block, sondern gilt bis zum Ende des umgebenden Blocks – also bis zum Ende der Methode oder der Schleife, in der sie steht. Das spart eine Einrückungsebene, was besonders bei mehreren Ressourcen hintereinander angenehm ist:
+Seit C# 8 geht es noch knapper: Eine **`using`-Deklaration** hat keinen eigenen Block, sondern gilt bis zum Ende des umgebenden Blocks – also bis zum Ende der Methode oder der Schleife, in der sie steht. Genau diese Form benutzt `TextdateiLevelQuelle.Laden` in `Adventure.Daten`:
 
 ```csharp
-using StreamReader quelle = File.OpenText(pfad);
-using StreamWriter ziel = File.CreateText(Path.Combine(Path.GetTempPath(), "kopie.txt"));
+List<string> zeilen = new();
+using StreamReader leser = new(pfad);
+string? zeile;
+while ((zeile = leser.ReadLine()) != null)
+{
+    if (zeile.Trim().Length > 0) zeilen.Add(zeile.TrimEnd());
+}
+return new Level(name, zeilen);
+```
+
+Die Datei wird freigegeben, sobald die Methode endet – auch auf dem `return`-Weg und auch dann, wenn `ReadLine` eine Ausnahme wirft. Das spart eine Einrückungsebene, was besonders bei mehreren Ressourcen hintereinander angenehm ist; die Freigabe erfolgt dann in umgekehrter Reihenfolge der Deklaration:
+
+```csharp
+using StreamReader quelle = File.OpenText(Path.Combine(ordner, "kerker.txt"));
+using StreamWriter ziel = File.CreateText(Path.Combine(ordner, "kerker_gespiegelt.txt"));
 
 while (quelle.ReadLine() is string zeile)
 {
-    ziel.WriteLine(zeile.ToUpper());
+    ziel.WriteLine(new string(zeile.Reverse().ToArray()));
 }
 // am Ende des umgebenden Blocks: erst ziel.Dispose(), dann quelle.Dispose()
 ```
 
-Die Freigabe erfolgt in umgekehrter Reihenfolge der Deklaration. Diese Form hast du in den Modulen zu [Dateien](/modules/dateien_verzeichnisse/dateien_verzeichnisse.md) und [Streams](/modules/streams/streams.md) bereits überall gesehen. Der Block mit Klammern bleibt sinnvoll, wenn die Ressource *vor* dem Ende der Methode freigegeben werden soll – etwa wenn man eine Datei erst schreibt und sie danach in derselben Methode wieder lesen möchte.
+Der Block mit Klammern bleibt sinnvoll, wenn die Ressource *vor* dem Ende der Methode freigegeben werden soll – etwa wenn man ein Level erst schreibt und es danach in derselben Methode wieder einliest, um es zu prüfen.
 
-Das Schlüsselwort `using` hat zwei völlig verschiedene Bedeutungen: Am Dateianfang (`using System.Text;`) importiert es einen Namensraum, im Methodenrumpf steuert es die Lebensdauer eines `IDisposable`-Objekts. Der Compiler erkennt am Kontext, was gemeint ist.
+Das Schlüsselwort `using` hat zwei völlig verschiedene Bedeutungen: Am Dateianfang (`using Adventure.Kern;`) importiert es einen Namensraum, im Methodenrumpf steuert es die Lebensdauer eines `IDisposable`-Objekts. Der Compiler erkennt am Kontext, was gemeint ist.
 {: .notice--primary}
 
 ## Eigene Klassen mit `Dispose`
 
-Sobald eine eigene Klasse ein `IDisposable`-Objekt als Feld hält, „erbt“ sie dessen Verantwortung: Wer die Klasse benutzt, kann den inneren `StreamWriter` nicht schließen, weil er ihn nicht sieht. Die Klasse muss also selbst `IDisposable` implementieren und den Aufruf weiterreichen. Ein kleines Protokoll, das Meldungen mit Uhrzeit in eine Datei schreibt:
+Sobald eine eigene Klasse ein `IDisposable`-Objekt als Feld hält, „erbt“ sie dessen Verantwortung: Wer die Klasse benutzt, kann den inneren `StreamWriter` nicht schließen, weil er ihn nicht sieht. Die Klasse muss also selbst `IDisposable` implementieren und den Aufruf weiterreichen. Ein Rundenprotokoll für das Adventure, das sich an das Ereignis `RundeBeendet` des Spielfelds hängt, ist ein gutes Beispiel:
 
 ```csharp
-class Protokoll : IDisposable
+class Rundenprotokoll : IDisposable
 {
     private readonly StreamWriter writer;
+    private readonly Spielfeld feld;
 
-    public Protokoll(string pfad)
+    public Rundenprotokoll(Spielfeld feld, string pfad)
     {
+        this.feld = feld;
         writer = new StreamWriter(pfad, append: true);
+        feld.RundeBeendet += Notieren;
     }
 
-    public void Eintrag(string text)
+    private void Notieren(object? sender, RundeEventArgs e)
     {
-        writer.WriteLine($"{DateTime.Now:HH:mm:ss} {text}");
+        writer.WriteLine($"Runde {e.Runde}: {e.Meldung}");
     }
 
     public void Dispose()
     {
-        writer.Dispose();   // leert den Puffer und schließt die Datei
+        feld.RundeBeendet -= Notieren;   // Ereignis wieder abmelden
+        writer.Dispose();                // leert den Puffer und schließt die Datei
     }
 }
 ```
 
-`Dispose()` enthält keine eigene Logik – es gibt nur die Verantwortung an das Feld weiter. Damit lässt sich `Protokoll` genauso benutzen wie ein `StreamWriter`:
+`Dispose()` enthält keine eigene Logik – es meldet den Handler ab und gibt die Verantwortung an das Feld weiter. Das Abmelden ist kein Schmuck: Ein angemeldeter Handler hält eine Referenz auf das Protokoll, sodass der GC es nicht einsammeln könnte, selbst wenn niemand sonst es mehr benutzt. Damit lässt sich `Rundenprotokoll` genauso benutzen wie ein `StreamWriter`:
 
 ```csharp
-using (Protokoll protokoll = new Protokoll(Path.Combine(Path.GetTempPath(), "protokoll.txt")))
+using (Rundenprotokoll protokoll = new Rundenprotokoll(feld, "runden.log"))
 {
-    protokoll.Eintrag("Programm gestartet");
-    protokoll.Eintrag("Figur r1 hinzugefügt");
+    feld.SpielerZieht(Richtung.Rechts);
+    feld.SpielerZieht(Richtung.Unten);
 }
 // Datei ist geschlossen, beide Zeilen stehen sicher auf der Platte
 ```
@@ -147,9 +164,9 @@ Ohne das `using` – oder ohne die `Dispose`-Methode – blieben die Einträge w
 
 ## Faustregel
 
-Im Zweifel gilt: **Alles, was `IDisposable` implementiert, gehört in ein `using`.** Ob ein Typ dazugehört, verrät die IDE (Vervollständigung zeigt `Dispose`) oder die Dokumentation. Die einzige verbreitete Ausnahme ist `HttpClient`, von dem man bewusst *eine* langlebige Instanz für das ganze Programm hält – dazu mehr im Modul [`HttpClient` und REST](/modules/httpclient_rest/httpclient_rest.md). Für Dateien, Streams und Verbindungen gibt es dagegen keinen guten Grund, auf das `using` zu verzichten.
+Im Zweifel gilt: **Alles, was `IDisposable` implementiert, gehört in ein `using`.** Ob ein Typ dazugehört, verrät die IDE (Vervollständigung zeigt `Dispose`) oder die Dokumentation. Die einzige verbreitete Ausnahme ist `HttpClient`, von dem man bewusst *eine* langlebige Instanz für das ganze Programm hält – genau so macht es `HttpLevelQuelle` mit ihrem `private static readonly HttpClient`, mehr dazu im Modul [`HttpClient` und REST](/modules/httpclient_rest/httpclient_rest.md). Für Dateien, Streams und Verbindungen gibt es dagegen keinen guten Grund, auf das `using` zu verzichten.
 
-Übung: Erweitere `Protokoll` um einen Zähler, sodass `Dispose()` als letzte Zeile „`n Einträge`“ in die Datei schreibt. Was passiert, wenn du `Dispose()` zweimal aufrufst – und wie kannst du das mit einem `bool`-Feld absichern?
+Übung: Erweitere `Rundenprotokoll` um einen Zähler, sodass `Dispose()` als letzte Zeile „`n Runden protokolliert`“ in die Datei schreibt. Was passiert, wenn du `Dispose()` zweimal aufrufst – und wie sicherst du das mit einem `bool`-Feld ab? Vergleiche anschließend, was in der Datei steht, wenn du das `using` weglässt und das Programm beendest.
 {: .notice--info}
 
 ## Weitere Quellen

@@ -9,11 +9,39 @@ toc: false
 classes: wide
 ---
 
-Vererbung ist mächtig – und genau deshalb manchmal gefährlich. Wer von einer Klasse erbt und eine `virtual`-Methode überschreibt, kann ihr Verhalten beliebig verändern: versehentlich, weil man die Semantik nicht verstanden hat, oder absichtlich, um eine Prüfung zu umgehen. Bei einer Klasse `Konto` ist das kein Spaß mehr. Mit dem Schlüsselwort `sealed` lässt sich Vererbung an einer Stelle der Hierarchie gezielt **beenden** – die Klasse ist dann versiegelt, man könnte auch sagen: enterbt.
+Vererbung ist mächtig – und genau deshalb manchmal gefährlich. Wer von einer Klasse erbt und ein `virtual`-Mitglied überschreibt, kann ihr Verhalten beliebig verändern: versehentlich, weil man die Semantik nicht verstanden hat, oder absichtlich, um eine Prüfung zu umgehen. Bei einer Klasse `Konto` ist das kein Spaß mehr, und selbst in unserem Spiel wäre eine Wand, durch die man plötzlich hindurchlaufen kann, kein Feature, sondern ein Fehler. Mit dem Schlüsselwort `sealed` lässt sich Vererbung an einer Stelle der Hierarchie gezielt **beenden** – die Klasse ist dann versiegelt, man könnte auch sagen: enterbt.
 
-## Versiegelte Klassen
+## Eine Wand ist eine Wand
 
-Als Ausgangspunkt dient eine Klasse `Konto`, deren Methoden bewusst überschreibbar sind, damit spezielle Kontoarten eigene Regeln ergänzen können:
+Im Adventure gibt es genau eine versiegelte Klasse, und das ist kein Zufall:
+
+```csharp
+public sealed class Wand : Spielobjekt
+{
+    public Wand(Position position) : base("Wand", position)
+    {
+    }
+
+    public override char Symbol => '#';
+}
+```
+
+Eine Wand ist ein **abgeschlossenes Konzept**: Sie steht auf einem Feld, sie wird als `#` gezeichnet, und man kommt nicht hindurch – das ist ihre komplette Bedeutung im Spiel. Für alles, was sich anders verhalten soll, gibt es bereits die passende Stelle in der Hierarchie: Eine Tür, die sich öffnen lässt, ist keine Spezialwand, sondern ein eigenes `Spielobjekt` mit eigenem Symbol. Eine `Glaswand : Wand`, die `IstPassierbar` auf `true` setzt, wäre dagegen eine Zeitbombe – jede Wegfindung im Spiel geht davon aus, dass `#` blockiert.
+
+```csharp
+sealed class Wand : Spielobjekt { /* ... */ }
+
+class Geheimwand : Wand                 // Fehler CS0509
+{
+    public override bool IstPassierbar => true;
+}
+```
+
+Der Compiler meldet CS0509: „kann nicht von dem versiegelten Typ `Wand` abgeleitet werden.“ Wer eine `Wand` in der Hand hält, weiß damit garantiert, womit er es zu tun hat – und wenn jemand später doch eine durchlässige Mauer braucht, muss er eine bewusste Entscheidung treffen und eine eigene Klasse neben `Wand` stellen, statt heimlich deren Bedeutung zu verbiegen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`).
+
+## Versiegeln, damit Prüfungen halten
+
+Der zweite klassische Grund ist Sicherheit. Als Ausgangspunkt dient eine Klasse `Konto`, deren Methoden bewusst überschreibbar sind, damit spezielle Kontoarten eigene Regeln ergänzen können:
 
 ```csharp
 class Konto
@@ -32,7 +60,7 @@ class Konto
 }
 ```
 
-Ein `SicheresKonto` überschreibt beide Methoden mit Prüfungen. Damit niemand diese Prüfungen durch eine weitere Ableitung wieder aushebeln kann, wird die Klasse mit `sealed` versiegelt:
+Ein `SicheresKonto` überschreibt beide Methoden mit Prüfungen. Damit niemand diese Prüfungen durch eine weitere Ableitung wieder aushebeln kann, wird die Klasse versiegelt:
 
 ```csharp
 sealed class SicheresKonto : Konto
@@ -57,23 +85,11 @@ sealed class SicheresKonto : Konto
 }
 ```
 
-`SicheresKonto` selbst erbt ganz normal von `Konto` und nutzt `base`, um die eigentliche Buchung zu erledigen. Der Unterschied zeigt sich erst, wenn jemand versucht, *von* `SicheresKonto` zu erben:
-
-```csharp
-class ManipuliertesKonto : SicheresKonto     // Fehler CS0509
-{
-    public override void Abheben(decimal betrag)
-    {
-        Kontostand -= betrag;    // Prüfung umgangen – geht zum Glück nicht
-    }
-}
-```
-
-Der Compiler meldet CS0509: „kann nicht von dem versiegelten Typ `SicheresKonto` abgeleitet werden.“ Die Semantik von `SicheresKonto` ist damit garantiert – wer ein `SicheresKonto` in der Hand hat, weiß, dass die Prüfungen gelten.
+`SicheresKonto` selbst erbt ganz normal von `Konto` und nutzt `base`, um die eigentliche Buchung zu erledigen – das Siegel wirkt nur nach unten. Ein `ManipuliertesKonto : SicheresKonto`, das in `Abheben` einfach `Kontostand -= betrag` schreiben und die Deckungsprüfung überspringen will, scheitert wieder an CS0509.
 
 ## Versiegelte Methoden
 
-Manchmal soll die Klasse weiterhin erweiterbar bleiben, aber eine *bestimmte* Methode nicht mehr verändert werden. Dafür kombiniert man `sealed` mit `override`: Die Methode wird ein letztes Mal überschrieben und gleichzeitig für alle weiteren Erben geschlossen.
+Manchmal soll die Klasse weiterhin erweiterbar bleiben, aber ein *bestimmtes* Mitglied nicht mehr verändert werden. Dafür kombiniert man `sealed` mit `override`: Die Methode wird ein letztes Mal überschrieben und gleichzeitig für alle weiteren Erben geschlossen.
 
 ```csharp
 class Girokonto : Konto
@@ -103,7 +119,7 @@ class Studentenkonto : Girokonto
 }
 ```
 
-`Studentenkonto` darf `Einzahlen` überschreiben, aber nicht `Abheben` – dort meldet der Compiler CS0239 („kann den geerbten Member nicht überschreiben, da er versiegelt ist“). `sealed` an einer Methode ist nur zusammen mit `override` erlaubt; eine Methode, die gar nicht `virtual` ist, braucht kein Siegel, weil sie ohnehin nicht überschrieben werden kann.
+`Studentenkonto` darf `Einzahlen` überschreiben, aber nicht `Abheben` – dort meldet der Compiler CS0239 („kann den geerbten Member nicht überschreiben, da er versiegelt ist“). `sealed` an einem Mitglied ist nur zusammen mit `override` erlaubt; eine Methode, die gar nicht `virtual` ist, braucht kein Siegel, weil sie ohnehin nicht überschrieben werden kann.
 
 ## Statische Klassen
 
@@ -124,13 +140,13 @@ class MeinZinsrechner : Zinsrechner   // Fehler CS0709
 
 Es gibt zwei gute Gründe für `sealed`:
 
-- **Sicherheit und Klarheit:** Die Klasse hat eine feste Bedeutung, die niemand durch Überschreiben verändern soll – wie beim `SicheresKonto`. Auch in .NET selbst sind viele Klassen versiegelt, allen voran `string`: Ein String, der sich beim Vergleichen plötzlich anders verhält, wäre eine Katastrophe für jedes Programm.
-- **Performance:** Ruft man eine `virtual`-Methode auf, muss die Laufzeitumgebung nachschauen, welche Implementierung zum tatsächlichen Objekt gehört (mehr dazu im Modul [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md)). Bei einer versiegelten Klasse kann es nur eine Implementierung geben – der JIT-Compiler darf den Aufruf dann direkt auflösen und die Methode sogar inlinen. Für die meisten Programme ist dieser Effekt unmessbar klein, in engen Schleifen kann er aber spürbar sein.
+- **Sicherheit und Klarheit:** Die Klasse hat eine feste Bedeutung, die niemand durch Überschreiben verändern soll – wie bei `Wand` oder `SicheresKonto`. Auch in .NET selbst sind viele Klassen versiegelt, allen voran `string`: Ein String, der sich beim Vergleichen plötzlich anders verhält, wäre eine Katastrophe für jedes Programm.
+- **Performance:** Ruft man ein `virtual`-Mitglied auf, muss die Laufzeitumgebung nachschauen, welche Implementierung zum tatsächlichen Objekt gehört (mehr dazu im Modul [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md)). Bei einer versiegelten Klasse kann es nur eine Implementierung geben – der JIT-Compiler darf den Aufruf dann direkt auflösen und die Methode sogar inlinen. Für die meisten Programme ist dieser Effekt unmessbar klein; in einer Schleife, die bei jedem Zeichnen der Karte für jedes Feld `Symbol` abfragt, ist er immerhin messbar.
 
-Im Zweifel nicht `sealed` – außer du hast einen Grund. Jedes Siegel nimmt späteren Erweiterungen eine Option weg, und die beste Erweiterung ist oft eine, an die man beim Schreiben der Klasse noch nicht gedacht hat. Wenn du aber weißt, dass eine Klasse ein abgeschlossenes Konzept ist (ein Wert wie `Bruch`, ein Sicherheitsbaustein wie `SicheresKonto`), dann versiegle sie und dokumentiere damit deine Absicht.
+Im Zweifel nicht `sealed` – außer du hast einen Grund. Jedes Siegel nimmt späteren Erweiterungen eine Option weg, und die beste Erweiterung ist oft eine, an die man beim Schreiben der Klasse noch nicht gedacht hat. `Spielobjekt` und `Spieler` bleiben deshalb offen: Aus `Spieler` könnte später ein `Magier` mit eigenen Fähigkeiten werden. Wenn du aber weißt, dass eine Klasse ein abgeschlossenes Konzept ist, dann versiegle sie und dokumentiere damit deine Absicht.
 {: .notice--primary}
 
-Übung: Die Klasse `Roboter` aus den vorigen Modulen soll erweiterbar bleiben, aber ihre `Name`-Property soll in keiner abgeleiteten Klasse überschrieben werden können. Wie erreichst du das, ohne die Klasse selbst zu versiegeln? Und was passiert, wenn du `Putzroboter` versiegelst und anschließend `Fensterputzroboter : Putzroboter` schreibst?
+Übung: Die Klasse `Spieler` soll erweiterbar bleiben, aber ihre Property `Symbol` soll in keiner abgeleiteten Klasse noch einmal überschrieben werden können – der Held ist immer `@`. Wie erreichst du das, ohne die Klasse selbst zu versiegeln? Schreibe anschließend eine Klasse `Magier : Spieler`, die `Beschreibung()` um die Zahl der Zaubersprüche erweitert, und versuche darin trotzdem, `Symbol` zu überschreiben: Welchen Fehler meldet der Compiler?
 {: .notice--info}
 
 ## Weitere Quellen

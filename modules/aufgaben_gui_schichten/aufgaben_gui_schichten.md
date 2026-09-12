@@ -9,567 +9,468 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Bei Oberflächen und Architekturen heißt das vor allem: eine Seite in Bereiche zerlegen, Logik von Anzeige trennen und Abhängigkeiten erkennen, bevor sie zum Problem werden. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Bei Oberflächen und Architekturen heißt das vor allem: eine Seite in Komponenten zerlegen, Spielregeln von Anzeige trennen und Abhängigkeiten erkennen, bevor sie zum Problem werden. Alle vier Aufgaben spielen im Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Zerlegung
 
-Entwirf einen einfachen Taschenrechner als Razor-Komponente: oben eine Anzeige, darunter ein Ziffernblock mit den Ziffern 0–9, dem Komma, den vier Grundrechenarten, `=` und `C`. Die Null soll doppelt so breit sein wie die anderen Ziffern, `=` doppelt so hoch, und der Block soll mit CSS-Grid gesetzt werden – ohne dass du jede Taste einzeln positionierst.
+In `Home.razor` steht die Levelauswahl direkt im Markup der Seite: ein `<label>`, ein `<select>` mit `@bind` und `@bind:after`, eine `@foreach`-Schleife über `LevelQuelle.LevelNamen`. Zerlege das in eine eigene Komponente `Levelauswahl.razor`, die von außen die Liste der Namen bekommt und die getroffene Auswahl über einen `EventCallback<string>` zurückmeldet.
 
-- Wie viele Spalten braucht das Grid, und wie erreichst du die doppelt breite Null, ohne jeder Taste eine Position zu geben?
-- Wie viele Klick-Handler brauchst du für siebzehn Tasten – und woher weiß ein gemeinsamer Handler, welche Taste gedrückt wurde?
-- Welche Felder bilden den Zustand des Rechners? Was muss sich die Komponente zwischen zwei Klicks merken?
-- Die Rechenlogik landet in dieser Aufgabe in der Komponente. Warum ist das hier vertretbar, und ab wann nicht mehr?
+- Welche Parameter braucht die Komponente – und welche davon dürfen fehlen?
+- Warum ein `EventCallback<string>` und kein gewöhnlicher `Action<string>`-Delegat?
+- Wo lebt danach der aktuell gewählte Levelname: in der Komponente, in der Seite oder in beiden?
+- Die Komponente soll die Liste anzeigen können, ohne `ILevelQuelle` zu kennen. Warum ist das besser, obwohl `@inject ILevelQuelle` auch in ihr funktionieren würde?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Zustand festlegen:**
+**Schritt 1 — Schnittstelle der Komponente festlegen:**
 
-Der Rechner braucht die Anzeige als Text, den linken Operanden, das gewählte Rechenzeichen und ein Merkmal, ob die nächste Ziffer eine neue Zahl beginnt (nach `+` oder `=`) oder die angezeigte fortsetzt.
+Bevor eine Zeile Markup entsteht, klären wir, was hinein- und was herausfließt. Hinein: die Liste der Namen und der aktuell gewählte Name. Heraus: die neue Auswahl. Mehr braucht die Komponente nicht – und alles, was sie nicht braucht, bekommt sie auch nicht.
 
-**Schritt 2 — Tasten als Daten, nicht als Markup:**
-
-Statt siebzehn `<button>`-Elemente zu schreiben, legen wir die Tasten in ein Array und lassen `@foreach` das Markup erzeugen. Der Handler bekommt die Taste über ein Lambda mit – ein Handler für alle:
+**Schritt 2 — Die Komponente:**
 
 ```razor
-@using System.Globalization
+@* Components/Levelauswahl.razor *@
 
-<div class="rechner">
-    <div class="anzeige">@anzeige</div>
-    <div class="tasten">
-        @foreach (string taste in tasten)
+<label>Level:
+    <select value="@Ausgewaehlt" @onchange="Gewechselt">
+        @foreach (string name in Namen)
         {
-            <button class="@KlasseFuer(taste)" @onclick="() => TasteGedrueckt(taste)">@taste</button>
+            <option value="@name">@name</option>
         }
-    </div>
+    </select>
+</label>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<string> Namen { get; set; } = [];
+    [Parameter] public string Ausgewaehlt { get; set; } = "";
+    [Parameter] public EventCallback<string> OnLevelGewaehlt { get; set; }
+
+    private Task Gewechselt(ChangeEventArgs e)
+    {
+        return OnLevelGewaehlt.InvokeAsync(e.Value?.ToString() ?? "");
+    }
+}
+```
+
+Statt `@bind` steht hier das Paar `value="@Ausgewaehlt"` und `@onchange="Gewechselt"` – von Hand auseinandergezogen, weil die Komponente den Wert nicht selbst besitzt, sondern nur anzeigt und die Änderung weitermeldet. Das ist genau das, was `@bind` intern auch tut.
+
+**Schritt 3 — Einbindung in `Home.razor`:**
+
+```razor
+<div class="werkzeuge">
+    <Levelauswahl Namen="LevelQuelle.LevelNamen" Ausgewaehlt="levelName"
+                  OnLevelGewaehlt="LevelWechseln" />
+    <button @onclick="NeuStarten">Neu starten</button>
 </div>
 
 @code {
-    private static readonly CultureInfo de = CultureInfo.GetCultureInfo("de-DE");
-
-    private readonly string[] tasten =
-        ["C", "/", "*", "7", "8", "9", "-", "4", "5", "6", "+", "1", "2", "3", "=", "0", ","];
-
-    private string anzeige = "0";
-    private double linkerOperand = 0;
-    private string? rechenzeichen;
-    private bool neueZahl = true;
-
-    private static string KlasseFuer(string taste) => taste switch
+    private void LevelWechseln(string name)
     {
-        "C" or "0" => "breit",
-        "=" => "hoch",
-        _ => ""
-    };
-
-    private void TasteGedrueckt(string taste)
-    {
-        switch (taste)
-        {
-            case "C":
-                anzeige = "0"; linkerOperand = 0; rechenzeichen = null; neueZahl = true;
-                break;
-            case "+" or "-" or "*" or "/":
-                Berechnen();
-                rechenzeichen = taste;
-                neueZahl = true;
-                break;
-            case "=":
-                Berechnen();
-                rechenzeichen = null;
-                neueZahl = true;
-                break;
-            default:
-                ZiffernTaste(taste);
-                break;
-        }
-    }
-
-    private void ZiffernTaste(string taste)
-    {
-        if (neueZahl)
-        {
-            anzeige = taste == "," ? "0," : taste;
-            neueZahl = false;
-        }
-        else if (taste != "," || !anzeige.Contains(','))
-        {
-            anzeige = anzeige == "0" && taste != "," ? taste : anzeige + taste;
-        }
-    }
-
-    private void Berechnen()
-    {
-        double rechts = double.Parse(anzeige, de);
-        double ergebnis = rechenzeichen switch
-        {
-            "+" => linkerOperand + rechts,
-            "-" => linkerOperand - rechts,
-            "*" => linkerOperand * rechts,
-            "/" => linkerOperand / rechts,
-            _ => rechts
-        };
-        linkerOperand = ergebnis;
-        anzeige = ergebnis.ToString(de);
+        levelName = name;
+        NeuStarten();
     }
 }
 ```
 
-**Schritt 3 — Layout mit CSS-Grid:**
+`LevelWechseln` ersetzt das frühere `@bind:after`: erst den Zustand ändern, dann das neue Level laden. Die Reihenfolge ist wichtig – stünde `NeuStarten()` zuerst, würde das alte Level noch einmal geladen.
 
-Vier Spalten, und die Tasten füllen sie in der Reihenfolge des Arrays automatisch. Nur zwei Klassen greifen ein: `breit` belegt zwei Spalten, `hoch` zwei Zeilen. Die Grid-Auto-Platzierung schiebt die folgenden Tasten um die belegten Zellen herum – deshalb steht die Null am Ende des Arrays direkt vor dem Komma, obwohl `=` in der Zeile davor beginnt.
+**Schritt 4 — Die Variante mit `@bind-`:**
 
-```css
-.rechner {
-    max-width: 260px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
+Blazor kennt eine Namenskonvention für Zweiweg-Bindung an eigene Komponenten: Heißt der Parameter `Ausgewaehlt` und der Rückkanal `AusgewaehltChanged` vom Typ `EventCallback<string>`, darf die Seite ihn wie ein eingebautes Eingabeelement binden:
 
-.anzeige {
-    text-align: right;
-    font-size: 1.8rem;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-}
-
-.tasten {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.3rem;
-}
-
-.tasten button { padding: 0.8rem; font-size: 1.1rem; }
-.tasten .breit { grid-column: span 2; }
-.tasten .hoch  { grid-row: span 2; }
+```razor
+<Levelauswahl Namen="LevelQuelle.LevelNamen" @bind-Ausgewaehlt="levelName"
+              @bind-Ausgewaehlt:after="NeuStarten" />
 ```
+
+Das ist eleganter, sobald die Komponente wirklich einen Wert *bearbeitet*. Für den Einstieg ist die explizite Variante aus Schritt 2 lehrreicher, weil man sieht, dass hinter `@bind` nichts Magisches steckt.
 
 **Zentrale Designentscheidungen:**
 
-- **Ein Handler statt siebzehn:** Das Lambda `() => TasteGedrueckt(taste)` fängt die Schleifenvariable ein, sodass jeder Button „seine“ Taste übergibt. Die Tastenbeschriftung ist damit zugleich der Parameter – Markup und Logik haben eine gemeinsame Datenquelle, das Array.
-- **Grid-Auto-Platzierung statt fester Positionen:** Nur die Ausnahmen (`breit`, `hoch`) werden benannt; alles andere ergibt sich aus der Reihenfolge. Eine Taste hinzuzufügen heißt, das Array zu erweitern.
-- **Zustand nur in Feldern:** Kein Handler schreibt in die Anzeige – `anzeige` ist ein Feld, das Markup zeigt es. Nach jedem Klick rendert Blazor neu.
-- **Logik in der Komponente – vorerst:** Für eine Übung ist das vertretbar. Sobald der Rechner Prozent, Klammern oder eine Verlaufsliste bekommt, wandert `Berechnen` in eine Klasse `Rechenwerk` im Fachkonzept, die man ohne Browser testen kann – genau das üben wir in Aufgabe 2.
+- **`EventCallback<string>` statt `Action<string>`:** Nach einem `EventCallback` rendert Blazor die Elternkomponente automatisch neu. Mit einem gewöhnlichen Delegaten müsste `Home` selbst `StateHasChanged` aufrufen – eine Zeile, die man genau einmal vergisst und dann lange sucht.
+- **Der Zustand bleibt oben:** `levelName` gehört weiterhin `Home`, denn `NeuStarten` braucht ihn. Die Komponente hat **kein** eigenes Feld für die Auswahl; sie zeigt an, was sie bekommt. Zwei Kopien desselben Werts sind zwei Gelegenheiten, auseinanderzulaufen.
+- **Keine Abhängigkeit von `ILevelQuelle`:** Eine Komponente, die nur eine `IReadOnlyList<string>` braucht, lässt sich für Spielstände, Schwierigkeitsgrade oder Tastaturlayouts wiederverwenden – und in einem Test mit drei erfundenen Namen ausprobieren. Mit `@inject ILevelQuelle` wäre sie für immer an Level gekettet.
+- **`EditorRequired` nur dort, wo es weh tut:** Ohne `Namen` ist die Komponente sinnlos, ohne `Ausgewaehlt` nur unschön. Deshalb ist nur der erste Parameter als erforderlich markiert.
 
 </details>
 
 ## Aufgabe 2 — Abstraktion
 
-Die folgende Komponente berechnet einen Rabatt. Sie funktioniert – aber sie verletzt die Regel, dass eine Komponente keine Geschäftslogik enthält:
+Jemand hat die Tastatursteuerung „verbessert“. Die Komponente prüft jetzt selbst, was vor dem Spieler liegt:
 
-```razor
-@using System.Globalization
-
-<label>Bestellwert: <input @bind="bestellwertText" /></label>
-<label><input type="checkbox" @bind="stammkunde" /> Stammkunde</label>
-<button @onclick="Berechnen">Berechnen</button>
-<p>@ergebnis</p>
-
-@code {
-    private string bestellwertText = "";
-    private bool stammkunde;
-    private string ergebnis = "";
-
-    private void Berechnen()
+```csharp
+private void TasteGedrueckt(KeyboardEventArgs e)
+{
+    Richtung? richtung = e.Key switch
     {
-        double wert = double.Parse(bestellwertText, CultureInfo.InvariantCulture);
-        double prozent = 0;
-        if (wert >= 500) prozent = 10;
-        else if (wert >= 100) prozent = 5;
-        if (stammkunde) prozent += 3;
-        double rabatt = wert * prozent / 100;
-        ergebnis = $"Rabatt {prozent} % = {rabatt:F2} €, zu zahlen {wert - rabatt:F2} €";
+        "ArrowUp" or "w" or "W" => Richtung.Oben,
+        "ArrowDown" or "s" or "S" => Richtung.Unten,
+        "ArrowLeft" or "a" or "A" => Richtung.Links,
+        "ArrowRight" or "d" or "D" => Richtung.Rechts,
+        _ => null
+    };
+    if (richtung is not Richtung r) return;
+
+    Position ziel = feld.Spieler.Position.Verschoben(r);
+    Spielobjekt? davor = feld.ObjektAn(ziel);
+
+    if (davor is Wand)
+    {
+        meldung = "Da ist eine Wand.";
+        return;
     }
+    if (davor is Tuer tuer && !tuer.IstOffen)
+    {
+        if (feld.Spieler.Inventar.Enthaelt<Schluessel>())
+        {
+            meldung = tuer.Interagieren(feld.Spieler);
+        }
+        else
+        {
+            meldung = "Die Tür ist verschlossen. Du brauchst einen Schlüssel.";
+        }
+        return;
+    }
+
+    feld.SpielerZieht(r);
 }
 ```
 
-Trenne die Komponente in Oberfläche und eine Fachkonzept-Klasse `Rabattrechner`.
+Es funktioniert – im Browser. Schiebe die Logik dorthin zurück, wo sie hingehört.
 
-- Welche Zeilen bestehen die Konsolen-Probe („könnte unverändert in einer Konsolenversion stehen“) und welche nicht?
-- Wohin gehört `double.Parse` – und wohin die Prüfung, dass ein Bestellwert nicht negativ sein darf?
-- Was gibt der `Rabattrechner` zurück – einen `double`, einen fertigen Text oder etwas anderes?
-- Wie sähe ein NUnit-Test für die Staffel „ab 500 € zehn Prozent“ aus?
+- Welche Zeilen bestehen die Konsolen-Probe aus dem [Architektur-Modul](/modules/schichten_architektur/schichten_architektur.md) und welche nicht?
+- Wie verhält sich dieselbe Situation in `Adventure.Konsole` – und warum ist der Unterschied ein Fehler und nicht nur eine Unschönheit?
+- Es steckt zusätzlich ein echter Spielfehler in diesem Code, den man erst beim Spielen bemerkt. Welcher?
+- Wie sähe ein NUnit-Test für „verschlossene Tür ohne Schlüssel“ aus, und warum lässt er sich mit der Fassung oben nicht schreiben?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
 **Schritt 1 — Zeilen sortieren:**
 
-Die Staffelung (`>= 500`, `>= 100`), der Stammkundenbonus und die Multiplikation sind Fachregeln – sie würden in einer Konsolenversion genauso stehen. `double.Parse` wandelt eine *Eingabe* um, `ergebnis = $"..."` formatiert eine *Ausgabe* – beides ist Oberfläche. Die Prüfung auf negative Werte ist dagegen eine Fachregel: Ein negativer Bestellwert ist in jeder Version des Programms unsinnig, also gehört sie in den `Rabattrechner`.
+Der `switch`-Ausdruck über `e.Key` besteht die Probe **nicht** – `"ArrowUp"` ist ein Begriff des Browsers, die Konsole kennt `ConsoleKey.UpArrow`. Er bleibt also in der Komponente. Alles darunter besteht die Probe: Ob vor dem Spieler eine Wand steht, ob eine Tür verschlossen ist und ob ein Schlüssel im Inventar liegt, ist in jeder Oberfläche dieselbe Frage. Diese Zeilen gehören in den Kern – und stehen dort längst.
 
-**Schritt 2 — Fachkonzept-Klasse:**
+**Schritt 2 — Der Fehler, den man beim Spielen merkt:**
 
-Der Rechner gibt kein fertiges Textformat zurück, sondern die drei Zahlen, die die Oberfläche braucht – als `record`, damit das Ergebnis einen Namen hat:
+Die drei `return`-Anweisungen überspringen `feld.SpielerZieht(r)` – und damit den **Zug der Gegner**. Läuft der Spieler gegen eine Wand, passiert im ganzen Spiel nichts: Die Wachen patrouillieren nicht, die Verfolger rücken nicht nach. Eine Wand wird so zum Pausenknopf, hinter dem man sich beliebig lange verstecken kann. Das ist keine Stilfrage mehr, sondern eine kaputte Spielregel – und sie ist genau deshalb entstanden, weil eine Oberfläche über den Ablauf einer Runde entschieden hat.
+
+**Schritt 3 — Die Regeln stehen schon im Kern:**
+
+`Spielfeld.SpielerZieht` behandelt beide Fälle korrekt und lässt in **jedem** Fall die Gegner ziehen:
 
 ```csharp
-namespace Shop.Fachkonzept;
-
-public record RabattErgebnis(double Prozent, double Betrag, double Endpreis);
-
-public class Rabattrechner
+public void SpielerZieht(Richtung richtung)
 {
-    public double StammkundenBonus { get; init; } = 3;
+    if (Status != Spielstatus.Laeuft) return;
 
-    public RabattErgebnis Berechnen(double bestellwert, bool stammkunde)
+    Runde++;
+    StringBuilder meldung = new();
+    Position ziel = Spieler.Position.Verschoben(richtung);
+    StatischesObjekt? davor = StatischesObjektAn(ziel);
+
+    if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
     {
-        if (bestellwert < 0)
-        {
-            throw new ArgumentException("Der Bestellwert darf nicht negativ sein.");
-        }
+        // Vor einer verschlossenen Tür oder einer Truhe: interagieren statt gehen.
+        meldung.Append(interagierbar.Interagieren(Spieler));
+    }
+    else if (Spieler.Bewegen(richtung, this))
+    {
+        // ... Gegenstand aufheben, Ausgang prüfen ...
+    }
+    else
+    {
+        meldung.Append("Da geht es nicht weiter.");
+    }
 
-        double prozent = bestellwert switch
-        {
-            >= 500 => 10,
-            >= 100 => 5,
-            _ => 0
-        };
-        if (stammkunde)
-        {
-            prozent += StammkundenBonus;
-        }
+    if (Status == Spielstatus.Laeuft)
+    {
+        GegnerZiehen(meldung);
+    }
 
-        double betrag = bestellwert * prozent / 100;
-        return new RabattErgebnis(prozent, betrag, bestellwert - betrag);
+    LetzteMeldung = meldung.ToString().Trim();
+    RundeBeendet?.Invoke(this, new RundeEventArgs(Runde, LetzteMeldung));
+}
+```
+
+Beachte den Unterschied in der Abstraktionshöhe: Der Kern fragt nicht `davor is Tuer`, sondern `davor is IInteragierbar` – das [Interface aus Vorlesung 02](/modules/interfaces_grundlagen/interfaces_grundlagen.md). Dadurch funktioniert derselbe Zweig für Türen *und* Truhen und für alles, was später dazukommt. Die Fassung in der Komponente hätte für jede neue Objektart ein weiteres `if` gebraucht.
+
+**Schritt 4 — Die Komponente schrumpft zurück:**
+
+```csharp
+private void TasteGedrueckt(KeyboardEventArgs e)
+{
+    Richtung? richtung = e.Key switch
+    {
+        "ArrowUp" or "w" or "W" => Richtung.Oben,
+        "ArrowDown" or "s" or "S" => Richtung.Unten,
+        "ArrowLeft" or "a" or "A" => Richtung.Links,
+        "ArrowRight" or "d" or "D" => Richtung.Rechts,
+        _ => null
+    };
+    if (richtung is Richtung r)
+    {
+        feld.SpielerZieht(r);
     }
 }
 ```
 
-**Schritt 3 — Komponente ohne Regeln:**
+Das Feld `meldung` in der Komponente entfällt ebenfalls: Die Meldung steht nach dem Zug in `feld.LetzteMeldung` und wird über den Parameter `Meldung` an die `Statusleiste` gereicht. Eine Kopie weniger, die veralten kann.
 
-Die Komponente liest Eingaben, ruft den Rechner und zeigt an. Beide Fehlerarten – ungültiges Format aus `double.Parse`, negative Zahl aus dem Fachkonzept – landen als Text im `ergebnis`-Feld:
-
-```razor
-@using System.Globalization
-@using Shop.Fachkonzept
-@inject Rabattrechner Rechner
-
-<label>Bestellwert: <input @bind="bestellwertText" /></label>
-<label><input type="checkbox" @bind="stammkunde" /> Stammkunde</label>
-<button @onclick="Berechnen">Berechnen</button>
-<p>@ergebnis</p>
-
-@code {
-    private string bestellwertText = "";
-    private bool stammkunde;
-    private string ergebnis = "";
-
-    private void Berechnen()
-    {
-        try
-        {
-            double wert = double.Parse(bestellwertText, CultureInfo.InvariantCulture);
-            RabattErgebnis r = Rechner.Berechnen(wert, stammkunde);
-            ergebnis = $"Rabatt {r.Prozent} % = {r.Betrag:F2} €, zu zahlen {r.Endpreis:F2} €";
-        }
-        catch (Exception ex) when (ex is FormatException || ex is ArgumentException)
-        {
-            ergebnis = ex.Message;
-        }
-    }
-}
-```
-
-In `Program.cs` genügt `builder.Services.AddScoped<Rabattrechner>();`, damit `@inject` den Rechner liefert.
-
-**Schritt 4 — Test ohne Browser:**
+**Schritt 5 — Der Test, der vorher unmöglich war:**
 
 ```csharp
 [Test]
-public void Berechnen_Ab500Euro_ZehnProzent()
+public void SpielerZieht_VerschlosseneTuerOhneSchluessel_SpielerBleibtStehen()
 {
-    Rabattrechner rechner = new Rabattrechner();
+    Spielfeld feld = LevelParser.Parsen(new Level("Test", ["###", "#@D", "###"]));
+    Position vorher = feld.Spieler.Position;
 
-    RabattErgebnis r = rechner.Berechnen(500, stammkunde: false);
+    feld.SpielerZieht(Richtung.Rechts);
 
-    Assert.That(r.Prozent, Is.EqualTo(10));
-    Assert.That(r.Endpreis, Is.EqualTo(450).Within(1e-9));
+    Assert.That(feld.Spieler.Position, Is.EqualTo(vorher));
+    Assert.That(feld.LetzteMeldung, Does.Contain("Schlüssel"));
 }
 ```
 
+Mit der ursprünglichen Fassung wäre dieser Test nicht schreibbar gewesen: Die Regel lebte in einer Razor-Komponente, und um sie zu prüfen, hätte man einen Browser, eine SignalR-Verbindung und ein simuliertes `keydown`-Ereignis gebraucht. Testbarkeit ist kein Nebeneffekt sauberer Schichten – sie ist ihr bestes Messgerät.
+
 **Zentrale Designentscheidungen:**
 
-- **Der Rechner kennt keine Strings:** Er nimmt `double` und `bool` und gibt Zahlen zurück. Ob die Eingabe aus einem Textfeld, einer Datei oder einem Test kommt, ist ihm egal – das macht ihn testbar.
-- **Ein `record` statt drei Rückgabewerten:** `RabattErgebnis` benennt, was zusammengehört, und die Oberfläche entscheidet selbst, wie sie es formatiert.
-- **Zwei Fehlerarten, zwei Quellen, ein Anzeigeort:** `FormatException` kommt aus der Oberfläche, `ArgumentException` aus dem Fachkonzept; angezeigt werden beide in der Komponente, denn nur sie darf anzeigen.
-- **Bonus als Property:** `StammkundenBonus` mit `init` erlaubt es, den Wert im Test oder in einer anderen Konfiguration zu ändern, ohne die Klasse anzufassen.
+- **Übersetzen ja, entscheiden nein:** Eine GUI darf Eingaben in Begriffe des Fachkonzepts übersetzen (`"ArrowUp"` → `Richtung.Oben`). Sobald sie *entscheidet*, was daraus folgt, ist die Grenze überschritten.
+- **Eine Runde ist unteilbar:** `SpielerZieht` ist die kleinste sinnvolle Einheit des Spiels – Spielerzug *und* Gegnerzug. Wer sie von außen aufbricht, bekommt Zustände, die die Spielregeln nie vorgesehen haben.
+- **Interfaces statt Typaufzählung:** `is IInteragierbar` bleibt richtig, wenn neue Objektarten dazukommen; `is Tuer || is Truhe` muss jedes Mal angefasst werden.
+- **Ein Zustand, eine Quelle:** `LetzteMeldung` gehört dem Spielfeld. Die Komponente zeigt sie an, statt eine zweite Fassung zu führen.
 
 </details>
 
 ## Aufgabe 3 — Algorithmenentwurf
 
-Der Geometrieeditor soll eine ausgewählte Figur bearbeiten können. Entwirf eine Dialog-Komponente `FigurBearbeitenDialog`, die die vorhandene Figur per `[Parameter]` bekommt und die geänderte Figur per `EventCallback<Figur?>` zurückgibt – oder `null` bei Abbruch. Ändern lassen sollen sich Position und Maße.
+Die Statusleiste zeigt das Inventar bisher als eine Zeile Text: `@Spieler.Inventar` ruft `Inventar<T>.ToString()` auf, das die Namen mit Komma verbindet. Entwirf stattdessen ein **Inventar-Panel**: eine Komponente, die jeden Gegenstand als Kachel mit Symbol und Namen zeigt, gleiche Gegenstände zusammenfasst („🔑 Schlüssel ×2“) und bei leerem Inventar einen Hinweis anzeigt.
 
-- Welche Parameter braucht die Komponente, und wie bindet die Startseite sie ein?
-- Bearbeitet der Dialog das übergebene Objekt direkt oder eine Kopie? Was passiert bei „Abbrechen“, wenn der Benutzer schon getippt hat?
-- Wie kommen die aktuellen Werte der Figur in die Textfelder – und in welcher Lebenszyklus-Methode?
-- Warum ist der Name in dieser Lösung nicht änderbar, und was müsste sich ändern, damit er es wird?
+- Welchen Typ hat der Parameter – `Inventar<Gegenstand>`, `IEnumerable<Gegenstand>` oder `List<string>`? Was gewinnt und was verliert man jeweils?
+- Wie fasst du gleiche Gegenstände zusammen, ohne den Kern zu ändern?
+- Das Emoji für einen Schlüssel steht bereits in `SymbolFuer` in `Home.razor`. Wie vermeidest du, es ein zweites Mal hinzuschreiben – und in welches Projekt gehört die gemeinsame Stelle?
+- Später soll ein Klick auf eine Kachel den Gegenstand benutzen. Welche Teile davon gehören in die Komponente, welche in den Kern?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Ablauf festlegen:**
+**Schritt 1 — Die gemeinsame Symboltabelle herausziehen:**
 
-1. Die Startseite setzt `bearbeitenOffen = true`, während `ausgewaehlt` eine Figur enthält.
-2. Der Dialog entsteht, kopiert die Werte der Figur **in eigene Textfelder** und zeigt sie an.
-3. Der Benutzer tippt – nur die Textfelder ändern sich, die Figur bleibt unberührt.
-4. Bei „OK“ werden die Texte geparst; erst wenn alle gültig sind, schreibt der Dialog sie in die Figur und ruft `OnGeschlossen` mit der Figur auf.
-5. Bei „Abbrechen“ ruft er `OnGeschlossen` mit `null` auf – die Figur ist unverändert.
+`SymbolFuer` wird an zwei Stellen gebraucht: auf dem Spielfeld und im Panel. Doppelt schreiben wäre die Garantie dafür, dass ein neues Objekt irgendwann an einer Stelle als Fragezeichen erscheint. Also wandert die Methode in eine eigene statische Klasse – **im Web-Projekt**, nicht im Kern:
 
-**Schritt 2 — Die Dialog-Komponente:**
+```csharp
+namespace Adventure.Web;
+
+/// <summary>Die Übersetzung von Spielobjekten in Emojis – reine Darstellung.</summary>
+public static class Symbole
+{
+    public static string Fuer(Spielobjekt? objekt) => objekt switch
+    {
+        null => "",
+        Wand => "🧱",
+        Spieler => "🧝",
+        Schluessel => "🔑",
+        Trank => "🧪",
+        Schatz => "💰",
+        // ... wie gehabt ...
+        _ => objekt.Symbol.ToString()
+    };
+}
+```
+
+Der Kern wäre der falsche Ort: Er hat mit `Spielobjekt.Symbol` bereits eine Darstellung – ein `char` für die Konsole. Ein zweites, browserspezifisches Symbol dort einzubauen hieße, dem Fachkonzept eine Oberfläche aufzudrängen. Emojis sind Sache derjenigen Schicht, die Emojis anzeigen kann.
+
+**Schritt 2 — Die Komponente:**
 
 ```razor
-@using System.Globalization
-@using Geometrieeditor.Fachkonzept
+@using Adventure.Kern
 
-<div class="dialog-hintergrund">
-    <div class="dialog">
-        <h2>@Figur.Name bearbeiten</h2>
-        <label>Position: <input @bind="x" size="5" /> <input @bind="y" size="5" /></label>
-        <label>@MasseBeschriftung <input @bind="masse" /></label>
-        <p class="fehler">@fehler</p>
-        <div class="dialog-buttons">
-            <button @onclick="Abbrechen">Abbrechen</button>
-            <button @onclick="Ok">OK</button>
-        </div>
-    </div>
+<div class="inventar">
+    <h3>Inventar</h3>
+    @if (!Inhalt.Any())
+    {
+        <p class="leer">Noch nichts gefunden.</p>
+    }
+    else
+    {
+        @foreach (var gruppe in Inhalt.GroupBy(g => g.Name))
+        {
+            <div class="kachel" title="@gruppe.Key">
+                <span class="symbol">@Symbole.Fuer(gruppe.First())</span>
+                <span class="name">@gruppe.Key</span>
+                @if (gruppe.Count() > 1)
+                {
+                    <span class="anzahl">×@gruppe.Count()</span>
+                }
+            </div>
+        }
+    }
 </div>
 
 @code {
     [Parameter, EditorRequired]
-    public Figur Figur { get; set; } = null!;
-
-    [Parameter]
-    public EventCallback<Figur?> OnGeschlossen { get; set; }
-
-    private string x = "", y = "", masse = "", fehler = "";
-
-    private string MasseBeschriftung => Figur switch
-    {
-        Rechteck => "Breite, Höhe:",
-        Kreis => "Radius:",
-        _ => "Seiten a, b, c:"
-    };
-
-    protected override void OnInitialized()
-    {
-        x = Text(Figur.X);
-        y = Text(Figur.Y);
-        masse = Figur switch
-        {
-            Rechteck r => Text(r.Breite, r.Hoehe),
-            Kreis k => Text(k.Radius),
-            Dreieck d => Text(d.SeiteA, d.SeiteB, d.SeiteC),
-            _ => ""
-        };
-    }
-
-    private async Task Ok()
-    {
-        try
-        {
-            double px = Zahl(x);
-            double py = Zahl(y);
-            double[] werte = masse
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(Zahl)
-                .ToArray();
-
-            switch (Figur)
-            {
-                case Rechteck r when werte.Length == 2:
-                    (r.Breite, r.Hoehe) = (werte[0], werte[1]);
-                    break;
-                case Kreis k when werte.Length == 1:
-                    k.Radius = werte[0];
-                    break;
-                case Dreieck d when werte.Length == 3:
-                    // Der Konstruktor prüft die Dreiecksungleichung – wir nutzen ihn als Probe.
-                    _ = new Dreieck(d.Name, px, py, werte[0], werte[1], werte[2]);
-                    (d.SeiteA, d.SeiteB, d.SeiteC) = (werte[0], werte[1], werte[2]);
-                    break;
-                default:
-                    throw new ArgumentException("Bitte die richtige Anzahl an Maßen eingeben.");
-            }
-            Figur.X = px;
-            Figur.Y = py;
-
-            await OnGeschlossen.InvokeAsync(Figur);
-        }
-        catch (Exception ex) when (ex is FormatException || ex is ArgumentException)
-        {
-            fehler = ex.Message;
-        }
-    }
-
-    private Task Abbrechen() => OnGeschlossen.InvokeAsync(null);
-
-    private static double Zahl(string text) => double.Parse(text, CultureInfo.InvariantCulture);
-
-    private static string Text(params double[] werte) =>
-        string.Join(", ", werte.Select(w => w.ToString(CultureInfo.InvariantCulture)));
+    public IEnumerable<Gegenstand> Inhalt { get; set; } = [];
 }
 ```
 
-**Schritt 3 — Einbindung in `Home.razor`:**
+```css
+.inventar { margin-top: 1rem; }
+.inventar h3 { font-size: 1rem; margin: 0 0 0.4rem; }
+.kachel { display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0.4rem;
+          background: #1e1e2e; border-radius: 4px; margin-bottom: 0.3rem; }
+.kachel .symbol { font-size: 1.3rem; }
+.kachel .anzahl { margin-left: auto; color: #999; }
+.inventar .leer { color: #777; font-style: italic; }
+```
+
+Eingebunden wird sie in der `Statusleiste` – dort, wo bisher die Textzeile stand:
 
 ```razor
-<button @onclick="() => bearbeitenOffen = true" disabled="@(ausgewaehlt is null)">Bearbeiten …</button>
+<Inventarpanel Inhalt="Spieler.Inventar" />
+```
 
-@if (bearbeitenOffen && ausgewaehlt is not null)
-{
-    <FigurBearbeitenDialog Figur="ausgewaehlt" OnGeschlossen="BearbeitenGeschlossen" />
-}
+Das funktioniert ohne Umweg, weil `Inventar<T>` das Interface `IEnumerable<T>` implementiert (siehe [Interfaces](/modules/interfaces_grundlagen/interfaces_grundlagen.md)) – die Komponente bekommt also genau das, was sie braucht, und nichts weiter.
+
+**Schritt 3 — Der Klick auf eine Kachel:**
+
+Die Komponente meldet nur, *dass* geklickt wurde, und *was* geklickt wurde:
+
+```razor
+<div class="kachel" @onclick="() => OnBenutzen.InvokeAsync(gruppe.First())">
 
 @code {
-    private bool bearbeitenOffen = false;
-
-    private void BearbeitenGeschlossen(Figur? geaendert)
-    {
-        bearbeitenOffen = false;
-        status = geaendert is null ? "Abgebrochen." : $"{geaendert.Name} geändert.";
-        StatusAktualisieren();
-    }
+    [Parameter] public EventCallback<Gegenstand> OnBenutzen { get; set; }
 }
 ```
+
+Die Startseite reicht das an den Kern weiter – und der Kern braucht dafür eine neue Fachoperation, etwa `Spielfeld.Benutzen(Gegenstand)`. Was ein Trank bewirkt, ob ein Schlüssel verbraucht wird und ob das Benutzen eine Runde kostet (die Gegner also ziehen), sind allesamt Spielregeln. Die Komponente darf davon nur wissen, dass sie hinterher neu rendern muss – und das tut Blazor von allein.
 
 **Zentrale Designentscheidungen:**
 
-- **Textfelder als Kopie:** Der Dialog arbeitet auf eigenen `string`-Feldern und schreibt erst bei „OK“ in die Figur. Deshalb ist „Abbrechen“ trivial – es gibt nichts zurückzusetzen. Würde `@bind` direkt an `Figur.X` hängen, wäre jede Eingabe sofort wirksam.
-- **`OnInitialized`, nicht `OnParametersSet`:** Die Parameter sind beim Aufruf von `OnInitialized` bereits gesetzt, und die Methode läuft genau einmal pro Instanz. `OnParametersSet` liefe bei jedem Neu-Rendern der Eltern erneut und würde die Eingaben des Benutzers überschreiben.
-- **Validierung wiederverwenden statt duplizieren:** Die Properties von `Dreieck` haben öffentliche Setter, nur der Konstruktor prüft die Dreiecksungleichung. Der Dialog erzeugt deshalb probeweise ein neues `Dreieck` und übernimmt die Werte nur, wenn das gelingt. Sauberer wäre eine Methode `SeitenSetzen` im Fachkonzept, die selbst prüft – eine gute Folgeaufgabe.
-- **Der Name bleibt schreibgeschützt:** `FigurenVerwaltung` nutzt den Namen als Schlüssel für die Eindeutigkeit. Änderte der Dialog `Figur.Name` direkt, würde er die Regel „kein doppelter Name“ umgehen. Ein Umbenennen wäre eine Fachoperation `Verwaltung.Umbenennen(figur, neuerName)`, die die Prüfung enthält – der Dialog darf sie nicht nachbauen.
+- **`IEnumerable<Gegenstand>` als Parametertyp:** Der engste Typ, der reicht. `Inventar<Gegenstand>` würde die Komponente an eine konkrete Klasse binden; `List<string>` würde die Objekte plattdrücken und die Symbolwahl unmöglich machen. So kann man das Panel auch mit dem Inhalt einer Truhe oder einer Testliste füttern.
+- **Gruppieren in der Anzeige, nicht im Kern:** `GroupBy` ist eine Darstellungsentscheidung – das Inventar *hat* zwei Schlüssel, es *zeigt* sie nur zusammengefasst. Würde man den Kern umbauen, verlöre man die Möglichkeit, zwei Schlüssel getrennt zu verbrauchen.
+- **Symbole ins Web-Projekt:** Das Fachkonzept kennt `char`-Symbole, die GUI-Schicht kennt Emojis. Jede Schicht darf ihre eigene Darstellung haben – aber nur einmal.
+- **Leerer Zustand ist ein Zustand:** „Noch nichts gefunden.“ ist kein Schmuck. Eine Anzeige, die bei leerer Liste einfach verschwindet, wirkt wie ein Fehler.
 
 </details>
 
 ## Aufgabe 4 — Mustererkennung
 
-In einem Projekt sieht das Abhängigkeitsdiagramm des Geometrieeditors so aus:
+In einem Projekt sieht das Abhängigkeitsdiagramm des Adventures so aus:
 
 ```
-   Geometrieeditor.Web
+   Adventure.Web
    Home.razor  ◄──────────────────────────────────┐
-        │ nutzt FigurenVerwaltung                  │
+        │ nutzt ILevelQuelle                       │
         ▼                                          │
-   Geometrieeditor.Fachkonzept                     │ ruft seite.FehlerAnzeigen(...)
-   FigurenVerwaltung, IFigurSpeicher               │
+   Adventure.Kern                                  │ ruft seite.FehlerAnzeigen(...)
+   Spielfeld, LevelParser, ILevelQuelle            │
         ▲ implementiert                            │
         │                                          │
-   Geometrieeditor.Datenhaltung                    │
-   JsonFigurSpeicher  ─────────────────────────────┘
+   Adventure.Daten                                 │
+   EingebauteLevelQuelle  ─────────────────────────┘
 ```
 
-Der `JsonFigurSpeicher` hat ein Feld `Home seite` bekommen, damit er bei einer fehlenden oder kaputten Datei eine Meldung in der Statuszeile anzeigen kann:
+Die `EingebauteLevelQuelle` hat ein Feld `Home seite` bekommen, damit sie bei einem unbekannten Levelnamen eine Meldung in der Statusleiste anzeigen kann:
 
 ```csharp
-public List<Figur> Laden()
+public Level Laden(string name)
 {
-    if (!File.Exists(pfad))
+    if (!level.TryGetValue(name, out string[]? zeilen))
     {
-        seite.FehlerAnzeigen($"Datei {pfad} nicht gefunden.");
-        return new List<Figur>();
+        seite.FehlerAnzeigen($"Es gibt kein Level namens '{name}'.");
+        return new Level(name, ["###", "#@#", "###"]);   // Notfall-Level
     }
-    string json = File.ReadAllText(pfad);
-    return JsonSerializer.Deserialize<List<Figur>>(json, optionen) ?? new List<Figur>();
+    return new Level(name, zeilen);
 }
 ```
 
-- Welche der vier Schichtregeln ist verletzt – und woran würde der Compiler es bemerken, wenn die Schichten eigene Projekte sind?
-- Wie kommt die Information „Datei fehlt“ nach oben, ohne dass die Datenhaltung die Oberfläche kennt?
-- Wer entscheidet, was bei einem Fehler passiert – die Datenhaltung, die Verwaltung oder die Komponente?
-- Schau dir `FigurenVerwaltung.Laden()` an: `figuren.Clear()` steht *vor* `speicher.Laden()`. Was passiert, wenn das Laden eine Exception wirft?
+- Welche der vier Schichtregeln ist verletzt – und woran würde der Compiler es bemerken, weil die Schichten eigene Projekte sind?
+- Wie kommt die Information „Level unbekannt“ nach oben, ohne dass die Datenschicht die Oberfläche kennt?
+- Wer entscheidet, was bei einem Fehler passiert – die Datenschicht, der Kern oder die Komponente?
+- Was passiert in der Konsolenversion mit diesem Code? Und was wäre passiert, wenn `NeuStarten` sein Spielfeld *vor* dem Laden leeren würde?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
 **Schritt 1 — Das Muster erkennen:**
 
-Verletzt ist Regel 2: Eine Schicht darf nie von einer höheren abhängen. Die Datenhaltung ist die unterste Schicht und kennt jetzt die oberste – das ist genau das „nur mal kurz eine Meldung anzeigen“, vor dem das Architektur-Modul warnt. Nebenbei ist auch Regel 1 verletzt, denn die Datenhaltung überspringt das Fachkonzept. Bei getrennten Projekten fällt es sofort auf: `Geometrieeditor.Datenhaltung` bräuchte eine Referenz auf `Geometrieeditor.Web`, das seinerseits auf die Datenhaltung verweist – ein Zirkelbezug, den `dotnet build` ablehnt. Der Code kann also nur entstanden sein, weil alles in einem Projekt liegt.
+Verletzt ist Regel 2: Eine Schicht darf nie von einer höheren abhängen. `Adventure.Daten` ist die unterste Schicht und kennt jetzt die oberste – das ist genau das „nur mal kurz eine Meldung anzeigen“, vor dem das Architektur-Modul warnt. Nebenbei ist auch Regel 1 verletzt, denn die Datenschicht überspringt den Kern.
+
+Bei getrennten Projekten fällt es sofort auf: `Adventure.Daten` bräuchte eine Referenz auf `Adventure.Web`, das seinerseits auf `Adventure.Daten` verweist – ein Zirkelbezug, den `dotnet build` ablehnt (Fehler NU1108 bzw. „A circular dependency was detected“). Der Code kann also gar nicht erst entstehen, solange die Projektgrenzen stimmen. Und in der Konsolenversion existiert die Klasse `Home` überhaupt nicht: `Adventure.Konsole` ließe sich nicht mehr kompilieren. Eine einzige „hilfreiche“ Zeile hätte eine ganze Oberfläche mitgerissen.
 
 **Schritt 2 — Information nach oben reichen:**
 
-Die Datenhaltung darf melden, was passiert ist, aber nicht entscheiden, wie es angezeigt wird. Zwei Wege: ein Rückgabewert oder eine Exception. Da `Laden()` bereits eine Liste zurückgibt und „Datei fehlt“ ein Ausnahmefall ist, passt eine Exception – am besten eine eigene, damit die Verwaltung sie von Programmierfehlern unterscheiden kann:
+Die Datenschicht darf melden, *was* passiert ist, aber nicht entscheiden, *wie* es angezeigt wird. Zwei Wege: ein Rückgabewert oder eine Exception. Da `Laden` bereits ein `Level` zurückgibt und „Level unbekannt“ ein Ausnahmefall ist, passt eine Exception – am besten eine eigene, damit der Aufrufer sie von Programmierfehlern unterscheiden kann:
 
 ```csharp
-namespace Geometrieeditor.Fachkonzept;
+namespace Adventure.Kern;
 
-public class SpeicherException : Exception
+public class LevelException : Exception
 {
-    public SpeicherException(string meldung, Exception? innere = null)
+    public LevelException(string meldung, Exception? innere = null)
         : base(meldung, innere) { }
 }
 ```
 
-Sie liegt im Fachkonzept, neben `IFigurSpeicher` – denn sie ist Teil des Vertrags, den das Interface beschreibt. Die Datenhaltung wirft sie:
+Sie liegt im **Kern**, direkt neben `ILevelQuelle` – denn sie ist Teil des Vertrags, den das Interface beschreibt. Die Datenschicht wirft sie:
 
 ```csharp
-public List<Figur> Laden()
+public Level Laden(string name)
 {
-    if (!File.Exists(pfad))
+    if (!level.TryGetValue(name, out string[]? zeilen))
     {
-        throw new SpeicherException($"Datei {pfad} nicht gefunden.");
+        throw new LevelException($"Es gibt kein Level namens '{name}'.");
     }
-    try
-    {
-        string json = File.ReadAllText(pfad);
-        return JsonSerializer.Deserialize<List<Figur>>(json, optionen) ?? new List<Figur>();
-    }
-    catch (JsonException ex)
-    {
-        throw new SpeicherException("Die Datei enthält kein gültiges Figuren-JSON.", ex);
-    }
+    return new Level(name, zeilen);
 }
 ```
+
+Eine spätere `TextdateiLevelQuelle` wirft dieselbe Exception, wenn die Datei fehlt oder unlesbar ist – und keine Komponente muss dafür angefasst werden.
 
 **Schritt 3 — Anzeigen in der Komponente:**
 
-Die Komponente ist die einzige Schicht, die anzeigen darf. Sie fängt die Exception im Handler und schreibt die Meldung in die Statuszeile:
+Die GUI-Schicht ist die einzige, die anzeigen darf. Sie fängt die Exception dort, wo sie entstehen kann:
 
-```razor
-@code {
-    private void Laden()
+```csharp
+private string fehler = "";
+
+private void NeuStarten()
+{
+    try
     {
-        try
-        {
-            Verwaltung.Laden();
-            ausgewaehlt = null;
-            StatusAktualisieren();
-        }
-        catch (SpeicherException ex)
-        {
-            status = ex.Message;
-        }
+        feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
+        fehler = "";
+    }
+    catch (LevelException ex)
+    {
+        fehler = ex.Message;
     }
 }
 ```
 
-Die Abhängigkeit zeigt jetzt wieder nur nach unten: Die Komponente kennt `SpeicherException` aus dem Fachkonzept, die Datenhaltung kennt nur das Fachkonzept.
+Im Markup zeigt ein `@if (fehler != "")` den Text an. Die Abhängigkeit zeigt jetzt wieder nur nach unten: Die Komponente kennt `LevelException` aus dem Kern, die Datenschicht kennt nur den Kern. Die Konsolenversion fängt dieselbe Exception und schreibt sie mit `Console.WriteLine` – dieselbe Information, eine andere Darstellung, und genau das ist der Sinn der Übung.
 
-**Schritt 4 — Die Reihenfolge in `FigurenVerwaltung.Laden`:**
+**Schritt 4 — Die Reihenfolge in `NeuStarten`:**
+
+Die Originalfassung ist nicht zufällig einzeilig:
 
 ```csharp
-public void Laden()
+private void NeuStarten()
 {
-    figuren.Clear();                     // zuerst löschen ...
-    figuren.AddRange(speicher.Laden());  // ... dann laden – wirft das, sind die alten Figuren weg
+    feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
 }
 ```
 
-Wirft `speicher.Laden()` die `SpeicherException`, ist die Liste bereits leer: Der Benutzer verliert seine ungespeicherten Figuren, nur weil die Datei fehlte. Die Reparatur ist eine Zeile Umstellung – erst laden, dann ersetzen:
-
-```csharp
-public void Laden()
-{
-    List<Figur> geladen = speicher.Laden();   // wirft ggf. – die Liste bleibt unangetastet
-    figuren.Clear();
-    figuren.AddRange(geladen);
-}
-```
+Die Zuweisung an `feld` passiert **zuletzt**. Wirft `Laden` oder `Parsen`, behält `feld` sein altes Spielfeld, und die Seite zeigt weiter das laufende Spiel. Hätte jemand „zum Aufräumen“ vorher `feld = null!;` geschrieben, wäre der Zustand nach einem Fehler kaputt: Das nächste Rendern liefe in eine `NullReferenceException` beim Zugriff auf `feld.Breite` – aus einem harmlosen Tippfehler im Levelnamen würde eine abgestürzte Seite. Erst das Riskante tun, dann den Zustand ändern.
 
 **Zentrale Designentscheidungen:**
 
-- **Eigene Exception im Fachkonzept:** `SpeicherException` gehört zum Vertrag `IFigurSpeicher`, nicht zur JSON-Implementierung. Eine spätere Datenbank-Datenhaltung wirft dieselbe Exception, und die Komponente muss nichts ändern.
-- **Melden unten, entscheiden oben:** Die Datenhaltung weiß, *dass* etwas schiefging; nur die Oberfläche weiß, *wie* man es dem Benutzer sagt. Dazwischen reicht die Verwaltung die Exception einfach durch.
-- **Unveränderter Zustand bei Fehlern:** Eine Operation, die fehlschlägt, sollte nichts halb erledigt hinterlassen. Erst das Riskante tun, dann den Zustand ändern – dieselbe Überlegung wie bei der Reihenfolge von Abheben und Einzahlen in Programmierung 1.
+- **Eigene Exception im Kern:** `LevelException` gehört zum Vertrag `ILevelQuelle`, nicht zu einer bestimmten Implementierung. Datei, Netz oder fest im Code – die Oberfläche fängt immer denselben Typ.
+- **Melden unten, entscheiden oben:** Die Datenschicht weiß, *dass* etwas schiefging; nur die Oberfläche weiß, *wie* man es dem Benutzer sagt. Ein Notfall-Level stillschweigend zurückzugeben, ist die schlechteste aller Antworten – der Fehler verschwindet, ohne behoben zu sein.
+- **Zwei Oberflächen als Prüfmittel:** Die Verletzung wäre in einem Einzelprojekt vielleicht monatelang unbemerkt geblieben. Weil es `Adventure.Konsole` gibt, bricht der Build sofort.
+- **Unveränderter Zustand bei Fehlern:** Eine Operation, die fehlschlägt, sollte nichts halb erledigt hinterlassen – dieselbe Überlegung wie bei der Reihenfolge von Abheben und Einzahlen in Programmierung 1.
 
 </details>

@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Manche Algorithmen sind vollkommen gleichgültig gegenüber dem Datentyp, mit dem sie arbeiten. Zwei Variablen vertauschen, das größere von zwei Elementen finden, ein Array umdrehen – der Ablauf ist immer derselbe, ob es sich um `int`, `string` oder `Figur` handelt. Trotzdem zwingt uns die statische Typisierung von C# scheinbar dazu, für jeden Typ eine eigene Methode zu schreiben. Generische Methoden lösen diesen Widerspruch: Man schreibt den Algorithmus **einmal** mit einem Platzhalter für den Typ, und der Compiler setzt bei jedem Aufruf den passenden konkreten Typ ein. Das ist wie ein Formular mit einem Leerfeld – das Formular ist fertig gedruckt, aber was im Feld steht, entscheidet erst, wer es ausfüllt.
+Manche Algorithmen sind vollkommen gleichgültig gegenüber dem Datentyp, mit dem sie arbeiten. Zwei Variablen vertauschen, das größere von zwei Elementen finden, ein Array umdrehen – der Ablauf ist immer derselbe, ob es sich um `int`, `string` oder `Gegner` handelt. Trotzdem zwingt uns die statische Typisierung von C# scheinbar dazu, für jeden Typ eine eigene Methode zu schreiben. Generische Methoden lösen diesen Widerspruch: Man schreibt den Algorithmus **einmal** mit einem Platzhalter für den Typ, und der Compiler setzt bei jedem Aufruf den passenden konkreten Typ ein. Das ist wie ein Formular mit einem Leerfeld – das Formular ist fertig gedruckt, aber was im Feld steht, entscheidet erst, wer es ausfüllt.
 
 ## Das Problem: Copy & Paste für jeden Typ
 
@@ -28,7 +28,7 @@ Tausche(ref x, ref y);
 Console.WriteLine($"{x} {y}"); // 7 3
 ```
 
-Das funktioniert – aber nur für `int`. Sobald wir zwei Strings oder zwei Figuren vertauschen wollen, brauchen wir eine weitere Methode mit exakt demselben Rumpf, in dem nur das Wort `int` ausgetauscht ist:
+Das funktioniert – aber nur für `int`. Sobald wir zwei Strings oder zwei Spielobjekte vertauschen wollen, brauchen wir eine weitere Methode mit exakt demselben Rumpf, in dem nur das Wort `int` ausgetauscht ist:
 
 ```csharp
 static void Tausche(ref string a, ref string b)
@@ -38,9 +38,9 @@ static void Tausche(ref string a, ref string b)
     b = temp;
 }
 
-static void Tausche(ref Figur a, ref Figur b)
+static void Tausche(ref Spielobjekt a, ref Spielobjekt b)
 {
-    Figur temp = a;
+    Spielobjekt temp = a;
     a = b;
     b = temp;
 }
@@ -50,21 +50,20 @@ Drei Methoden, ein Algorithmus. Jede Verbesserung müsste dreimal eingebaut werd
 
 ## Der Umweg über `object` – und warum er nicht reicht
 
-Die naheliegende Idee: Da im Modul [`object` als Basisklasse](/modules/object_basisklasse/object_basisklasse.md) jeder Typ von `object` erbt, schreiben wir die Methode einfach für `object`. Für `Tausche` mit `ref` geht das nicht direkt (eine `int`-Variable ist keine `object`-Variable), aber bei einem einfachen Rückgabewert lässt sich das Problem gut zeigen:
+Die naheliegende Idee: Da im Modul [`object` als Basisklasse](/modules/object_basisklasse/object_basisklasse.md) jeder Typ von `object` erbt, schreiben wir die Methode einfach für `object`. Genau dieselbe Überlegung liegt nahe, wenn man das Inventar des Helden bauen will: Ein Inventar soll Schlüssel, Tränke und Schätze aufnehmen können – also nehmen wir eben eine `List<object>`, dann passt alles hinein.
 
 ```csharp
-static object ErstesElement(object[] elemente)
-{
-    return elemente[0];
-}
+List<object> inventar = new List<object>();
+inventar.Add(new Schluessel(new Position(3, 3)));
+inventar.Add("Notiz vom Wächter");            // kompiliert – ein string ist auch ein object
+inventar.Add(42);                             // kompiliert ebenfalls
 
-object[] zahlen = { 1, 2, 3 };
-int erste = (int)ErstesElement(zahlen);       // Cast nötig
-string text = (string)ErstesElement(zahlen);  // kompiliert – und stürzt ab!
-// InvalidCastException: Unable to cast object of type 'System.Int32' to type 'System.String'.
+Schluessel k = (Schluessel)inventar[0];       // Cast nötig
+Trank t = (Trank)inventar[1];                 // kompiliert – und stürzt ab!
+// InvalidCastException: Unable to cast object of type 'System.String' to type 'Adventure.Kern.Trank'.
 ```
 
-Die zweite Zeile ist das eigentliche Problem: Der Compiler kann nicht wissen, was tatsächlich in dem `object[]` steckt, und lässt den Cast durchgehen. Der Fehler taucht erst zur Laufzeit auf – im schlimmsten Fall beim Kunden statt beim Entwickler. Dazu kommt, dass Werttypen wie `int` beim Umwandeln in `object` in ein Heap-Objekt verpackt werden müssen (**Boxing**) und beim Cast zurück wieder ausgepackt werden (**Unboxing**). Das kostet Zeit und Speicher, wie wir im Modul [Garbage Collection](/modules/garbage_collection/garbage_collection.md) gesehen haben.
+Die letzten drei Zeilen zeigen beide Schwächen auf einmal. Erstens nimmt das Inventar klaglos Dinge an, die man gar nicht aufheben kann – eine Zeichenkette, eine Zahl, und ebenso eine `Wand`. Zweitens kann der Compiler nicht wissen, was tatsächlich in der Liste steckt, und lässt jeden Cast durchgehen. Der Fehler taucht erst zur Laufzeit auf – im schlimmsten Fall beim Spieler statt beim Entwickler. Dazu kommt, dass Werttypen wie `int` beim Umwandeln in `object` in ein Heap-Objekt verpackt werden müssen (**Boxing**) und beim Cast zurück wieder ausgepackt werden (**Unboxing**). Das kostet Zeit und Speicher, wie wir im Modul [Garbage Collection](/modules/garbage_collection/garbage_collection.md) gesehen haben.
 
 `object` als „universeller Typ“ tauscht Typsicherheit zur Kompilierzeit gegen Casts und mögliche Abstürze zur Laufzeit. Im Zweifel: lieber generisch als `object`.
 {: .notice--warning}
@@ -88,13 +87,13 @@ static void Tausche<T>(ref T a, ref T b)
 int x = 3, y = 7;
 Tausche<int>(ref x, ref y);
 
-string s1 = "Rechnung", s2 = "Brief";
+string s1 = "Kerker", s2 = "Katakomben";
 Tausche<string>(ref s1, ref s2);
 
-Figur f1 = new Kreis("K1", 0, 0, 2);
-Figur f2 = new Rechteck("R1", 1, 1, 3, 4);
-Tausche<Figur>(ref f1, ref f2);
-Console.WriteLine(f1.Name); // R1
+Gegner g1 = new Wache(new Position(4, 2));
+Gegner g2 = new Verfolger(new Position(9, 5));
+Tausche<Gegner>(ref g1, ref g2);
+Console.WriteLine(g1.Name); // Verfolger
 ```
 
 Der Compiler erzeugt für jeden verwendeten Typ eine passende Variante der Methode und prüft dabei alles wie gewohnt: `Tausche<int>(ref x, ref s1)` wäre ein Compilerfehler, weil `s1` kein `int` ist. Es gibt keine Casts, kein Boxing und keinen Absturz zur Laufzeit.
@@ -106,12 +105,12 @@ Die spitzen Klammern beim Aufruf sind meist überflüssig. Der Compiler kann aus
 ```csharp
 Tausche(ref x, ref y);     // T = int, vom Compiler erkannt
 Tausche(ref s1, ref s2);   // T = string
-Tausche(ref f1, ref f2);   // T = Figur
+Tausche(ref g1, ref g2);   // T = Gegner
 ```
 
 Die Methode sieht damit beim Aufruf aus wie eine normale überladene Methode – nur dass wir sie ein einziges Mal geschrieben haben. Typinferenz funktioniert immer dann, wenn `T` in mindestens einem Parameter vorkommt. Steht `T` nur im Rückgabetyp, muss man ihn explizit angeben, weil der Compiler sonst keinen Anhaltspunkt hat.
 
-Übung: Schreibe eine generische Methode `Umdrehen<T>(T[] feld)`, die die Reihenfolge der Elemente im Array umkehrt. Verwende dafür intern `Tausche<T>`. Teste sie mit einem `int[]` und einem `string[]`.
+Übung: Schreibe eine generische Methode `Umdrehen<T>(T[] feld)`, die die Reihenfolge der Elemente im Array umkehrt. Verwende dafür intern `Tausche<T>`. Teste sie mit einem `int[]` und einem `Gegner[]`.
 {: .notice--info}
 
 ## Mehrere Typparameter
@@ -130,10 +129,10 @@ static Dictionary<TKey, TValue> Zuordnen<TKey, TValue>(TKey[] schluessel, TValue
     return ergebnis;
 }
 
-string[] stapel = { "Rechnungen", "Briefe", "Notizen" };
-int[] hoehen = { 2, 4, 1 };
-Dictionary<string, int> ablage = Zuordnen(stapel, hoehen);
-Console.WriteLine(ablage["Briefe"]); // 4
+string[] levelNamen = { "Kerker", "Katakomben", "Schatzkammer" };
+int[] gegnerzahlen = { 2, 2, 5 };
+Dictionary<string, int> uebersicht = Zuordnen(levelNamen, gegnerzahlen);
+Console.WriteLine(uebersicht["Katakomben"]); // 2
 ```
 
 Die Zeile `where TKey : notnull` ist ein erster Vorgeschmack auf **Constraints**: `Dictionary` verlangt, dass Schlüssel nicht `null` sein dürfen, und diese Anforderung müssen wir an unseren Typparameter weiterreichen. Die Typinferenz funktioniert auch hier – aus `string[]` und `int[]` erkennt der Compiler `TKey = string` und `TValue = int`.
@@ -153,7 +152,7 @@ static T Maximum<T>(T a, T b)
 }
 ```
 
-Der Compiler lehnt das ab – und zwar zu Recht. `T` könnte beim Aufruf jeder beliebige Typ sein, auch einer, für den `>` gar nicht definiert ist. Da die Methode für **alle** Typen funktionieren muss, darf sie innerhalb des Rumpfs nur das verwenden, was wirklich jeder Typ hat: die Methoden von `object` wie `ToString()` und `Equals()`. Um dem Compiler zu versprechen, dass `T` vergleichbar ist, brauchen wir eine Einschränkung des Typparameters – dazu mehr im Modul [Generische Constraints](/modules/generische_constraints/generische_constraints.md).
+Der Compiler lehnt das ab – und zwar zu Recht. `T` könnte beim Aufruf jeder beliebige Typ sein, auch einer, für den `>` gar nicht definiert ist. Dasselbe Problem trifft uns, sobald wir im Inventar `element.Name` ausgeben wollen: Ein beliebiges `T` hat keine Property `Name`. Da die Methode für **alle** Typen funktionieren muss, darf sie innerhalb des Rumpfs nur das verwenden, was wirklich jeder Typ hat: die Methoden von `object` wie `ToString()` und `Equals()`. Um dem Compiler zu versprechen, dass `T` vergleichbar oder sammelbar ist, brauchen wir eine Einschränkung des Typparameters – dazu mehr im Modul [Generische Constraints](/modules/generische_constraints/generische_constraints.md).
 
 Ohne Constraint ist `T` ein völlig unbekannter Typ. Der Compiler erlaubt nur, was für jeden denkbaren Typ funktioniert: Zuweisungen, Vergleiche mit `Equals`, `ToString()` und das Ablegen in Variablen, Arrays oder Listen.
 {: .notice--primary}

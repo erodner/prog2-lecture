@@ -13,50 +13,48 @@ Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch
 
 ## Aufgabe 1 — Mustererkennung
 
-Die folgende Methode soll eine Liste von Notizen in eine Datei sichern. Sie kompiliert – und läuft trotzdem in drei voneinander unabhängige Probleme. Finde sie, ohne den Code auszuführen.
+Die folgende Methode soll ein im Editor gebautes Level in den Level-Ordner sichern. Sie kompiliert – und läuft trotzdem in drei voneinander unabhängige Probleme. Finde sie, ohne den Code auszuführen.
 
 ```csharp
-static void Sichern(List<string> notizen)
+static void LevelSichern(Level level)
 {
-    string pfad = "C:\\Daten\\Notizen\\sicherung.txt";
+    string pfad = "C:\\Spiele\\Adventure\\levels\\" + level.Name + ".txt";
     FileStream fs = new FileStream(pfad, FileMode.Open, FileAccess.Write);
     StreamWriter writer = new StreamWriter(fs);
-    foreach (string notiz in notizen)
+    foreach (string zeile in level.Zeilen)
     {
-        writer.WriteLine(notiz);
+        writer.WriteLine(zeile);
     }
     Console.WriteLine($"{new FileInfo(pfad).Length} Bytes gesichert.");
 }
 ```
 
 - Was gibt die letzte Zeile aus, wenn alles „funktioniert“ – und warum?
-- Was passiert beim allerersten Aufruf auf einem frischen Rechner? Was, wenn die Datei vorher *länger* war als die neuen Notizen?
+- Was passiert beim allerersten Sichern eines neuen Levels? Was, wenn die alte Karte *größer* war als die neue?
 - Auf welchen Betriebssystemen läuft die Methode überhaupt?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Das fehlende `using`:** Weder `fs` noch `writer` werden freigegeben. Der `StreamWriter` puffert, deshalb meldet `FileInfo.Length` in der letzten Zeile **0 Bytes**, obwohl `WriteLine` mehrfach aufgerufen wurde – die Daten liegen noch im Arbeitsspeicher. Die Datei bleibt zudem gesperrt, bis der Garbage Collector irgendwann den Finalizer ausführt; ob die Notizen dann noch auf der Platte landen, ist Glückssache.
+**Schritt 1 — Das fehlende `using`:** Weder `fs` noch `writer` werden freigegeben. Der `StreamWriter` puffert, deshalb meldet `FileInfo.Length` in der letzten Zeile **0 Bytes**, obwohl `WriteLine` für jede Zeile aufgerufen wurde – die Karte liegt noch im Arbeitsspeicher. Die Datei bleibt zudem gesperrt, sodass ein anschließendes `TextdateiLevelQuelle.Laden` mit einer `IOException` scheitert; ob die Zeilen jemals auf der Platte landen, ist Glückssache.
 
-**Schritt 2 — Der falsche `FileMode`:** `FileMode.Open` verlangt, dass die Datei existiert – beim ersten Aufruf gibt es eine `FileNotFoundException`. Existiert sie, wird sie *nicht* geleert: Der Stream schreibt ab Position 0 über den alten Inhalt, und war dieser länger, bleibt sein Ende als Müll stehen. Für „komplett neu schreiben“ ist `FileMode.Create` gemeint.
+**Schritt 2 — Der falsche `FileMode`:** `FileMode.Open` verlangt, dass die Datei existiert – ein neues Level endet mit einer `FileNotFoundException`. Existiert die Datei, wird sie *nicht* geleert: Der Stream schreibt ab Position 0 über den alten Inhalt, und war die alte Karte größer, bleiben deren letzte Zeilen stehen. Beim nächsten Laden hat das Level plötzlich Wände, die nie jemand gezeichnet hat. Gemeint ist `FileMode.Create`.
 
-**Schritt 3 — Der hart codierte Pfad:** `C:\Daten\...` existiert nur unter Windows, und selbst dort nur, wenn jemand das Verzeichnis angelegt hat. Pfade gehören mit `Path.Combine` aus einem Systemordner zusammengebaut, das Verzeichnis wird bei Bedarf erzeugt.
+**Schritt 3 — Der hart codierte Pfad:** `C:\Spiele\...` existiert nur unter Windows, und selbst dort nur, wenn jemand das Verzeichnis angelegt hat. Der Ordner gehört als Feld in die Klasse (wie in `TextdateiLevelQuelle`), der Pfad wird mit `Path.Combine` gebaut, und das Verzeichnis wird bei Bedarf erzeugt.
 
 ```csharp
-static void Sichern(List<string> notizen)
+static void LevelSichern(string ordner, Level level)
 {
-    string ordner = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Notizen");
     Directory.CreateDirectory(ordner);
-    string pfad = Path.Combine(ordner, "sicherung.txt");
+    string pfad = Path.Combine(ordner, level.Name + ".txt");
 
     using (StreamWriter writer = new StreamWriter(pfad, append: false))
     {
-        foreach (string notiz in notizen)
+        foreach (string zeile in level.Zeilen)
         {
-            writer.WriteLine(notiz);
+            writer.WriteLine(zeile);
         }
-    }   // erst hier ist alles auf der Platte
+    }   // erst hier ist alles auf der Platte und die Datei wieder frei
     Console.WriteLine($"{new FileInfo(pfad).Length} Bytes gesichert.");
 }
 ```
@@ -65,230 +63,254 @@ static void Sichern(List<string> notizen)
 
 - **`using`-Block statt -Deklaration:** Die Datei muss *vor* der `Console.WriteLine`-Zeile geschlossen sein, sonst zeigt `Length` wieder den Puffer-Stand.
 - **`StreamWriter` direkt mit Pfad:** `append: false` entspricht `FileMode.Create` – ein Objekt weniger, das freigegeben werden muss.
-- **`Directory.CreateDirectory` ohne `Exists`-Prüfung:** Die Methode tut nichts, wenn der Ordner schon da ist.
+- **Ordner als Parameter:** Die Methode entscheidet nicht mehr selbst, wo Level liegen. Damit lässt sie sich im Test auf ein Temp-Verzeichnis richten.
 
 </details>
 
 ## Aufgabe 2 — Algorithmenentwurf
 
-Eine Textdatei ist mehrere Gigabyte groß – etwa ein Wikipedia-Export. Entwirf eine Methode, die die zehn häufigsten Wörter samt Anzahl ausgibt.
+Das Spiel soll nach jeder gewonnenen Partie einen Eintrag in eine Datei `highscores.csv` anhängen und beim Start die fünf besten anzeigen. Eine Zeile hat die Form `name;level;punkte;runden`; Zeilen, die mit `#` beginnen, sind Kommentare. Die Datei wird von Spielern auch von Hand bearbeitet – es stehen also kaputte Zeilen darin.
 
-- Warum scheidet `File.ReadAllText` aus, und wie liest man stattdessen?
-- Wie wird eine Zeile in Wörter zerlegt? Wie gehst du mit `Haus`, `haus` und `Haus,` um?
-- Welche Datenstruktur zählt effizient? Wie groß wird sie – hängt das von der Dateigröße ab?
-- Wie testest du die Methode, ohne eine Riesendatei zu brauchen?
+- Wie liest man die Datei, wenn sie über die Jahre auf zehntausende Zeilen anwächst?
+- Was passiert bei einer Zeile mit drei statt vier Feldern oder mit `zwölf` statt `12`? Abbrechen oder überspringen?
+- Welche Sortierung ergibt eine sinnvolle Bestenliste? Was ist der Unterschied zwischen 300 Punkten in 20 Runden und 300 Punkten in 90 Runden?
+- Wie hängst du einen neuen Eintrag an, ohne die ganze Datei neu zu schreiben? Wie testest du das alles ohne Datei?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Zeilenweise lesen:** Die Datei passt nicht in den Speicher, aber eine einzelne Zeile schon. Ein `StreamReader` liefert Zeile für Zeile; der Speicherbedarf bleibt konstant. Die Methode nimmt einen `TextReader` entgegen statt eines Pfads – so lässt sie sich im Test mit einem `StringReader` füttern.
+**Schritt 1 — Zeilenweise lesen, nicht alles auf einmal:** Für die Top 5 braucht niemand die ganze Datei im Speicher. Ein `StreamReader` (oder `File.ReadLines`, das intern genau das tut) liefert Zeile für Zeile. Die Lesemethode bekommt einen `TextReader` statt eines Pfads – damit kennt sie kein Dateisystem und lässt sich mit einem `StringReader` testen.
 
-**Schritt 2 — Wörter normalisieren:** `Split` mit einer Liste von Trennzeichen entfernt Satzzeichen, `ToLowerInvariant` macht `Haus` und `haus` gleich. Das ist eine bewusste Vereinfachung – Bindestriche und Apostrophe bleiben Grenzfälle.
-
-**Schritt 3 — Zählen mit `Dictionary`:** Ein [`Dictionary<string, int>`](https://www.erodner.de/prog-lecture/modules/dictionary/dictionary/) hat pro *verschiedenem* Wort einen Eintrag. Seine Größe hängt vom Wortschatz ab (einige hunderttausend Einträge), nicht von der Dateigröße.
+**Schritt 2 — Robust parsen, kaputte Zeilen überspringen:** Eine Bestenliste ist kein kritisches Dokument. Eine unlesbare Zeile darf den Start des Spiels nicht verhindern; sie wird gezählt und übersprungen. `int.TryParse` prüft und wandelt in einem Schritt, ohne Exception.
 
 ```csharp
-static Dictionary<string, int> WoerterZaehlen(TextReader quelle)
-{
-    Dictionary<string, int> haeufigkeit = new();
-    char[] trenner = [' ', '\t', '.', ',', ';', ':', '!', '?', '"', '(', ')'];
+public record Highscore(string Name, string Level, int Punkte, int Runden);
 
+public static IEnumerable<Highscore> Lesen(TextReader quelle, Action<string>? warnung = null)
+{
+    int nummer = 0;
     while (quelle.ReadLine() is string zeile)
     {
-        foreach (string wort in zeile.Split(trenner, StringSplitOptions.RemoveEmptyEntries))
+        nummer++;
+        if (zeile.Trim().Length == 0 || zeile.StartsWith('#')) continue;
+
+        string[] f = zeile.Split(';');
+        if (f.Length != 4 || !int.TryParse(f[2], out int punkte) || !int.TryParse(f[3], out int runden))
         {
-            string schluessel = wort.ToLowerInvariant();
-            haeufigkeit[schluessel] = haeufigkeit.GetValueOrDefault(schluessel) + 1;
+            warnung?.Invoke($"Zeile {nummer} übersprungen: '{zeile}'");
+            continue;
         }
+        yield return new Highscore(f[0], f[1], punkte, runden);
     }
-    return haeufigkeit;
+}
+```
+
+**Schritt 3 — Sortieren und anhängen:** Viele Punkte sind besser, und bei Gleichstand gewinnt, wer weniger Runden gebraucht hat – das sind zwei Kriterien, also `OrderByDescending` gefolgt von `ThenBy`. Das Anhängen braucht die alten Zeilen gar nicht zu kennen: `append: true` springt ans Dateiende, der Aufwand ist unabhängig von der Dateigröße.
+
+```csharp
+using StreamReader leser = File.OpenText(pfad);
+foreach (Highscore h in Lesen(leser, Console.Error.WriteLine)
+             .OrderByDescending(h => h.Punkte)
+             .ThenBy(h => h.Runden)
+             .Take(5))
+{
+    Console.WriteLine($"{h.Name,-12} {h.Level,-14} {h.Punkte,5} Punkte in {h.Runden} Runden");
 }
 
-using StreamReader reader = File.OpenText(pfad);
-var top10 = WoerterZaehlen(reader)
-    .OrderByDescending(paar => paar.Value)
-    .Take(10);
-foreach (var (wort, anzahl) in top10)
+public static void Anhaengen(string pfad, Highscore h)
 {
-    Console.WriteLine($"{wort,-15} {anzahl}");
+    using StreamWriter writer = new StreamWriter(pfad, append: true);
+    writer.WriteLine($"{h.Name};{h.Level};{h.Punkte};{h.Runden}");
 }
 ```
 
 **Zentrale Designentscheidungen:**
 
-- **`TextReader` als Parameter:** Die Zählung weiß nichts von Dateien. `new StringReader("das Haus. Das haus!")` genügt für einen Unit-Test.
-- **`GetValueOrDefault` statt `ContainsKey` + Zugriff:** Ein Lookup pro Wort statt zwei – bei Milliarden Wörtern zählt das.
-- **Sortieren erst am Ende:** Die Top 10 ergeben sich mit LINQ aus dem fertigen Dictionary; während des Lesens wäre Sortieren unnötig teuer.
+- **`TextReader` als Parameter:** Die Auswertung weiß nichts von Dateien. `new StringReader("#kommentar\nAda;kerker;300;20")` genügt für einen Unit-Test – genau der Trick, den wir in [Vorlesung 12](/lectures/12/12.md) brauchen werden.
+- **Überspringen statt abbrechen:** Anders als beim Spielstand (Aufgabe 4) ist ein verlorener Eintrag kein Schaden. Wer die Warnung sehen will, gibt ein `Action<string>` mit; wer nicht, lässt es weg.
+- **`yield return` statt Liste:** Die Methode liefert die Einträge verzögert, sodass `Take(5)` nach fünf Treffern nicht mehr weiterlesen müsste, wenn die Datei bereits sortiert wäre.
+- **Anhängen statt neu schreiben:** Ein Absturz mitten im Schreiben kann so höchstens die letzte Zeile beschädigen, nicht die ganze Bestenliste.
 
 </details>
 
 ## Aufgabe 3 — Abstraktion
 
-Ein Adressbuch soll als JSON gespeichert werden. Ein Kontakt hat Vor- und Nachnamen, optional einen Geburtstag, beliebig viele Adressen (jeweils mit Art wie „privat“ oder „dienstlich“, Straße, PLZ, Ort) und beliebig viele Telefonnummern. Entwirf zuerst die JSON-Struktur, dann die C#-Klassen.
+Für das Adventure soll ein grafischer **Level-Editor** entstehen. Das bisherige Format – eine reine Textkarte – reicht dafür nicht mehr: Der Editor will auch einen Titel, einen Autor, eine Schwierigkeit und vor allem Einstellungen für einzelne Objekte speichern (wie wertvoll *diese* Truhe ist, wie stark *dieser* Trank heilt, in welche Richtung *diese* Wache losläuft). Entwirf das JSON-Format, dann die C#-Klassen.
 
-- Ist die Wurzel ein Array von Kontakten oder ein Objekt? Was spricht für was?
-- Wie stellst du „kein Geburtstag bekannt“ dar? Wie die Art einer Adresse?
-- Was muss an den Klassen gelten, damit `System.Text.Json` sie ohne Sonderbehandlung liest und schreibt?
+- Bleibt die Karte eine Liste von Zeilen, oder wird jedes Feld ein JSON-Objekt? Was spricht für was?
+- Wo bringst du die Zusatzangaben unter, ohne die Karte unlesbar zu machen?
+- Wie sorgst du dafür, dass ein Spiel von morgen eine Datei von heute noch lesen kann – und umgekehrt?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — JSON-Struktur:** Die Wurzel ist ein Objekt, kein Array. So gibt es Platz für Metadaten wie eine `version`, mit der ein späteres Programm alte Dateien erkennen und konvertieren kann. Verschachtelte Dinge bleiben verschachtelt: Adressen sind Objekte in einem Array, keine zusammengeklebten Strings.
+**Schritt 1 — Die Karte bleibt Text:** Die naheliegende Idee, jedes Feld als `{"x":3,"y":7,"art":"trank"}` zu speichern, bläht eine 20 × 9-Karte auf 180 Objekte auf – und niemand erkennt darin noch einen Raum. Die ASCII-Karte ist kompakt, im Editor *und* im Texteditor lesbar, und Git zeigt Änderungen zeilenweise an. Sie bleibt also, und der vorhandene `LevelParser` funktioniert unverändert weiter.
+
+**Schritt 2 — Zusatzangaben als Ausnahmen, nicht als Wiederholung:** Die Objektliste beschreibt nur, was vom Standard abweicht. Eine Truhe ohne Eintrag ist 100 Punkte wert, ein Trank heilt 1 – so bleiben die meisten Level kurz. Die Wurzel ist ein Objekt (kein Array), damit Metadaten wie `version` Platz haben.
 
 ```json
 {
   "version": 1,
-  "kontakte": [
-    {
-      "vorname": "Ada",
-      "nachname": "Lovelace",
-      "geburtstag": "1815-12-10",
-      "adressen": [
-        { "art": "privat", "strasse": "St. James's Square 12", "plz": "SW1Y", "ort": "London" }
-      ],
-      "telefonnummern": ["+44 20 1234"]
-    },
-    { "vorname": "Max", "nachname": "Muster", "geburtstag": null, "adressen": [], "telefonnummern": [] }
+  "name": "kerker",
+  "autor": "ada",
+  "schwierigkeit": "leicht",
+  "karte": [
+    "####################",
+    "#@.....#...........#",
+    "#..k...#.....W.....#",
+    "#......D..........E#",
+    "####################"
+  ],
+  "objekte": [
+    { "position": { "x": 15, "y": 6 }, "art": "truhe", "wert": 250 },
+    { "position": { "x": 13, "y": 2 }, "art": "wache", "laufrichtung": "Links" },
+    { "position": { "x": 3, "y": 7 }, "art": "trank", "heilung": 2 }
   ]
 }
 ```
 
-**Schritt 2 — Klassen:** Jede JSON-Ebene wird eine Klasse mit öffentlichen Properties. `DateOnly?` bildet den optionalen Geburtstag ab, ein `enum` die Adressart. Listen werden mit `[]` initialisiert, damit ein frisch angelegter Kontakt nie `null`-Listen hat.
+**Schritt 3 — Klassen dazu:** Jede JSON-Ebene wird eine Klasse mit öffentlichen Properties – dieselbe Regel wie beim `Spielstand`. Optionale Angaben werden `int?`: `null` heißt „nimm den Standardwert“, und `0` bleibt dadurch ein gültiger, ausdrücklich gewünschter Wert.
 
 ```csharp
-enum AdressArt { Privat, Dienstlich }
-
-class Adresse
-{
-    public AdressArt Art { get; set; }
-    public string Strasse { get; set; } = "";
-    public string Plz { get; set; } = "";
-    public string Ort { get; set; } = "";
-}
-
-class Kontakt
-{
-    public string Vorname { get; set; } = "";
-    public string Nachname { get; set; } = "";
-    public DateOnly? Geburtstag { get; set; }
-    public List<Adresse> Adressen { get; set; } = [];
-    public List<string> Telefonnummern { get; set; } = [];
-}
-
-class Adressbuch
+class LevelDatei
 {
     public int Version { get; set; } = 1;
-    public List<Kontakt> Kontakte { get; set; } = [];
+    public string Name { get; set; } = "";
+    public string? Autor { get; set; }
+    public string? Schwierigkeit { get; set; }
+    public List<string> Karte { get; set; } = [];
+    public List<ObjektDaten> Objekte { get; set; } = [];
+}
+
+class ObjektDaten
+{
+    public Position Position { get; set; }
+    public string Art { get; set; } = "";
+    public int? Wert { get; set; }
+    public int? Heilung { get; set; }
+    public Richtung? Laufrichtung { get; set; }
 }
 
 JsonSerializerOptions optionen = new()
 {
     WriteIndented = true,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    Converters = { new JsonStringEnumConverter() }
 };
 ```
 
 **Zentrale Designentscheidungen:**
 
-- **Wurzelobjekt mit `version`:** Kostet eine Zeile, spart später Migrationsschmerzen. Ein nacktes Array kann man nachträglich nicht erweitern, ohne alle alten Dateien ungültig zu machen.
-- **`enum` als String:** Ohne `JsonStringEnumConverter` würde `Privat` als `0` gespeichert – unlesbar, und beim Umsortieren des Enums stimmen alte Dateien nicht mehr.
-- **Keine Rückreferenz `Adresse.Kontakt`:** Sie wäre praktisch, würde aber einen Zyklus erzeugen, den der Serialisierer nicht abbilden kann. Wer sie braucht, markiert sie mit `[JsonIgnore]` und setzt sie nach dem Laden.
+- **Wurzelobjekt mit `version`:** Kostet eine Zeile, spart später Migrationsschmerzen. Ein nacktes Array kann man nachträglich nicht erweitern, ohne alle alten Dateien ungültig zu machen. Ein Spiel, das `version > 1` liest, kann eine verständliche Meldung zeigen statt abzustürzen.
+- **Unbekannte Felder ignorieren:** `System.Text.Json` überliest Properties, die es nicht kennt. Eine ältere Programmversion kann eine neuere Datei also weiterhin spielen, nur ohne die neuen Feinheiten – das ist die andere Hälfte der Abwärtskompatibilität.
+- **`enum` als String:** Ohne `JsonStringEnumConverter` würde `Richtung.Links` als `2` gespeichert – unlesbar, und beim Umsortieren des Enums stimmen alle alten Level nicht mehr.
+- **Kein zweites Wahrheitsmodell:** Die Objektliste *ergänzt* die Karte, sie ersetzt sie nicht. Gäbe es beide Quellen für dieselbe Information, müsste man bei jedem Widerspruch entscheiden, welche gewinnt.
 
 </details>
 
 ## Aufgabe 4 — Zerlegung
 
-Der Geometrieeditor soll seine Figuren alternativ als CSV speichern können, damit sie sich in einer Tabellenkalkulation öffnen lassen. Entwirf `CsvFigurSpeicher : IFigurSpeicher`.
+Ein Spielstand soll sich alternativ in einem zeilenbasierten Textformat speichern lassen, das man mit jedem Editor reparieren kann. Entwirf `CsvSpielstandSpeicher : ISpielstandSpeicher` mit `void Speichern(Spielstand)` und `Spielstand? Laden()`.
 
-- Wie sieht eine Zeile aus, wenn Rechteck, Kreis und Dreieck unterschiedlich viele Werte haben?
-- In welche Teilschritte zerfällt `Laden`? Welche davon lassen sich isoliert testen?
-- Was passiert bei einer unbekannten Typkennung, einer fehlenden Spalte, einem `2,5` statt `2.5` – abbrechen oder überspringen?
+- `Spielstand` enthält fünf Listen unterschiedlicher Länge. Wie bildet man das in einem flachen Zeilenformat ab – mit festen Spalten oder anders?
+- In welche Teilschritte zerfällt das Speichern und Laden? Welche davon lassen sich ohne Datei testen?
+- Was tust du bei einer unbekannten Kennung, einer fehlenden Spalte, einem `zwölf` statt `12` – abbrechen oder überspringen? Warum hier anders als bei den Highscores?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Format festlegen:** Eine Kopfzeile, dann pro Figur eine Zeile mit festen sieben Spalten `typ;name;x;y;a;b;c`. Nicht genutzte Spalten bleiben leer. Die Typkennung übernimmt die Rolle des `typ`-Diskriminators aus `Figur.cs`; Zahlen werden mit `CultureInfo.InvariantCulture` geschrieben, damit auf einem deutschen System kein `2,5` entsteht, das mit dem Trennzeichen kollidiert.
+**Schritt 1 — Format festlegen:** Feste Spalten scheitern, weil ein Spielstand mal zwei und mal sieben Gegner hat. Stattdessen beginnt jede Zeile mit einer **Kennung**, die sagt, was danach kommt; Listen werden zu mehreren Zeilen derselben Kennung. Das Format ist damit erweiterbar, ohne alte Dateien zu brechen.
 
 ```
-typ;name;x;y;a;b;c
-rechteck;r1;0;0;4;3;
-kreis;k1;10;5;2.5;;
-dreieck;d1;-3;7;3;4;5
+version;1
+level;kerker
+runde;31
+spieler;15;7
+leben;2
+punkte;100
+entfernt;3;3
+tuer;7;4
+truhe;15;6
+gegner;13;2
+gegner;11;5
 ```
 
-**Schritt 2 — Zerlegung in Methoden:** `Speichern` und `Laden` sind nur Schleifen um eine Datei. Die eigentliche Arbeit steckt in zwei kleinen Übersetzern: `ZeileFuer(Figur)` und `FigurAus(string, int)`. Beide sind `static`, brauchen keine Datei und lassen sich mit einem einzigen String testen.
+**Schritt 2 — Zerlegung in Methoden:** `Speichern` und `Laden` sind nur der Dateizugriff. Die eigentliche Arbeit steckt in zwei Übersetzern, `ZeilenFuer` und `StandAus`, die beide `static` sind, keine Datei kennen und sich mit einem String-Array prüfen lassen.
 
 ```csharp
-public class CsvFigurSpeicher : IFigurSpeicher
+public class CsvSpielstandSpeicher : ISpielstandSpeicher
 {
-    private static readonly CultureInfo inv = CultureInfo.InvariantCulture;
     private readonly string pfad;
 
-    public CsvFigurSpeicher(string pfad) => this.pfad = pfad;
+    public CsvSpielstandSpeicher(string pfad) => this.pfad = pfad;
 
-    public void Speichern(IEnumerable<Figur> figuren)
+    public void Speichern(Spielstand stand) => File.WriteAllLines(pfad, ZeilenFuer(stand));
+
+    public Spielstand? Laden() => File.Exists(pfad) ? StandAus(File.ReadLines(pfad)) : null;
+
+    internal static IEnumerable<string> ZeilenFuer(Spielstand s)
     {
-        using StreamWriter writer = File.CreateText(pfad);
-        writer.WriteLine("typ;name;x;y;a;b;c");
-        foreach (Figur f in figuren) writer.WriteLine(ZeileFuer(f));
+        yield return "version;1";
+        yield return $"level;{s.LevelName}";
+        yield return $"runde;{s.Runde}";
+        yield return $"spieler;{s.SpielerPosition.X};{s.SpielerPosition.Y}";
+        yield return $"leben;{s.Lebenspunkte}";
+        yield return $"punkte;{s.Punkte}";
+        foreach (string name in s.Inventar) yield return $"inventar;{name}";
+        foreach (Position p in s.EntfernteGegenstaende) yield return $"entfernt;{p.X};{p.Y}";
+        foreach (Position p in s.OffeneTueren) yield return $"tuer;{p.X};{p.Y}";
+        foreach (Position p in s.GeoeffneteTruhen) yield return $"truhe;{p.X};{p.Y}";
+        foreach (Position p in s.GegnerPositionen) yield return $"gegner;{p.X};{p.Y}";
     }
 
-    public List<Figur> Laden()
+    internal static Spielstand StandAus(IEnumerable<string> zeilen)
     {
-        List<Figur> figuren = [];
-        if (!File.Exists(pfad)) return figuren;
-
-        using StreamReader reader = File.OpenText(pfad);
-        reader.ReadLine();                       // Kopfzeile überspringen
-        int nummer = 1;
-        while (reader.ReadLine() is string zeile)
+        Spielstand s = new();
+        int nummer = 0;
+        foreach (string zeile in zeilen)
         {
             nummer++;
-            if (zeile.Trim().Length > 0) figuren.Add(FigurAus(zeile, nummer));
+            if (zeile.Trim().Length == 0) continue;
+            string[] f = zeile.Split(';');
+            Position Pos() => new(Zahl(f, 1, nummer), Zahl(f, 2, nummer));
+
+            switch (f[0])
+            {
+                case "version": break;                               // für spätere Formatwechsel
+                case "level": s.LevelName = Feld(f, 1, nummer); break;
+                case "runde": s.Runde = Zahl(f, 1, nummer); break;
+                case "spieler": s.SpielerPosition = Pos(); break;
+                case "leben": s.Lebenspunkte = Zahl(f, 1, nummer); break;
+                case "punkte": s.Punkte = Zahl(f, 1, nummer); break;
+                case "inventar": s.Inventar.Add(Feld(f, 1, nummer)); break;
+                case "entfernt": s.EntfernteGegenstaende.Add(Pos()); break;
+                case "tuer": s.OffeneTueren.Add(Pos()); break;
+                case "truhe": s.GeoeffneteTruhen.Add(Pos()); break;
+                case "gegner": s.GegnerPositionen.Add(Pos()); break;
+                default: throw new FormatException($"Zeile {nummer}: unbekannte Kennung '{f[0]}'.");
+            }
         }
-        return figuren;
+        return s;
     }
 
-    private static string ZeileFuer(Figur f)
-    {
-        string basis = $"{f.Name};{f.X.ToString(inv)};{f.Y.ToString(inv)}";
-        return f switch
-        {
-            Rechteck r => $"rechteck;{basis};{r.Breite.ToString(inv)};{r.Hoehe.ToString(inv)};",
-            Kreis k    => $"kreis;{basis};{k.Radius.ToString(inv)};;",
-            Dreieck d  => $"dreieck;{basis};{d.SeiteA.ToString(inv)};{d.SeiteB.ToString(inv)};{d.SeiteC.ToString(inv)}",
-            _ => throw new NotSupportedException($"CSV kennt den Typ {f.GetType().Name} nicht.")
-        };
-    }
+    private static string Feld(string[] f, int i, int nummer) => i < f.Length
+        ? f[i]
+        : throw new FormatException($"Zeile {nummer}: Feld {i} fehlt.");
 
-    private static Figur FigurAus(string zeile, int nummer)
-    {
-        string[] felder = zeile.Split(';');
-        if (felder.Length != 7)
-            throw new FormatException($"Zeile {nummer}: 7 Spalten erwartet, {felder.Length} gefunden.");
-
-        double Zahl(int i) => double.TryParse(felder[i], NumberStyles.Float, inv, out double wert)
+    private static int Zahl(string[] f, int i, int nummer) =>
+        int.TryParse(Feld(f, i, nummer), out int wert)
             ? wert
-            : throw new FormatException($"Zeile {nummer}: '{felder[i]}' ist keine Zahl.");
-
-        return felder[0] switch
-        {
-            "rechteck" => new Rechteck(felder[1], Zahl(2), Zahl(3), Zahl(4), Zahl(5)),
-            "kreis"    => new Kreis(felder[1], Zahl(2), Zahl(3), Zahl(4)),
-            "dreieck"  => new Dreieck(felder[1], Zahl(2), Zahl(3), Zahl(4), Zahl(5), Zahl(6)),
-            _ => throw new FormatException($"Zeile {nummer}: unbekannter Typ '{felder[0]}'.")
-        };
-    }
+            : throw new FormatException($"Zeile {nummer}: '{f[i]}' ist keine Zahl.");
 }
 ```
 
-**Schritt 3 — Fehlerfälle:** Der Speicher bricht bei der ersten defekten Zeile mit einer `FormatException` ab, die die Zeilennummer nennt. Ein Dreieck mit unmöglichen Seiten scheitert wie beim JSON-Laden an der `ArgumentException` des Konstruktors – die Validierung bleibt im Fachkonzept.
+**Schritt 3 — Fehlerfälle:** Der Speicher bricht bei der ersten defekten Zeile mit einer `FormatException` ab, die die Zeilennummer nennt – die Spielschleife kann daraus „Spielstand beschädigt“ machen. Das Gegenteil wäre gefährlich: Würde man die Zeile `tuer;7;4` stillschweigend überspringen, stünde der Held hinter einer plötzlich verschlossenen Tür ohne Schlüssel und käme nie wieder heraus. Bei den Highscores in Aufgabe 2 kostet eine verlorene Zeile dagegen nichts.
 
 **Zentrale Designentscheidungen:**
 
-- **Abbrechen statt überspringen:** Stillschweigend ausgelassene Figuren würde der Benutzer erst beim nächsten Speichern bemerken – dann sind sie endgültig weg. Eine Ausnahme mit Zeilennummer lässt sich in der GUI als Meldung anzeigen.
-- **Feste Spaltenzahl:** Einfacher zu parsen und zu prüfen als Zeilen variabler Länge; die leeren Spalten kosten nichts.
-- **Bekannte Grenze:** Ein Name mit `;` zerstört die Zeile. Wer das braucht, quotiert die Felder oder greift zu einer CSV-Bibliothek – und hat spätestens dann ein Argument für JSON.
+- **Kennung statt fester Spaltenzahl:** Listen beliebiger Länge passen ohne Verrenkungen hinein, und eine neue Kennung bricht keine alte Datei – solange das Laden unbekannte Zeilen entweder kennt oder ehrlich ablehnt.
+- **Reine Übersetzer, getrennt vom Dateizugriff:** `ZeilenFuer` und `StandAus` sind als Paar testbar (`StandAus(ZeilenFuer(stand))` muss den Ausgangswert ergeben), ohne dass ein Test je eine Datei anlegt.
+- **`Laden` liefert `null` statt einer Exception, wenn die Datei fehlt:** Das ist der Vertrag aus `ISpielstandSpeicher`, den auch der `JsonSpielstandSpeicher` erfüllt – „noch nie gespeichert“ ist kein Fehler.
+- **Bekannte Grenze:** Ein Levelname mit `;` zerstört die Zeile. Wer das braucht, quotiert die Felder – und hat damit ein sehr gutes Argument für JSON: `JsonSpielstandSpeicher` erledigt dasselbe in drei Zeilen und kümmert sich um Sonderzeichen von allein.
 
 </details>

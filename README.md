@@ -30,21 +30,14 @@ Die Seite ist dann unter `http://localhost:4000` erreichbar.
 ```
 lectures/       # Eine Datei pro Vorlesungseinheit (00–12)
 modules/        # Einzelne Lehrmodule mit Inhalt und Codebeispielen
-examples/       # Lauffähige .NET-Beispielprojekte (nicht Teil der Webseite)
+examples/       # Kleine .NET-Beispielprojekte (nicht Teil der Webseite); das Spiel liegt in prog2-adventure
 assets/         # Bilder, Daten und statische Dateien
 _data/          # Navigation und Autorenprofile
 ```
 
-## Beispielprojekte bauen
+## Beispielspiel „Adventure“
 
-```bash
-cd examples
-dotnet build 04_blazor/Geometrieeditor                          # Blazor-App + Schichten-Architektur
-dotnet test  04_blazor/Geometrieeditor                          # NUnit-Tests des Fachkonzepts
-dotnet run --project 04_blazor/Geometrieeditor/Geometrieeditor.Web  # dann http://localhost:5xxx im Browser öffnen
-```
-
-Details zu allen Projekten stehen in [`examples/README.md`](examples/README.md).
+Das durchgehende Beispiel der Vorlesung ist ein 2D-Dungeon-Spiel im eigenen Repository [erodner/prog2-adventure](https://github.com/erodner/prog2-adventure). Git-Tags markieren dort den Stand nach den Vorlesungen 01, 02, 04, 09 und 12. Die kleinen Zusatzbeispiele unter `examples/` (P/Invoke, NuGet, Unit-Tests) baut man mit `dotnet build`; Details in [`examples/README.md`](examples/README.md).
 
 ## Lizenz
 

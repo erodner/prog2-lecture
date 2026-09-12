@@ -9,410 +9,395 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Delegaten und Ereignisse sind dafür besonders geeignet, weil sie erlauben, das *Was* vom *Wer* zu trennen – und weil man bei Closures und Multicast-Delegaten sehr genau hinschauen muss, was zur Laufzeit wirklich passiert. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Delegaten und Ereignisse sind dafür besonders geeignet, weil sie erlauben, das *Was* vom *Wer* zu trennen – und weil man bei Closures und Multicast-Delegaten sehr genau hinschauen muss, was zur Laufzeit wirklich passiert. Alle Aufgaben spielen im Adventure, dem durchgehenden Beispiel des Kurses – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Algorithmenentwurf
 
-Sage die vollständige Ausgabe des folgenden Programms voraus, ohne es auszuführen. Das Programm kombiniert einen Multicast-Delegaten mit `+=` und `-=` und zwei Schleifen, die Lambdas in einer Liste sammeln.
+Sage die vollständige Ausgabe des folgenden Programms voraus, ohne es auszuführen. Vier Empfänger hängen am Ereignis `Spielfeld.RundeBeendet`, und zwischendurch wird mit `-=` wieder abgemeldet. Nimm an, dass jeder Aufruf von `SpielerZieht` tatsächlich eine Runde zu Ende spielt, `feld.Runde` also von 1 bis 3 hochzählt.
 
 ```csharp
-delegate void MeldungHandler(string text);
+Spielfeld feld = LevelParser.Parsen(level);
+List<string> protokoll = [];
 
-static class Ausgabe
-{
-    public static void Kurz(string text) => Console.WriteLine($"[kurz] {text}");
-    public static void Lang(string text) => Console.WriteLine($"[lang] {text.ToUpper()}!");
-}
+void Anzeigen(object? sender, RundeEventArgs e) => Console.WriteLine($"[anzeige] Runde {e.Runde}");
+void Protokollieren(object? sender, RundeEventArgs e) => protokoll.Add(e.Meldung);
 
-MeldungHandler? melder = Ausgabe.Kurz;
-melder += Ausgabe.Lang;
-melder += Ausgabe.Kurz;
-melder("a");
+feld.RundeBeendet += Anzeigen;
+feld.RundeBeendet += Protokollieren;
+feld.RundeBeendet += Anzeigen;
 
-melder -= Ausgabe.Kurz;
-melder("b");
+int gezaehlt = 0;
+feld.RundeBeendet += (sender, e) => Console.WriteLine($"[zaehler] {++gezaehlt}");
 
-List<Action> aktionen = [];
-for (int i = 1; i <= 3; i++)
-    aktionen.Add(() => Console.WriteLine($"i = {i}"));
+feld.SpielerZieht(Richtung.Rechts);
 
-int summe = 0;
-foreach (int wert in new[] { 10, 20 })
-    aktionen.Add(() => { summe += wert; Console.WriteLine($"summe = {summe}"); });
+feld.RundeBeendet -= Anzeigen;
+feld.SpielerZieht(Richtung.Unten);
 
-foreach (Action aktion in aktionen)
-    aktion();
+for (int i = 0; i < 2; i++)
+    feld.RundeBeendet += (sender, e) => Console.WriteLine($"[schleife] i = {i}");
 
-melder -= Ausgabe.Lang;
-melder -= Ausgabe.Kurz;
-melder?.Invoke("c");
-Console.WriteLine(melder is null);
+feld.RundeBeendet -= (sender, e) => Console.WriteLine($"[zaehler] {++gezaehlt}");
+feld.SpielerZieht(Richtung.Links);
+
+Console.WriteLine($"[protokoll] {protokoll.Count}");
 ```
 
 Leitfragen:
 - In welcher Reihenfolge werden die Methoden eines Multicast-Delegaten aufgerufen?
 - Was entfernt `-=`, wenn dieselbe Methode zweimal in der Liste steht?
-- Welchen Wert hat `i`, wenn die Lambdas *ausgeführt* werden? Und `wert`?
-- Was ist der Unterschied zwischen `for` und `foreach` beim Einfangen der Laufvariablen?
+- Welchen Wert hat `i`, wenn die beiden Lambdas der `for`-Schleife *ausgeführt* werden?
+- Warum meldet das `-=` mit dem Lambda nichts ab, obwohl der Code buchstabengleich aussieht?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Der Multicast-Delegat nach den drei Zuweisungen:**
+**Schritt 1 — Die Aufrufliste nach den vier Registrierungen:**
 
-Nach `melder = Kurz; melder += Lang; melder += Kurz;` enthält die Aufrufliste `[Kurz, Lang, Kurz]`. Der Aufruf `melder("a")` arbeitet sie in dieser Reihenfolge ab:
+Die Liste lautet `[Anzeigen, Protokollieren, Anzeigen, Lambda-Zähler]` und wird in genau dieser Reihenfolge abgearbeitet. Runde 1 ergibt also:
 
 ```
-[kurz] a
-[lang] A!
-[kurz] a
+[anzeige] Runde 1
+[anzeige] Runde 1
+[zaehler] 1
 ```
+
+`Protokollieren` schreibt nur in die Liste und gibt nichts aus – man sieht es erst am Ende an `protokoll.Count`.
 
 **Schritt 2 — `-=` entfernt das letzte Vorkommen:**
 
-`melder -= Kurz` sucht das *letzte* Vorkommen von `Kurz` und entfernt genau dieses eine. Die Liste ist jetzt `[Kurz, Lang]`, und `melder("b")` gibt aus:
+`feld.RundeBeendet -= Anzeigen` sucht das *letzte* Vorkommen von `Anzeigen` und entfernt genau dieses eine. Die Liste ist jetzt `[Anzeigen, Protokollieren, Lambda-Zähler]`, und Runde 2 gibt aus:
 
 ```
-[kurz] b
-[lang] B!
+[anzeige] Runde 2
+[zaehler] 2
 ```
 
 **Schritt 3 — Die `for`-Schleife teilt eine Variable:**
 
-Die drei Lambdas `() => Console.WriteLine($"i = {i}")` fangen nicht den Wert von `i` ein, sondern die Variable. Die `for`-Schleife hat nur *eine* Variable `i` für alle Durchläufe; nach dem letzten Durchlauf wurde `i++` ausgeführt und die Bedingung `i <= 3` verletzt – `i` ist 4. Erst dann werden die Lambdas ausgeführt:
+Die beiden Lambdas fangen nicht den Wert von `i` ein, sondern die Variable selbst. Die `for`-Schleife hat nur *eine* Variable `i` für alle Durchläufe; nach dem letzten Durchlauf wurde `i++` ausgeführt und die Bedingung `i < 2` verletzt – `i` ist 2. Erst danach wird das Ereignis ausgelöst.
+
+**Schritt 4 — Das wirkungslose `-=`:**
+
+Jedes hingeschriebene Lambda erzeugt ein *neues* Delegatobjekt. Das Lambda in der `-=`-Zeile ist nicht dasselbe Objekt wie das beim `+=` registrierte, auch wenn es Zeichen für Zeichen gleich aussieht – `-=` findet nichts und tut nichts. Der Zähler bleibt also in der Liste. Runde 3 ergibt damit:
 
 ```
-i = 4
-i = 4
-i = 4
+[anzeige] Runde 3
+[zaehler] 3
+[schleife] i = 2
+[schleife] i = 2
 ```
 
-**Schritt 4 — Die `foreach`-Schleife legt pro Durchlauf eine neue Variable an:**
+**Schritt 5 — Das Protokoll:**
 
-Seit C# 5 ist die Laufvariable von `foreach` für jeden Durchlauf eine eigene Variable. Das erste Lambda hat `wert = 10` eingefangen, das zweite `wert = 20`. `summe` dagegen ist eine einzige äußere Variable, die beide Lambdas teilen und verändern:
+`Protokollieren` war bei allen drei Runden dabei und wurde nie abgemeldet:
 
 ```
-summe = 10
-summe = 30
+[protokoll] 3
 ```
-
-**Schritt 5 — Der leere Delegat:**
-
-`melder -= Lang` macht aus `[Kurz, Lang]` die Liste `[Kurz]`, `melder -= Kurz` entfernt auch das letzte Element – das Ergebnis ist nicht ein leerer Delegat, sondern `null`. `melder?.Invoke("c")` tut daher nichts, und die letzte Zeile gibt `True` aus.
 
 **Zentrale Designentscheidungen:**
 
-- **Closures fangen Variablen ein, keine Werte:** Wer einen Wert festhalten will, muss ihn innerhalb des Schleifenrumpfs in eine neue lokale Variable kopieren (`int kopie = i;`).
-- **`-=` ist kein „alle entfernen“:** Hat man eine Methode mehrfach registriert – ein häufiger Fehler bei Ereignissen, wenn `+=` in einer Methode steht, die mehrfach aufgerufen wird – muss man sie ebenso oft abmelden.
-- **`?.Invoke` statt direktem Aufruf:** Ein Delegat ohne Methoden ist `null`, nicht leer. Der Aufruf `melder("c")` hätte eine `NullReferenceException` ausgelöst.
+- **Closures fangen Variablen ein, keine Werte:** Wer einen Wert festhalten will, muss ihn innerhalb des Schleifenrumpfs in eine neue lokale Variable kopieren (`int kopie = i;`). Bei `foreach` ist das seit C# 5 nicht nötig.
+- **`-=` ist kein „alle entfernen“:** Hat man eine Methode mehrfach registriert – ein häufiger Fehler, wenn `+=` in einer Methode steht, die mehrfach aufgerufen wird –, muss man sie ebenso oft abmelden. Genau das passiert in der Konsolenversion beinahe, wenn nach `F9` erneut `SchatzGefunden += …` ausgeführt wird; dort ist es nur deshalb korrekt, weil `Spielfeld.Wiederherstellen` einen *neuen* Spieler liefert.
+- **Wer sich abmelden will, braucht eine benannte Methode:** Ein anonym hingeschriebenes Lambda lässt sich nicht wiederfinden. Alternativ merkt man sich den Delegaten in einer Variablen und meldet diese wieder ab.
+- **Der Sender bemerkt von alldem nichts:** `Spielfeld.SpielerZieht` enthält genau eine Zeile mit `RundeBeendet?.Invoke(...)` – ob dahinter null, ein oder fünf Empfänger stehen, ändert den Sender nicht.
 
 </details>
 
 ## Aufgabe 2 — Abstraktion
 
-Ein Temperatursensor in einem Serverraum misst regelmäßig die Temperatur. Überschreitet sie einen Schwellwert, sollen drei unabhängige Komponenten reagieren: eine **Anzeige** (gibt die aktuelle Temperatur aus), ein **Logger** (merkt sich alle Überschreitungen mit Zeitpunkt) und ein **Alarm** (löst aber erst aus, wenn die Temperatur den Schwellwert um mehr als 5 Grad überschreitet). Der Sensor soll keine der drei Komponenten kennen.
+Die Lebenspunkte des Helden ändern sich an mehreren Stellen: `SchadenNehmen` bei jeder Berührung durch eine Wache oder einen Verfolger, `Heilen` beim Trinken eines Tranks, `Wiederherstellen` beim Laden eines Spielstands. Drei Empfänger sollen darauf reagieren: die **Statusleiste** der Weboberfläche (zeichnet die Herzen neu), die **Konsole** (blinkt rot auf, wenn Schaden genommen wurde) und ein **Heiler-Hinweis**, der nur dann etwas sagt, wenn nach dem Treffer noch genau ein Lebenspunkt übrig ist.
 
-Entwirf das System mit einem Ereignis `SchwellwertUeberschritten`:
+Entwirf dafür ein Ereignis `LebenspunkteGeaendert` in der Klasse `Spieler`:
 - Welche Daten muss das Ereignis transportieren? Wie sieht die `EventArgs`-Klasse aus?
-- Wer registriert die Empfänger beim Sensor – der Sensor, die Empfänger selbst oder ein Dritter?
-- Soll das Ereignis bei *jeder* Messung über dem Schwellwert ausgelöst werden oder nur beim *Übergang* von unter nach über dem Schwellwert? Was bedeutet die Entscheidung für den Logger?
-- Wo gehört die „mehr als 5 Grad“-Regel des Alarms hin: in den Sensor oder in den Alarm?
+- Soll das Ereignis bei *jedem* Aufruf von `SchadenNehmen` ausgelöst werden oder nur, wenn sich der Wert tatsächlich geändert hat? Was bedeutet die Entscheidung für die Statusleiste?
+- Wo gehört die „genau ein Lebenspunkt übrig“-Regel hin: in den Spieler oder in den Empfänger?
+- Muss `Wiederherstellen` das Ereignis ebenfalls auslösen?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
 **Schritt 1 — Die Ereignisdaten:**
 
-Die Empfänger brauchen die gemessene Temperatur und den Schwellwert (damit der Alarm die Differenz berechnen kann). Der Zeitpunkt wird beim Erzeugen festgehalten, damit alle Empfänger denselben sehen. Die Properties sind nur lesbar:
+Die Empfänger brauchen den alten und den neuen Wert: Die Statusleiste zeichnet mit dem neuen, die Konsole entscheidet an der Differenz, ob es Schaden oder Heilung war. Das Maximum kommt dazu, damit niemand `Spieler.MaxLebenspunkte` von außen nachschlagen muss. Alle Properties sind nur lesbar:
 
 ```csharp
-class SchwellwertEventArgs : EventArgs
+public class LebenspunkteEventArgs : EventArgs
 {
-    public double Temperatur { get; }
-    public double Schwellwert { get; }
-    public DateTime Zeitpunkt { get; }
+    public int Vorher { get; }
+    public int Nachher { get; }
+    public int Maximum { get; }
 
-    public SchwellwertEventArgs(double temperatur, double schwellwert)
+    public LebenspunkteEventArgs(int vorher, int nachher, int maximum)
     {
-        Temperatur = temperatur;
-        Schwellwert = schwellwert;
-        Zeitpunkt = DateTime.Now;
+        Vorher = vorher;
+        Nachher = nachher;
+        Maximum = maximum;
     }
+
+    public int Differenz => Nachher - Vorher;
+    public bool IstSchaden => Differenz < 0;
 }
 ```
 
-**Schritt 2 — Der Sensor als Sender:**
+`Differenz` und `IstSchaden` sind berechnete Properties – sie speichern nichts, sondern ersparen jedem Empfänger dieselbe Rechnung.
 
-Wir entscheiden uns, das Ereignis nur beim *Übergang* auszulösen – sonst würde der Logger bei einer Messung pro Sekunde jede Sekunde einen Eintrag schreiben, solange es warm ist. Dafür merkt sich der Sensor, ob er sich bereits über dem Schwellwert befindet:
+**Schritt 2 — Der Sender:**
+
+Alle drei Stellen führen über eine einzige private Methode, die den Wert setzt und meldet. Ausgelöst wird nur, wenn sich wirklich etwas geändert hat: Ein Treffer bei null Lebenspunkten oder ein Trank bei vollem Leben ändert nichts, und die Statusleiste würde sonst ohne Anlass neu zeichnen.
 
 ```csharp
-class Temperatursensor
+public class Spieler : BeweglichesObjekt
 {
-    public double Schwellwert { get; }
-    private bool ueberSchwellwert;
+    public const int MaxLebenspunkte = 3;
 
-    public event EventHandler<SchwellwertEventArgs>? SchwellwertUeberschritten;
+    public int Lebenspunkte { get; private set; } = MaxLebenspunkte;
 
-    public Temperatursensor(double schwellwert)
+    public event EventHandler<LebenspunkteEventArgs>? LebenspunkteGeaendert;
+
+    private void LebenspunkteSetzen(int neu)
     {
-        Schwellwert = schwellwert;
+        int alt = Lebenspunkte;
+        if (neu == alt) return;                       // keine Änderung, keine Meldung
+        Lebenspunkte = neu;
+        LebenspunkteGeaendert?.Invoke(this,
+            new LebenspunkteEventArgs(alt, neu, MaxLebenspunkte));
     }
 
-    public void MessungEintragen(double temperatur)
-    {
-        bool jetztDrueber = temperatur > Schwellwert;
-        if (jetztDrueber && !ueberSchwellwert)
-            OnSchwellwertUeberschritten(new SchwellwertEventArgs(temperatur, Schwellwert));
-        ueberSchwellwert = jetztDrueber;
-    }
+    public void SchadenNehmen(int schaden = 1)
+        => LebenspunkteSetzen(Math.Max(0, Lebenspunkte - schaden));
 
-    protected virtual void OnSchwellwertUeberschritten(SchwellwertEventArgs e)
+    public void Heilen(int heilung)
+        => LebenspunkteSetzen(Math.Min(MaxLebenspunkte, Lebenspunkte + heilung));
+
+    public void Wiederherstellen(int lebenspunkte, int punkte)
     {
-        SchwellwertUeberschritten?.Invoke(this, e);
+        LebenspunkteSetzen(Math.Clamp(lebenspunkte, 0, MaxLebenspunkte));
+        Punkte = punkte;
     }
 }
 ```
 
 **Schritt 3 — Die drei Empfänger:**
 
-Jeder Empfänger bringt eine Methode `Anmelden(Temperatursensor sensor)` mit und registriert seine eigene Behandlungsmethode. Die Alarm-Regel steckt im Alarm, nicht im Sensor – der Sensor soll nicht wissen, dass es einen Alarm gibt, geschweige denn, wann er auslöst:
+Jeder Empfänger bringt seine eigene Regel mit; der Spieler kennt keinen von ihnen:
 
 ```csharp
-class Anzeige
+// Adventure.Konsole
+feld.Spieler.LebenspunkteGeaendert += (sender, e) =>
 {
-    public void Anmelden(Temperatursensor sensor) => sensor.SchwellwertUeberschritten += Aktualisieren;
+    if (e.IstSchaden) Console.Beep(220, 150);
+};
 
-    private void Aktualisieren(object? sender, SchwellwertEventArgs e)
-        => Console.WriteLine($"Anzeige: {e.Temperatur:F1} °C (Grenze {e.Schwellwert:F1} °C)");
-}
-
-class Logger
+// nur ein Lebenspunkt übrig – eigener Empfänger, eigene Regel
+feld.Spieler.LebenspunkteGeaendert += (sender, e) =>
 {
-    private readonly List<string> eintraege = [];
-    public IReadOnlyList<string> Eintraege => eintraege;
+    if (e.Nachher == 1) Console.WriteLine("Ein Trank wäre jetzt eine gute Idee.");
+};
 
-    public void Anmelden(Temperatursensor sensor) => sensor.SchwellwertUeberschritten += Protokollieren;
-
-    private void Protokollieren(object? sender, SchwellwertEventArgs e)
-        => eintraege.Add($"{e.Zeitpunkt:HH:mm:ss} – {e.Temperatur:F1} °C");
-}
-
-class Alarm
-{
-    private const double Toleranz = 5.0;
-
-    public void Anmelden(Temperatursensor sensor) => sensor.SchwellwertUeberschritten += Pruefen;
-
-    private void Pruefen(object? sender, SchwellwertEventArgs e)
-    {
-        if (e.Temperatur - e.Schwellwert > Toleranz)
-            Console.WriteLine("ALARM: Kritische Temperatur!");
-    }
-}
+// Adventure.Web: Statusleiste neu zeichnen
+spieler.LebenspunkteGeaendert += (sender, e) => InvokeAsync(StateHasChanged);
 ```
 
-**Schritt 4 — Verdrahtung durch einen Dritten:**
+**Schritt 4 — `Wiederherstellen`:**
 
-Weder der Sensor noch die Empfänger entscheiden, wer mit wem verbunden ist. Das macht der aufrufende Code – im Geometrieeditor war das die Gui-Schicht, die den `IFigurSpeicher` in die `FigurenVerwaltung` steckt, hier ist es das Hauptprogramm:
-
-```csharp
-Temperatursensor sensor = new(schwellwert: 30.0);
-Anzeige anzeige = new();
-Logger logger = new();
-Alarm alarm = new();
-
-anzeige.Anmelden(sensor);
-logger.Anmelden(sensor);
-alarm.Anmelden(sensor);
-
-sensor.MessungEintragen(28.0);   // nichts
-sensor.MessungEintragen(31.5);   // Anzeige: 31,5 °C (Grenze 30,0 °C)
-sensor.MessungEintragen(33.0);   // nichts – immer noch drüber, kein Übergang
-sensor.MessungEintragen(27.0);   // nichts – wieder drunter
-sensor.MessungEintragen(36.0);   // Anzeige: 36,0 °C (Grenze 30,0 °C)
-                                 // ALARM: Kritische Temperatur!
-Console.WriteLine(logger.Eintraege.Count);   // 2
-```
+Ja, auch das Laden eines Spielstands soll melden – sonst zeigt die Statusleiste nach `F9` noch die Herzen des alten Spielstands. In der Konsolenversion fällt das nicht auf, weil dort ohnehin ein neues `Spielfeld` samt neuem `Spieler` entsteht; in Blazor, wo dieselbe Komponente weiterlebt, wäre es ein sichtbarer Fehler.
 
 **Zentrale Designentscheidungen:**
 
-- **Der Sensor kennt keinen Empfänger:** Er hat nur ein Ereignis und eine `On…`-Methode. Ein vierter Empfänger (SMS-Versand) braucht keine Änderung am Sensor.
-- **Flankenerkennung im Sender:** Ob bei jeder Messung oder nur beim Übergang ausgelöst wird, ist eine fachliche Entscheidung des Senders – sonst müsste jeder Empfänger den vorigen Zustand selbst nachhalten. Der Preis: Bleibt die Temperatur dauerhaft hoch, gibt es nur ein Ereignis. Für einen Alarm ist das gewollt, für eine Live-Anzeige bräuchte man ein zweites Ereignis `MessungEingetragen`.
-- **Empfängerspezifische Regeln beim Empfänger:** Die 5-Grad-Toleranz gehört in den `Alarm`. Läge sie im Sensor, wäre er wieder mit einem konkreten Empfänger verheiratet.
-- **Unveränderliche `EventArgs`:** Alle drei Empfänger sehen dieselben Daten, weil keiner sie verändern kann.
+- **Eine einzige Auslösestelle:** `SchadenNehmen`, `Heilen` und `Wiederherstellen` gehen über `LebenspunkteSetzen`. Wer später eine vierte Schadensquelle ergänzt (eine Falle), bekommt das Ereignis geschenkt und kann es nicht vergessen.
+- **Melden nach dem Ändern:** Erst `Lebenspunkte = neu`, dann `Invoke`. Ein Empfänger, der über `sender` den Spieler befragt, sieht den neuen Zustand – konsistent mit `e.Nachher`.
+- **Nur bei echter Änderung:** Das spart der Oberfläche nutzlose Renderdurchläufe. Wer eine Live-Anzeige „Treffer!“ braucht, nimmt dafür ein zweites Ereignis, statt dieses aufzuweichen.
+- **Empfängerspezifische Regeln beim Empfänger:** Die „genau ein Lebenspunkt“-Regel gehört nicht in `Spieler`. Sonst wäre der Kern wieder mit einer konkreten Anzeige verheiratet – dasselbe Problem wie beim Sturzsensor.
 
 </details>
 
 ## Aufgabe 3 — Mustererkennung
 
-Gegeben ist eine Liste von Figuren aus dem Geometrieeditor (`Figur` mit `Name`, `X`, `Y`, `Flaeche`, `Umfang`; abgeleitet `Kreis` mit `Radius` und `Rechteck` mit `Breite`, `Hoehe`). Übersetze die Abfragen (a) bis (c) von Query- in Methodensyntax, (d) und (e) von Methoden- in Query-Syntax. Schreibe dann (f) und begründe, warum diese Abfrage nur in Methodensyntax vollständig ausdrückbar ist.
+Gegeben ist ein Spielfeld `feld` mit `feld.AlleObjekte` (`IEnumerable<Spielobjekt>`), `feld.Gegner` (`IReadOnlyList<Gegner>`) und `Position held = feld.Spieler.Position;`. Übersetze die Abfragen (a) bis (c) von Query- in Methodensyntax, (d) und (e) von Methoden- in Query-Syntax. Schreibe dann (f) und begründe, warum diese Abfrage nur in Methodensyntax vollständig ausdrückbar ist.
 
 ```csharp
 // (a)
-var a = from f in figuren where f.Flaeche > 10 select f.Name;
+var a = from o in feld.AlleObjekte where o.IstPassierbar select o.Position;
 
 // (b)
-var b = from f in figuren orderby f.Umfang descending, f.Name select f;
+var b = from g in feld.Gegner orderby g.Position.Entfernung(held), g.Name select g;
 
 // (c)
-var c = from f in figuren where f is Kreis orderby f.Flaeche select $"{f.Name}: {f.Flaeche:F1}";
+var c = from o in feld.AlleObjekte where o is Truhe select $"{o.Name} bei {o.Position}";
 
 // (d)
-var d = figuren.Where(f => f.X > 0 && f.Y > 0).Select(f => f.Name.ToUpper());
+var d = feld.Gegner.Where(g => g.Position.X > 0 && g.Position.Y > 0).Select(g => g.Name);
 
 // (e)
-var e = figuren.Where(f => f is Rechteck).OrderBy(f => f.Name).Select(f => f.Umfang);
+var e = feld.AlleObjekte.Where(o => !o.IstPassierbar).OrderBy(o => o.Name).Select(o => o.Symbol);
 
-// (f) Die zwei Namen mit der größten Fläche – ohne Duplikate, falls Namen doppelt vorkommen.
+// (f) Die Namen der zwei Gegner, die dem Helden am nächsten stehen – ohne doppelte Namen.
 ```
 
 Leitfragen:
 - Welches Schlüsselwort entspricht welcher Methode – und in welcher Reihenfolge?
-- Wie drückt man `descending` und einen zweiten Sortierschlüssel in Methodensyntax aus?
-- Was passiert bei `select f` – braucht man dafür ein `Select`?
+- Wie drückt man einen zweiten Sortierschlüssel in Methodensyntax aus?
+- Warum ist `where o is Gegner` etwas anderes als `OfType<Gegner>()`?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
 **Schritt 1 — Query nach Methode (a bis c):**
 
-Jedes `where` wird zu `Where`, `orderby` zu `OrderBy` (bzw. `OrderByDescending`), ein zweiter Sortierschlüssel zu `ThenBy`, und `select` zu `Select`. Ein `select f`, das das Element unverändert durchreicht, erzeugt in Methodensyntax keinen Aufruf:
+Jedes `where` wird zu `Where`, `orderby` zu `OrderBy`, ein zweiter Sortierschlüssel zu `ThenBy`, und `select` zu `Select`:
 
 ```csharp
-var a = figuren.Where(f => f.Flaeche > 10).Select(f => f.Name);
+var a = feld.AlleObjekte.Where(o => o.IstPassierbar).Select(o => o.Position);
 
-var b = figuren.OrderByDescending(f => f.Umfang).ThenBy(f => f.Name);
+var b = feld.Gegner.OrderBy(g => g.Position.Entfernung(held)).ThenBy(g => g.Name);
 
-var c = figuren.Where(f => f is Kreis)
-               .OrderBy(f => f.Flaeche)
-               .Select(f => $"{f.Name}: {f.Flaeche:F1}");
+var c = feld.AlleObjekte.Where(o => o is Truhe)
+                        .Select(o => $"{o.Name} bei {o.Position}");
 ```
+
+Bei (b) fällt auf: Ein `select g`, das das Element unverändert durchreicht, erzeugt in Methodensyntax gar keinen Aufruf – eine Identitätsprojektion ist ein Leerlauf.
 
 **Schritt 2 — Methode nach Query (d und e):**
 
 Umgekehrt wird jede Methode wieder zu einem Schlüsselwort. Die Reihenfolge bleibt erhalten, das `from` kommt hinzu:
 
 ```csharp
-var d = from f in figuren
-        where f.X > 0 && f.Y > 0
-        select f.Name.ToUpper();
+var d = from g in feld.Gegner
+        where g.Position.X > 0 && g.Position.Y > 0
+        select g.Name;
 
-var e = from f in figuren
-        where f is Rechteck
-        orderby f.Name
-        select f.Umfang;
+var e = from o in feld.AlleObjekte
+        where !o.IstPassierbar
+        orderby o.Name
+        select o.Symbol;
 ```
 
 **Schritt 3 — Nur in Methodensyntax (f):**
 
-Die Query-Syntax kennt weder `Take` noch `Distinct`. Man kann eine Query-Abfrage in Klammern setzen und die fehlenden Methoden anhängen – aber vollständig in Query-Syntax geht es nicht:
+Die Query-Syntax kennt weder `Take` noch `Distinct` noch `OfType`. Man kann einen Query-Teil in Klammern setzen und die fehlenden Methoden anhängen – aber vollständig in Query-Syntax geht es nicht:
 
 ```csharp
-var f = figuren.OrderByDescending(x => x.Flaeche)
-               .Select(x => x.Name)
-               .Distinct()
-               .Take(2);
+var f = feld.Gegner.OrderBy(g => g.Position.Entfernung(held))
+                   .Select(g => g.Name)
+                   .Distinct()
+                   .Take(2);
 
 // Mischform: Query-Teil in Klammern, Rest als Methoden
-var fGemischt = (from x in figuren orderby x.Flaeche descending select x.Name)
-                .Distinct()
-                .Take(2);
+var fGemischt = (from g in feld.Gegner
+                 orderby g.Position.Entfernung(held)
+                 select g.Name).Distinct().Take(2);
 ```
 
-Die Reihenfolge von `Distinct` und `Take` ist entscheidend: `Take(2).Distinct()` könnte nur *einen* Namen liefern, wenn die beiden größten Figuren gleich heißen.
+Die Reihenfolge von `Distinct` und `Take` ist entscheidend: `Take(2).Distinct()` könnte nur *einen* Namen liefern, wenn die beiden nächsten Gegner beide „Wache“ heißen – und genau das ist im Adventure der Normalfall.
+
+**Schritt 4 — `where o is Gegner` gegen `OfType<Gegner>()`:**
+
+Beide liefern dieselben Elemente, aber nicht denselben statischen Typ. `feld.AlleObjekte.Where(o => o is Gegner)` bleibt ein `IEnumerable<Spielobjekt>` – im nächsten `Select` ist `o.NaechsterZug(feld)` deshalb ein Compilerfehler. `feld.AlleObjekte.OfType<Gegner>()` liefert ein `IEnumerable<Gegner>`, und erst damit sind gegnerspezifische Mitglieder erreichbar. `OfType` filtert und typisiert in einem Schritt.
 
 **Zentrale Designentscheidungen:**
 
 - **Die Übersetzung ist mechanisch:** Der Compiler macht genau das, was wir hier von Hand getan haben – deshalb sind beide Formen gleichwertig und gleich schnell.
-- **`select f` ist ein Leerlauf:** Eine Identitätsprojektion erzeugt keinen `Select`-Aufruf. Das ist eine Optimierung, keine Ausnahme.
-- **Methodensyntax ist die Obermenge:** Sobald `Take`, `Skip`, `Distinct`, `Any`, `Count` oder `ToList` gebraucht werden, kommt man um Methoden nicht herum. Die Mischform ist erlaubt, aber selten lesbarer als die reine Methodenkette.
+- **Methodensyntax ist die Obermenge:** Sobald `Take`, `Skip`, `Distinct`, `OfType`, `Any`, `Count` oder `ToList` gebraucht werden, kommt man um Methoden nicht herum.
+- **Reihenfolge ist Semantik:** `Distinct().Take(2)` und `Take(2).Distinct()` sind zwei verschiedene Abfragen. Wer LINQ liest, liest von links nach rechts wie eine Verarbeitungsstraße.
 
 </details>
 
 ## Aufgabe 4 — Mustererkennung
 
-Der folgende Taschenrechner wählt die Operation über eine `switch`-Anweisung aus. Jede neue Operation erfordert einen weiteren `case` – und der Rechner kann nur, was zur Kompilierzeit im `switch` steht.
+Die Konsolenversion des Spiels übersetzt Tastendrücke mit einem `switch`-Ausdruck in eine Richtung. Jede zusätzliche Belegung erfordert einen weiteren Zweig – und der Spieler kann nur, was zur Kompilierzeit dort steht:
 
 ```csharp
-static double Berechne(string operation, double a, double b)
+ConsoleKey taste = Console.ReadKey(true).Key;
+
+Richtung? richtung = taste switch
 {
-    switch (operation)
-    {
-        case "+": return a + b;
-        case "-": return a - b;
-        case "*": return a * b;
-        case "/": return a / b;
-        case "max": return Math.Max(a, b);
-        default: throw new ArgumentException($"Unbekannte Operation: {operation}");
-    }
-}
+    ConsoleKey.W or ConsoleKey.UpArrow => Richtung.Oben,
+    ConsoleKey.S or ConsoleKey.DownArrow => Richtung.Unten,
+    ConsoleKey.A or ConsoleKey.LeftArrow => Richtung.Links,
+    ConsoleKey.D or ConsoleKey.RightArrow => Richtung.Rechts,
+    _ => null
+};
 ```
 
-Erkenne das Muster, das sich in allen `case`-Zweigen wiederholt, und ersetze den `switch` durch eine Tabelle `Dictionary<string, Func<double, double, double>>`.
-- Was haben alle Zweige gemeinsam – welche Signatur steckt dahinter?
-- Wie sieht der Eintrag für `Math.Max` aus? Braucht er ein Lambda?
-- Wie kann ein Nutzer des Rechners zur Laufzeit eine neue Operation hinzufügen, ohne den Rechner zu ändern?
-- Wie behandelst du eine unbekannte Operation – und wie listest du alle verfügbaren auf?
+Erkenne das Muster, das sich in allen Zweigen wiederholt, und ersetze den `switch` durch ein `Dictionary<ConsoleKey, Richtung>`.
+- Was haben alle Zweige gemeinsam – welche Abbildung steckt dahinter?
+- Wie kommt der Fall „unbekannte Taste“ ohne `default` aus?
+- Wie kann jemand zur Laufzeit eine zweite Tastenbelegung ergänzen (etwa `h j k l`), ohne die Spielschleife zu ändern?
+- F5 und F9 tun etwas anderes als eine Richtung zu liefern. Wie passt das in dieselbe Tabelle – und sollte es das?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
 **Schritt 1 — Das Muster erkennen:**
 
-Jeder `case` bildet zwei `double` auf ein `double` ab. Alle Zweige haben also die Signatur `double (double, double)` – das ist ein `Func<double, double, double>`. Der `switch` ist nichts anderes als eine Zuordnung von Name zu Funktion, und dafür gibt es eine Datenstruktur: das `Dictionary`.
+Jeder Zweig bildet eine Taste auf eine Richtung ab, sonst nichts. Der `switch` ist also keine Fallunterscheidung, sondern eine **Zuordnung** von Schlüssel zu Wert – und dafür gibt es eine Datenstruktur statt einer Kontrollstruktur: das `Dictionary`, das wir im [Collections-Überblick](/modules/collections_ueberblick/collections_ueberblick.md) kennengelernt haben.
 
 **Schritt 2 — Die Tabelle:**
 
 ```csharp
-class Rechner
+class Tastenbelegung
 {
-    private readonly Dictionary<string, Func<double, double, double>> operationen = new()
+    private readonly Dictionary<ConsoleKey, Richtung> belegung = new()
     {
-        ["+"] = (a, b) => a + b,
-        ["-"] = (a, b) => a - b,
-        ["*"] = (a, b) => a * b,
-        ["/"] = (a, b) => a / b,
-        ["max"] = Math.Max
+        [ConsoleKey.W] = Richtung.Oben,
+        [ConsoleKey.UpArrow] = Richtung.Oben,
+        [ConsoleKey.S] = Richtung.Unten,
+        [ConsoleKey.DownArrow] = Richtung.Unten,
+        [ConsoleKey.A] = Richtung.Links,
+        [ConsoleKey.LeftArrow] = Richtung.Links,
+        [ConsoleKey.D] = Richtung.Rechts,
+        [ConsoleKey.RightArrow] = Richtung.Rechts,
     };
 
-    public IEnumerable<string> VerfuegbareOperationen => operationen.Keys;
+    public IEnumerable<ConsoleKey> BelegteTasten => belegung.Keys;
 
-    public void Registrieren(string name, Func<double, double, double> operation)
-    {
-        operationen[name] = operation;
-    }
+    public void Belegen(ConsoleKey taste, Richtung richtung) => belegung[taste] = richtung;
 
-    public double Berechne(string operation, double a, double b)
-    {
-        if (!operationen.TryGetValue(operation, out Func<double, double, double>? rechnung))
-            throw new ArgumentException($"Unbekannte Operation: {operation}");
-        return rechnung(a, b);
-    }
+    public Richtung? RichtungFuer(ConsoleKey taste)
+        => belegung.TryGetValue(taste, out Richtung r) ? r : null;
 }
 ```
 
-`Math.Max` braucht kein Lambda: Die Methodengruppe wird direkt zugewiesen, und der Compiler wählt aus den Überladungen von `Math.Max` diejenige mit zwei `double`-Parametern aus. Für `+` und `-` gibt es keine Methode, die man zuweisen könnte – Operatoren sind keine Methodengruppen – deshalb hier Lambdas.
+`TryGetValue` ersetzt den `default`-Zweig: Steht die Taste nicht in der Tabelle, ist das Ergebnis `null`, und die Spielschleife ignoriert den Tastendruck wie bisher. Der Indexer wäre hier falsch – er würde bei jeder unbelegten Taste eine `KeyNotFoundException` werfen, und das passiert im Spiel ständig.
 
-**Schritt 3 — Erweiterung zur Laufzeit:**
+**Schritt 3 — Die Spielschleife wird kürzer:**
 
 ```csharp
-Rechner rechner = new();
-rechner.Registrieren("pow", Math.Pow);
-rechner.Registrieren("hyp", (a, b) => Math.Sqrt(a * a + b * b));
+Tastenbelegung tasten = new();
+tasten.Belegen(ConsoleKey.K, Richtung.Oben);      // Vi-Tasten, zur Laufzeit ergänzt
+tasten.Belegen(ConsoleKey.J, Richtung.Unten);
+tasten.Belegen(ConsoleKey.H, Richtung.Links);
+tasten.Belegen(ConsoleKey.L, Richtung.Rechts);
 
-Console.WriteLine(rechner.Berechne("hyp", 3, 4));   // 5
-Console.WriteLine(rechner.Berechne("pow", 2, 10));  // 1024
-Console.WriteLine(string.Join(", ", rechner.VerfuegbareOperationen));
-// +, -, *, /, max, pow, hyp
+if (tasten.RichtungFuer(Console.ReadKey(true).Key) is Richtung r)
+{
+    feld.SpielerZieht(r);
+}
 ```
 
-Der Rechner wurde für `pow` und `hyp` nicht angefasst. Ein `switch` hätte das nicht erlaubt.
+An `Tastenbelegung` wurde für die vier neuen Tasten keine Zeile geändert. Ein `switch` hätte das nicht erlaubt – und eine Belegung aus einer Konfigurationsdatei wäre damit endgültig unmöglich gewesen.
+
+**Schritt 4 — F5 und F9:**
+
+Diese Tasten liefern keine Richtung, sondern führen eine Aktion aus. Man *kann* sie in dieselbe Tabelle legen, wenn man den Werttyp verallgemeinert – dann ist es ein `Dictionary<ConsoleKey, Action<Spielfeld>>`, und auch das Ziehen wird zu einer Aktion:
+
+```csharp
+Dictionary<ConsoleKey, Action<Spielfeld>> befehle = new()
+{
+    [ConsoleKey.UpArrow] = f => f.SpielerZieht(Richtung.Oben),
+    [ConsoleKey.F5] = f => speicher.Speichern(f.Erfassen(levelName, level)),
+};
+```
+
+Ob das besser ist, hängt vom Ziel ab. Die `Action`-Tabelle ist mächtiger, aber sie verliert die Information, *welche* Richtung eine Taste bedeutet – für eine Hilfeanzeige oder eine Tastenkonfiguration im Menü wäre die erste Variante wertvoller. Zwei kleine Tabellen mit klarer Bedeutung sind hier besser als eine große, die alles kann.
 
 **Zentrale Designentscheidungen:**
 
-- **Daten statt Kontrollfluss:** Eine Zuordnung „Name → Verhalten“ ist eine Tabelle, kein Verzweigungsbaum. Sobald ein `switch` in jedem Zweig dasselbe Muster hat, ist das ein Signal für eine Delegat-Tabelle.
-- **Offen für Erweiterung, geschlossen für Änderung:** Neue Operationen kommen über `Registrieren` hinzu; der Code in `Berechne` bleibt unverändert. Das ist dasselbe Prinzip wie bei Ereignissen – der Sender kennt seine Empfänger nicht.
-- **`TryGetValue` statt Indexer:** Der Indexer würde bei einem unbekannten Schlüssel eine `KeyNotFoundException` werfen, deren Meldung dem Nutzer nichts sagt. Mit `TryGetValue` formulieren wir die Fehlermeldung selbst.
-- **Das `Dictionary` ist `private`:** Von außen gibt es nur `Registrieren`, `Berechne` und die Liste der Namen. Niemand kann versehentlich `operationen.Clear()` aufrufen – dieselbe Überlegung wie beim `event`-Schlüsselwort gegenüber einem öffentlichen Delegatfeld.
+- **Daten statt Kontrollfluss:** Eine Zuordnung „Schlüssel → Wert“ ist eine Tabelle, kein Verzweigungsbaum. Sobald ein `switch` in jedem Zweig dasselbe Muster hat, ist das ein Signal.
+- **Offen für Erweiterung, geschlossen für Änderung:** Neue Belegungen kommen über `Belegen` hinzu; der Code in `RichtungFuer` bleibt unverändert. Das ist dasselbe Prinzip wie bei Ereignissen – der Sender kennt seine Empfänger nicht.
+- **Das `Dictionary` ist `private`:** Von außen gibt es nur `Belegen`, `RichtungFuer` und die Liste der Tasten. Niemand kann versehentlich `belegung.Clear()` aufrufen – dieselbe Überlegung wie beim `event`-Schlüsselwort gegenüber einem öffentlichen Delegatfeld.
+- **Blazor bekommt dieselbe Behandlung:** In `Home.razor` steht derselbe `switch`, nur über `KeyboardEventArgs.Key` (einem `string`). Dass es zwei Tabellen für zwei Eingabearten braucht, ist kein Zufall – daraus wird in Vorlesung 08 das [Adapter-Muster](/modules/adapter/adapter.md).
 
 </details>

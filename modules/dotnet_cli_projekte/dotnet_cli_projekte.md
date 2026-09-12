@@ -47,7 +47,7 @@ Jede Zeile hat eine klare Aufgabe:
 - **`ImplicitUsings`** – die häufigsten Namespaces wie `System` und `System.Collections.Generic` sind automatisch importiert. Deshalb fehlt in `Program.cs` das `using System;`.
 - **`Nullable`** – der Compiler warnt, wenn eine Referenz `null` sein könnte und trotzdem ohne Prüfung benutzt wird. Wir lassen das in allen Projekten eingeschaltet.
 
-Alle Beispielprojekte der Vorlesung liegen im Repository unter `examples/`. Dort setzt eine gemeinsame Datei `Directory.Build.props` Zielframework, `Nullable` und `ImplicitUsings` für alle Projekte auf einmal, sodass die einzelnen `.csproj`-Dateien fast leer sind. Jedes Beispiel lässt sich mit `dotnet build` bauen.
+Die kleinen Zusatzbeispiele der Vorlesung liegen im Repository dieser Webseite unter `examples/`; das durchgehende Beispiel, das Spiel **Adventure**, hat mit [prog2-adventure](https://github.com/erodner/prog2-adventure) ein eigenes Repository. In beiden setzt eine gemeinsame Datei `Directory.Build.props` Zielframework, `Nullable` und `ImplicitUsings` für alle Projekte auf einmal, sodass die einzelnen `.csproj`-Dateien fast leer sind. Jedes Beispiel lässt sich mit `dotnet build` bauen.
 {: .notice--primary}
 
 ## Bauen und starten
@@ -67,33 +67,45 @@ Compilerfehler erscheinen bei `dotnet build` mit Dateiname, Zeile und Spalte –
 
 ## Solutions mit mehreren Projekten
 
-Sobald eine Anwendung wächst, teilt man sie in mehrere Projekte: eine Klassenbibliothek mit der Fachlogik, ein Konsolen- oder GUI-Projekt für die Bedienung, später ein Testprojekt. Eine **Solution** fasst diese Projekte zusammen, damit ein einziger `dotnet build` alle baut. Wir legen eine Solution mit einer Bibliothek und einem Konsolenprogramm an:
+Sobald eine Anwendung wächst, teilt man sie in mehrere Projekte: eine Klassenbibliothek mit der Fachlogik, ein Konsolen- oder GUI-Projekt für die Bedienung, später ein Testprojekt. Eine **Solution** fasst diese Projekte zusammen, damit ein einziger `dotnet build` alle baut. Unser Semesterprojekt, das Spiel Adventure, ist genau so aufgebaut: `Adventure.Kern` enthält die Spielregeln, `Adventure.Konsole` spielt es im Terminal, `Adventure.Daten` lädt Level und speichert Spielstände, `Adventure.Web` bringt es später in den Browser, `Adventure.Tests` prüft alles nach. Wir legen den Anfang davon selbst an – die Bibliothek und das Konsolenprogramm:
 
 ```bash
-mkdir Notenverwaltung
-cd Notenverwaltung
-dotnet new sln
-dotnet new classlib -o Notenverwaltung.Fachkonzept
-dotnet new console -o Notenverwaltung.Konsole
-dotnet sln add Notenverwaltung.Fachkonzept
-dotnet sln add Notenverwaltung.Konsole
+mkdir Adventure
+cd Adventure
+dotnet new sln -n Adventure
+dotnet new classlib -o Adventure.Kern
+dotnet new console -o Adventure.Konsole
+dotnet sln add Adventure.Kern
+dotnet sln add Adventure.Konsole
 ```
 
-`dotnet new sln` erzeugt mit dem .NET 10 SDK eine Datei `Notenverwaltung.slnx` – das neue, schlanke XML-Format für Solutions; ältere SDKs erzeugen eine `.sln`, die genauso funktioniert. Die beiden `dotnet sln add`-Zeilen tragen die Projekte darin ein. Bis hierhin wissen die Projekte allerdings nichts voneinander: Das Konsolenprogramm könnte keine Klasse aus dem Fachkonzept verwenden. Dafür braucht es eine **Projektreferenz**:
+`dotnet new sln` erzeugt mit dem .NET 10 SDK eine Datei `Adventure.slnx` – das neue, schlanke XML-Format für Solutions; ältere SDKs erzeugen eine `.sln`, die genauso funktioniert. Die beiden `dotnet sln add`-Zeilen tragen die Projekte darin ein. Bis hierhin wissen die Projekte allerdings nichts voneinander: Das Konsolenprogramm könnte keine Klasse aus dem Kern verwenden. Dafür braucht es eine **Projektreferenz**:
 
 ```bash
-dotnet add Notenverwaltung.Konsole reference Notenverwaltung.Fachkonzept
+dotnet add Adventure.Konsole reference Adventure.Kern
 ```
 
-In der `Notenverwaltung.Konsole.csproj` erscheint daraufhin ein neuer Eintrag:
+In der `Adventure.Konsole.csproj` erscheint daraufhin ein neuer Eintrag:
 
 ```xml
 <ItemGroup>
-  <ProjectReference Include="..\Notenverwaltung.Fachkonzept\Notenverwaltung.Fachkonzept.csproj" />
+  <ProjectReference Include="..\Adventure.Kern\Adventure.Kern.csproj" />
 </ItemGroup>
 ```
 
-Die Richtung ist wichtig: Die Konsole kennt das Fachkonzept, aber nicht umgekehrt. Genau dieses Muster – Fachlogik in einer Bibliothek, Oberfläche in einem eigenen Projekt, das darauf verweist – ist die Grundlage der Schichten-Architektur, mit der wir in der [Vorlesung 04](/lectures/04/04.md) den Geometrieeditor bauen. Dort findest du im Repository unter `examples/04_blazor/Geometrieeditor/` eine Solution mit vier Projekten, die genau so entstanden ist.
+Die Richtung ist wichtig: Die Konsole kennt den Kern, aber nicht umgekehrt. Im Lauf des Semesters kommen auf genau diesem Weg drei weitere Projekte dazu, und die `Adventure.slnx` listet am Ende alle fünf:
+
+```xml
+<Solution>
+  <Project Path="Adventure.Daten/Adventure.Daten.csproj" />
+  <Project Path="Adventure.Kern/Adventure.Kern.csproj" />
+  <Project Path="Adventure.Konsole/Adventure.Konsole.csproj" />
+  <Project Path="Adventure.Tests/Adventure.Tests.csproj" />
+  <Project Path="Adventure.Web/Adventure.Web.csproj" />
+</Solution>
+```
+
+Auch dort zeigen alle Projektreferenzen nach innen: `Adventure.Konsole`, `Adventure.Web` und `Adventure.Tests` verweisen auf `Adventure.Kern` und `Adventure.Daten`, `Adventure.Daten` verweist auf `Adventure.Kern` – und `Adventure.Kern` selbst verweist auf nichts. Fachlogik in einer Bibliothek, Oberfläche in einem eigenen Projekt, das darauf zeigt: Dieses Muster ist die Grundlage der Schichten-Architektur, die wir in der [Vorlesung 04](/lectures/04/04.md) systematisch anschauen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure).
 
 Referenziert Projekt A das Projekt B und B wiederum A, meldet `dotnet build` einen Zirkelbezug und bricht ab. Das ist kein Werkzeugfehler, sondern ein Designproblem: Zwei Projekte, die sich gegenseitig brauchen, gehören entweder zusammen oder eines von beiden hängt an der falschen Stelle.
 {: .notice--warning}
@@ -113,9 +125,9 @@ dotnet new list
 # Solution File         sln            ...         Solution
 ```
 
-Die Vorlage `nunit` werden wir in der [Vorlesung 12](/lectures/12/12.md) für Unit-Tests einsetzen; `blazor` in der Vorlesung 04. Alles, was du hier per CLI anlegst, kannst du anschließend ganz normal in Rider, Visual Studio oder VS Code öffnen.
+Die Vorlage `nunit` werden wir in der [Vorlesung 12](/lectures/12/12.md) für Unit-Tests einsetzen – daraus entsteht `Adventure.Tests`; aus `blazor` wird in der Vorlesung 04 das Projekt `Adventure.Web`. Alles, was du hier per CLI anlegst, kannst du anschließend ganz normal in Rider, Visual Studio oder VS Code öffnen.
 
-Übung: Lege die Solution `Notenverwaltung` wie oben an. Schreibe im Fachkonzept eine Klasse `Student` mit `Name` und einer `List<double>` für Noten sowie einer Methode `Durchschnitt()`. Erzeuge im Konsolenprojekt zwei Studierende, gib ihre Durchschnitte aus und baue alles mit einem einzigen `dotnet build` im Solution-Ordner. Was passiert, wenn du die Projektreferenz aus der `.csproj` wieder löschst?
+Übung: Lege die Solution `Adventure` mit `Adventure.Kern` und `Adventure.Konsole` wie oben an. Schreibe im Kern eine Klasse `Position` mit den Properties `X` und `Y` und einer Methode `Entfernung(Position andere)`, die den Abstand in Feldern liefert. Gib im Konsolenprojekt die Entfernung zwischen zwei Positionen aus und baue alles mit einem einzigen `dotnet build` im Solution-Ordner. Was passiert, wenn du die Projektreferenz aus der `.csproj` wieder löschst? Und was meldet der Compiler, wenn du umgekehrt versuchst, aus `Adventure.Kern` heraus eine Klasse aus `Adventure.Konsole` zu benutzen?
 {: .notice--info}
 
 ## Weitere Quellen

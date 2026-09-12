@@ -214,77 +214,116 @@ using (NativerZaehler zaehler = new NativerZaehler())
 
 ## Aufgabe 4 — Abstraktion
 
-Der Geometrieeditor soll Berechnungen künftig wahlweise mit einer nativen Bibliothek oder rein in C# durchführen – etwa weil auf dem Build-Server kein C-Compiler steht oder weil Unit-Tests nicht von einer `.dylib` abhängen sollen.
+In unserem Spiel Adventure entscheidet `Spielfeld.HatSichtlinie(von, nach)`, ob ein Verfolger `V` den Spieler überhaupt sehen kann: Die Methode läuft mit dem Bresenham-Algorithmus von Feld zu Feld und gibt `false` zurück, sobald eine Wand im Weg steht. Pro Runde wird sie für jeden Verfolger aufgerufen, bei großen Levels also oft – und sie besteht aus nichts als Ganzzahl-Arithmetik in einer engen Schleife. Genau die Sorte Code, die man gerne in C schreibt. Eine C-Bibliothek `sicht` soll die Prüfung übernehmen:
 
-Entwirf ein Interface `IMatheBibliothek` mit den Operationen `Addiere` und `Vektorlaenge` und zwei Implementierungen. Überlege:
+```c
+bool hat_sichtlinie(const unsigned char* blockiert, int breite, int hoehe,
+                    int x0, int y0, int x1, int y1);
+```
+
+Nur darf das Spiel dadurch nicht kaputtgehen, wenn die Bibliothek fehlt – auf dem Build-Server steht kein C-Compiler, und die Unit-Tests aus `Adventure.Tests` sollen nicht von einer `.dylib` abhängen. Entwirf ein Interface `ISichtpruefung` und zwei Implementierungen. Überlege:
 - Wer entscheidet, welche Implementierung benutzt wird – und wann?
-- Wie erfährt das Programm, dass die native Bibliothek fehlt, ohne dass die Entscheidung in jeder Berechnung neu getroffen wird?
+- Wie erfährt das Programm, dass die native Bibliothek fehlt, ohne dass die Entscheidung bei jeder Sichtprüfung neu getroffen wird?
 - Welches Entwurfsmuster aus Vorlesung 08 beschreibt die native Implementierung?
+- In welches Projekt gehört das Interface, in welches die native Variante?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Das Interface als Vertrag und zwei Implementierungen:**
+**Schritt 1 — Das Interface als Vertrag:**
 
-Der Rest des Programms hängt nur vom Interface ab – wie beim `IFigurSpeicher` im Geometrieeditor, hinter dem Arbeitsspeicher und JSON-Datei austauschbar waren. Die verwaltete Variante ist trivial und läuft überall. Die native Variante ist ein **Adapter**: Sie passt die statischen, klein geschriebenen C-Funktionen an die Instanzmethoden des Interfaces an.
+Der entscheidende Schritt ist die Wahl der Parameter. Eine native Funktion kann nichts mit `Spielfeld`, `Position` oder `Dictionary` anfangen – sie versteht nur Zahlen und Speicherblöcke. Also übergeben wir die Hindernisse als flaches Byte-Array: `blockiert[y * breite + x]` ist ungleich null, wenn dort etwas Undurchsichtiges steht. Dieselbe Signatur passt für beide Implementierungen:
 
 ```csharp
-interface IMatheBibliothek
+public interface ISichtpruefung
 {
-    int Addiere(int a, int b);
-    double Vektorlaenge(double x, double y);
-}
-
-class VerwalteteMatheBibliothek : IMatheBibliothek
-{
-    public int Addiere(int a, int b) => a + b;
-    public double Vektorlaenge(double x, double y) => Math.Sqrt(x * x + y * y);
-}
-
-class NativeMatheBibliothek : IMatheBibliothek
-{
-    private static partial class Nativ
-    {
-        [LibraryImport("mathe", EntryPoint = "addiere")]     public static partial int Addiere(int a, int b);
-        [LibraryImport("mathe", EntryPoint = "vektorlaenge")] public static partial double Vektorlaenge(double x, double y);
-    }
-
-    public int Addiere(int a, int b) => Nativ.Addiere(a, b);
-    public double Vektorlaenge(double x, double y) => Nativ.Vektorlaenge(x, y);
+    /// <summary>Ist die Sicht von (x0,y0) nach (x1,y1) frei? blockiert[y * breite + x] != 0 heißt Wand.</summary>
+    bool HatSichtlinie(byte[] blockiert, int breite, int hoehe, int x0, int y0, int x1, int y1);
 }
 ```
 
-**Schritt 2 — Die Entscheidung an einer Stelle:**
-
-Ob die native Bibliothek verfügbar ist, weiß man erst beim ersten Aufruf. Eine Fabrikmethode probiert es genau einmal aus und liefert danach das passende Objekt:
+Die verwaltete Variante ist der Bresenham-Algorithmus, den `Spielfeld` bisher selbst enthielt – nur liest er die Hindernisse jetzt aus dem Array statt aus dem `Dictionary`:
 
 ```csharp
-static class MatheBibliothekFabrik
+public class VerwalteteSichtpruefung : ISichtpruefung
 {
-    public static IMatheBibliothek Erzeugen()
+    public bool HatSichtlinie(byte[] blockiert, int breite, int hoehe, int x0, int y0, int x1, int y1)
+    {
+        int x = x0, y = y0;
+        int dx = Math.Abs(x1 - x), dy = -Math.Abs(y1 - y);
+        int sx = x < x1 ? 1 : -1, sy = y < y1 ? 1 : -1;
+        int fehler = dx + dy;
+
+        while (x != x1 || y != y1)
+        {
+            int f2 = 2 * fehler;
+            if (f2 >= dy) { fehler += dy; x += sx; }
+            if (f2 <= dx) { fehler += dx; y += sy; }
+
+            if (x == x1 && y == y1) break;              // das Zielfeld selbst blockiert nicht
+            if (blockiert[y * breite + x] != 0) return false;
+        }
+        return true;
+    }
+}
+```
+
+**Schritt 2 — Die native Variante als Adapter:**
+
+Die zweite Implementierung rechnet nichts selbst, sondern reicht die Werte an die C-Funktion weiter. Sie passt eine statische, klein geschriebene C-Funktion an eine Instanzmethode des Interfaces an – das ist genau das **Adapter**-Muster aus Vorlesung 08. `bool` als Rückgabewert braucht `[MarshalAs(UnmanagedType.I1)]`, sonst liest C# vier statt einem Byte; und weil `[LibraryImport]` ein Source-Generator ist, müssen alle umgebenden Typen `partial` sein:
+
+```csharp
+public partial class NativeSichtpruefung : ISichtpruefung
+{
+    [LibraryImport("sicht", EntryPoint = "hat_sichtlinie")]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private static partial bool HatSichtlinieNativ(byte[] blockiert, int breite, int hoehe,
+                                                  int x0, int y0, int x1, int y1);
+
+    public bool HatSichtlinie(byte[] blockiert, int breite, int hoehe, int x0, int y0, int x1, int y1)
+        => HatSichtlinieNativ(blockiert, breite, hoehe, x0, y0, x1, y1);
+}
+```
+
+**Schritt 3 — Die Entscheidung an genau einer Stelle:**
+
+Ob die Bibliothek vorhanden ist, weiß man erst beim ersten Aufruf: `DllNotFoundException` fliegt nicht beim Programmstart, sondern wenn die Deklaration zum ersten Mal benutzt wird. Eine Fabrikmethode provoziert diesen Moment einmal bewusst und liefert danach das passende Objekt:
+
+```csharp
+public static class SichtpruefungFabrik
+{
+    public static ISichtpruefung Erzeugen()
     {
         try
         {
-            NativeMatheBibliothek nativ = new NativeMatheBibliothek();
-            nativ.Addiere(0, 0);                 // Probeaufruf: lädt die Bibliothek
+            NativeSichtpruefung nativ = new NativeSichtpruefung();
+            nativ.HatSichtlinie(new byte[1], 1, 1, 0, 0, 0, 0);   // Probeaufruf: lädt die Bibliothek
             return nativ;
         }
         catch (DllNotFoundException)
         {
-            Console.WriteLine("Native Bibliothek fehlt – verwende C#-Implementierung.");
-            return new VerwalteteMatheBibliothek();
+            Console.WriteLine("Bibliothek 'sicht' nicht gefunden – verwende die C#-Implementierung.");
+            return new VerwalteteSichtpruefung();
         }
     }
 }
-
-IMatheBibliothek mathe = MatheBibliothekFabrik.Erzeugen();
-Console.WriteLine(mathe.Vektorlaenge(3, 4)); // 5 – egal welche Implementierung
 ```
+
+Das `Spielfeld` bekommt die Prüfung im Konstruktor gereicht und behält seine bisherige, bequeme Signatur mit `Position` – die Umrechnung auf das flache Array bleibt sein Geheimnis:
+
+```csharp
+public bool HatSichtlinie(Position von, Position nach) =>
+    sicht.HatSichtlinie(Hinderniskarte(), Breite, Hoehe, von.X, von.Y, nach.X, nach.Y);
+```
+
+`Verfolger.NaechsterZug` ruft weiterhin `feld.HatSichtlinie(Position, ziel)` auf und merkt von der ganzen Umstellung nichts.
 
 **Zentrale Designentscheidungen:**
 
-- **Entscheidung beim Start, nicht bei jedem Aufruf:** Der Probeaufruf löst das Laden aus und fängt die `DllNotFoundException` genau einmal. Danach gibt es im Programm keine `try`/`catch`-Blöcke um Rechenoperationen mehr.
-- **Tests bekommen die verwaltete Variante:** Unit-Tests für Klassen, die `IMatheBibliothek` benutzen, übergeben einfach `new VerwalteteMatheBibliothek()` – kein Compiler, keine Plattformabhängigkeit.
-- **Das Interface gehört ins Fachkonzept, der Adapter in eine äußere Schicht:** Wie bei `IFigurSpeicher` und `JsonFigurSpeicher` zeigt die Abhängigkeit nach innen. Die native Bibliothek ist ein Implementierungsdetail, das der Kern nicht kennen muss.
+- **Entscheidung beim Start, nicht bei jedem Aufruf:** Der Probeaufruf löst das Laden aus und fängt die `DllNotFoundException` genau einmal. Danach steht im Spiel kein einziges `try`/`catch` mehr um eine Sichtprüfung.
+- **Die Schnittstelle wird von der nativen Seite her entworfen:** Nur Zahlen und ein Byte-Array gehen über die Grenze. Wer das Interface mit `Position` und `Dictionary` formuliert, kann die native Variante gar nicht mehr anschließen.
+- **Tests bekommen die verwaltete Variante:** `SpielfeldTests` erzeugt das Spielfeld mit `new VerwalteteSichtpruefung()` – kein Compiler, keine Plattformabhängigkeit, überall dasselbe Ergebnis.
+- **Das Interface gehört nach `Adventure.Kern`, der Adapter in eine äußere Schicht:** Wie bei `ILevelQuelle` und `JsonSpielstandSpeicher` zeigt die Abhängigkeit nach innen. Die native Bibliothek ist ein Implementierungsdetail, das der Kern nicht kennen muss.
+- **Erst messen, dann optimieren:** Für jede Prüfung eine `Hinderniskarte` zu bauen und über die Grenze zu reichen, kann mehr kosten als der Algorithmus selbst. Die native Variante lohnt sich nur, wenn die Karte einmal pro Runde entsteht – und wenn eine Messung den Gewinn wirklich zeigt.
 
 </details>
