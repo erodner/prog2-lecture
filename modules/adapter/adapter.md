@@ -204,4 +204,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 
 - [`StreamReader`-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.io.streamreader)
 - [`Stream`-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.io.stream)
-- [Adapter – Refactoring.Guru](https://refactoring.guru/de/design-patterns/adapter/csharp/example)
+- [Adapter – Refactoring.Guru](https://refactoring.guru/design-patterns/adapter) – Problem, Rollen und Diagramm des Musters, mit Beispielen aus der Praxis.
+- [Adapter in C# – Refactoring.Guru](https://refactoring.guru/design-patterns/adapter/csharp/example) – ein vollständiges, lauffähiges C#-Beispiel zum Nachbauen.

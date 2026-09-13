@@ -59,7 +59,7 @@ Die statische Klasse `JsonSerializer` erledigt beide Richtungen mit je einem Auf
 ```csharp
 Spielstand stand = feld.Erfassen("kerker", level);
 string json = JsonSerializer.Serialize(stand);
-// {"LevelName":"kerker","Runde":31,"SpielerPosition":{"X":15,"Y":7}, ... }
+// {"LevelName":"kerker","Runde":33,"SpielerPosition":{"X":15,"Y":5}, ... }
 
 Spielstand? zurueck = JsonSerializer.Deserialize<Spielstand>(json);
 Console.WriteLine(zurueck?.Punkte);   // 100
@@ -72,10 +72,10 @@ Die einzeilige Ausgabe ist für Maschinen gedacht. Für Dateien, die Menschen ö
 ```json
 {
   "LevelName": "kerker",
-  "Runde": 31,
+  "Runde": 33,
   "SpielerPosition": {
     "X": 15,
-    "Y": 7
+    "Y": 5
   },
   "Lebenspunkte": 2,
   "Punkte": 100,
@@ -100,18 +100,18 @@ Die einzeilige Ausgabe ist für Maschinen gedacht. Für Dateien, die Menschen ö
   ],
   "GegnerPositionen": [
     {
-      "X": 13,
+      "X": 8,
       "Y": 2
     },
     {
-      "X": 11,
-      "Y": 5
+      "X": 15,
+      "Y": 4
     }
   ]
 }
 ```
 
-Man kann die Datei lesen wie einen Bericht: Runde 31, der Held steht auf (15, 7) mit zwei von drei Lebenspunkten und 100 Punkten, sein Inventar ist leer (der Schlüssel wurde für die Tür verbraucht und liegt deshalb auch nicht mehr auf (3, 3)), die Tür auf (7, 4) ist offen, die Truhe auf (15, 6) geplündert, und die beiden Gegner stehen auf (13, 2) und (11, 5).
+Man kann die Datei lesen wie einen Bericht: Runde 33, der Held steht auf (15, 5) mit zwei von drei Lebenspunkten und 100 Punkten, sein Inventar ist leer (der Schlüssel wurde für die Tür verbraucht und liegt deshalb auch nicht mehr auf (3, 3)), die Tür auf (7, 4) ist offen, die Truhe auf (15, 6) geplündert, und die beiden Gegner – Wache und Verfolger, in der Reihenfolge, in der sie in der Karte stehen – sind inzwischen bei (8, 2) und (15, 4) angekommen. Der Verfolger steht direkt über dem Helden: Er hat ihn im selben Zug erwischt, in dem die Truhe aufging.
 
 Interessant ist, was mit `Position` passiert. Der Typ ist ein `readonly record struct` mit den Properties `X` und `Y` – und genau die schreibt der Serialisierer als verschachteltes JSON-Objekt. Beim Laden findet er den Konstruktor `Position(int X, int Y)`, ordnet jeden Parameter anhand seines **Namens** einer Property zu (Groß-/Kleinschreibung spielt keine Rolle) und ruft ihn auf. Dass Positionen dadurch pro Eintrag vier Zeilen brauchen, ist der Preis der Lesbarkeit; ein eigener Konverter könnte daraus `"15,7"` machen.
 
@@ -168,7 +168,10 @@ public class JsonSpielstandSpeicher : ISpielstandSpeicher
     private static readonly JsonSerializerOptions optionen = new() { WriteIndented = true };
     private readonly string pfad;
 
-    public JsonSpielstandSpeicher(string pfad) => this.pfad = pfad;
+    public JsonSpielstandSpeicher(string pfad)
+    {
+        this.pfad = pfad;
+    }
 
     public void Speichern(Spielstand spielstand)
     {
@@ -213,3 +216,4 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Serialisieren von Eigenschaften abgeleiteter Klassen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/serialization/system-text-json/polymorphism)
 - [Unveränderliche Typen und Konstruktoren – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/serialization/system-text-json/immutability)
 - [Anpassen von Eigenschaftennamen und -werten – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/serialization/system-text-json/customize-properties)
+- [JSON – die komplette Syntax auf einer Seite (deutsch)](https://www.json.org/json-de.html) – die Syntaxdiagramme zeigen in einer Minute, dass JSON wirklich nur aus fünf Bausteinen besteht.

@@ -162,7 +162,7 @@ Diese Schreibweise mit dem `T` schauen wir uns in Vorlesung 05 genauer an; hier 
 
 Die .NET-Klassenbibliothek ist voll von Interfaces, und du hast einige davon längst benutzt, ohne es zu merken. `foreach` funktioniert über jede Klasse, die `IEnumerable` implementiert – deshalb kann man Arrays, Listen und auch unser `Inventar<T>` mit derselben Schleife durchlaufen. `IComparable` beschreibt, dass sich Objekte vergleichen lassen, was `Sort()` für eigene Klassen möglich macht. Und `IDisposable` kennzeichnet Objekte, die Ressourcen wie Dateien freigeben müssen. Alle drei tauchen in späteren Vorlesungen im Detail auf; hier reicht die Erkenntnis: Ein Interface ist die Art, wie .NET „dieses Objekt kann X“ ausdrückt.
 
-Übung: Schreibe eine Klasse `Hebel : StatischesObjekt, IInteragierbar`, die beim Interagieren zwischen „umgelegt“ und „zurückgestellt“ wechselt, das Symbol entsprechend `'-'` (umgelegt) oder `'|'` (zurückgestellt) liefert und nicht passierbar ist. Teste sie, indem du sie mit `feld.Hinzufuegen(new Hebel(new Position(3, 4)))` ins Spielfeld setzt und davorläufst. Welche Zeile in `Spielfeld.SpielerZieht` musstest du dafür ändern?
+Übung: Schreibe eine Klasse `Hebel : StatischesObjekt, IInteragierbar`, die beim Interagieren zwischen „umgelegt“ und „zurückgestellt“ wechselt, das Symbol entsprechend `'-'` (umgelegt) oder `'|'` (zurückgestellt) liefert und nicht passierbar ist. Teste sie, indem du sie mit `feld.Hinzufuegen(new Hebel(new Position(3, 4)))` ins Spielfeld setzt und davorläufst. Welche Zeile in `Spielfeld.SpielerZieht` sorgt dafür, dass der Hebel ohne eine einzige Änderung am Spielfeld funktioniert? Und was passiert, wenn du `IstPassierbar` versehentlich auf `true` setzt?
 {: .notice--info}
 
 ## Weitere Quellen
@@ -170,3 +170,5 @@ Die .NET-Klassenbibliothek ist voll von Interfaces, und du hast einige davon lä
 - [Schnittstellen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/interfaces)
 - [interface (C#-Referenz) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/interface)
 - [Mustervergleich mit `is` – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/functional/pattern-matching)
+- [Roguelike – Wikipedia](https://de.wikipedia.org/wiki/Roguelike) – das Genre unseres Dungeons; die dort beschriebenen Spielelemente sind fast alle „Fähigkeiten“, die sich als Interface modellieren lassen.
+- [Entwurfsmuster in C# – Refactoring Guru](https://refactoring.guru/design-patterns/csharp) – Katalog mit lauffähigen Beispielen; fast jedes Muster dort beginnt mit einem Interface als Vertrag.

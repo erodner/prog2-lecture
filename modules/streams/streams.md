@@ -147,5 +147,6 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 
 - [Stream-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.io.stream)
 - [FileStream-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.io.filestream)
-- [Vorgehensweise: Lesen aus einer Textdatei – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/file-system/how-to-read-from-a-text-file)
+- [Vorgehensweise: Lesen von Text aus einer Datei – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/io/how-to-read-text-from-a-file)
 - [Zeichencodierung in .NET – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/base-types/character-encoding-introduction)
+- [.NET Fiddle](https://dotnetfiddle.net/) – die Puffer-Schleife und `MemoryStream` im Browser ausprobieren, ohne ein Projekt anzulegen.

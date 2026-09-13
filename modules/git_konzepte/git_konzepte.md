@@ -48,8 +48,10 @@ Der Staging-Bereich irritiert Einsteiger am meisten: Warum nicht einfach alles d
 Im Ordner `.git/` speichert Git alles in einer einfachen Objektdatenbank mit drei Objektarten. Ein **Blob** ist der Inhalt einer Datei, ohne Namen. Ein **Tree** ist ein Verzeichnis: eine Liste von Namen, die auf Blobs (Dateien) oder weitere Trees (Unterordner) zeigen. Ein **Commit** zeigt auf genau einen Tree – den Wurzelordner des Projekts zu diesem Zeitpunkt – und zusätzlich auf seinen Vorgänger-Commit:
 
 ```
-commit a3ff341  "Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen"
-  parent  ──► commit b946807  "Vorlesung 01: Spielobjekt, Wand und Spieler"
+commit a3ff341  "Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen
+                  – spielbar in der Konsole"
+  parent  ──► commit b946807  "Vorlesung 01: Spielobjekt, Wand und Spieler
+                               – ein Raum in der Konsole"
   tree    ──► tree 3c8e...
                 ├── .gitignore              ──► blob 9f01...
                 ├── Adventure.Kern/         ──► tree 51aa...
@@ -90,4 +92,6 @@ Weil jeder Commit auf seinen Vorgänger zeigt, bildet die Historie eine Kette �
 
 - [Was ist Versionsverwaltung? – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Erste-Schritte-Was-ist-Versionsverwaltung%3F)
 - [Was ist Git? – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Erste-Schritte-Was-ist-Git%3F)
-- [Git-Objekte – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Internals-Git-Objekte)
+- [Git-Objekte – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Interna-Git-Objekte)
+- [Visualizing Git](https://git-school.github.io/visualizing-git/) – ein Spielplatz im Browser: Du tippst `git commit`, `git branch` oder `git merge` ein und siehst den Graphen live wachsen.
+- [Git Objects – Pro Git (englisch)](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) – die englische Fassung des Interna-Kapitels; sie ist ausführlicher und enthält die Beispiele mit `git hash-object` und `git cat-file`.

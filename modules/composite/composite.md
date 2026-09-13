@@ -180,6 +180,7 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 
 ## Weitere Quellen
 
-- [Composite – Refactoring.Guru](https://refactoring.guru/de/design-patterns/composite/csharp/example)
+- [Composite – Refactoring.Guru](https://refactoring.guru/design-patterns/composite) – anschauliche Diagramme des Baums und eine klare Trennung von Blatt und Kompositum.
+- [Composite in C# – Refactoring.Guru](https://refactoring.guru/design-patterns/composite/csharp/example) – ein vollständiges C#-Beispiel, das sich direkt mit unserem `IBauteil` vergleichen lässt.
 - [Razor-Komponenten in ASP.NET Core – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/)
 - [Document Object Model (DOM) – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/API/Document_Object_Model)

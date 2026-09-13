@@ -135,11 +135,17 @@ dotnet run
 # 14:23:50.4885 INFO  Programm beendet.
 
 cat logs/app.log
+# 2026-09-10 14:23:50.4717 INFO  NLogDemo.Program Programm gestartet.
+# 2026-09-10 14:23:50.4798 WARN  NLogDemo.Program Konfigurationsdatei 'einstellungen.json' nicht gefunden, nutze Standardwerte.
 # 2026-09-10 14:23:50.4809 ERROR NLogDemo.Program Zugriff auf einen ungültigen Messwert. System.IndexOutOfRangeException: Index was outside the bounds of the array.
 #    at Program.<Main>$(String[] args) in /Users/anna/NLogDemo/Program.cs:line 14
 # 2026-09-10 14:23:50.4868 DEBUG NLogDemo.Program Verarbeite Datensatz 1 von 3
-# ...
+# 2026-09-10 14:23:50.4885 DEBUG NLogDemo.Program Verarbeite Datensatz 2 von 3
+# 2026-09-10 14:23:50.4885 DEBUG NLogDemo.Program Verarbeite Datensatz 3 von 3
+# 2026-09-10 14:23:50.4885 INFO  NLogDemo.Program Programm beendet.
 ```
+
+Die Datei bekommt acht Einträge, die Konsole vier: Die drei `Debug`-Meldungen erscheinen nur dort, wo die Regel `minlevel="Debug"` gilt, und der Logger-Name `NLogDemo.Program` steht nur im Dateilayout. Derselbe Code, zwei Detailstufen – entschieden allein in der `nlog.config`.
 
 Am Ende des Programms steht noch `LogManager.Shutdown();`. NLog puffert Dateiausgaben aus Geschwindigkeitsgründen; der Aufruf leert den Puffer, damit die letzten Zeilen sicher in der Datei landen, bevor der Prozess endet.
 
@@ -159,3 +165,5 @@ NLog ist nicht die einzige Wahl. **Serilog** ist ähnlich verbreitet und setzt k
 - [NLog-Konfigurationsdatei – NLog-Wiki](https://github.com/NLog/NLog/wiki/Configuration-file)
 - [Protokollierung in .NET – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/extensions/logging)
 - [Logging-Anbieter in .NET – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/extensions/logging-providers)
+- [Semantic Versioning 2.0.0 (deutsch)](https://semver.org/lang/de/) – erklärt, was die drei Zahlen in `Version="6.2.0"` versprechen und woran du erkennst, dass ein Update dir den Code zerlegen darf.
+- [Dependency Injection in Blazor – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/fundamentals/dependency-injection) – der Weg, auf dem ein `ILogger<T>` in eine Razor-Komponente kommt, wenn du die Abstraktion aus dem Abschnitt „Alternativen“ wirklich benutzt.

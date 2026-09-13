@@ -89,3 +89,4 @@ Mit `git show 3e7f0c2` sieht man dann die vollständige Commit-Nachricht und den
 - [Git-Fenster in Visual Studio (Git-Änderungen, Git-Repository) – Microsoft Learn](https://learn.microsoft.com/de-de/visualstudio/version-control/git-browse-repository)
 - [Version Control in VS Code – Visual Studio Code Docs](https://code.visualstudio.com/docs/sourcecontrol/overview)
 - [Git in JetBrains Rider – JetBrains-Dokumentation](https://www.jetbrains.com/help/rider/Using_Git_Integration.html)
+- [Visualizing Git](https://git-school.github.io/visualizing-git/) – zeigt denselben Graphen wie das Verlaufsfenster deiner IDE, nur baust du ihn hier selbst mit Befehlen auf; gut, um beide Ansichten übereinanderzulegen.

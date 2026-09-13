@@ -174,3 +174,5 @@ Im Zweifel gilt: **Alles, was `IDisposable` implementiert, gehört in ein `using
 - [`IDisposable`-Schnittstelle – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.idisposable)
 - [`using`-Anweisung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/statements/using)
 - [Implementieren einer Dispose-Methode – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/garbage-collection/implementing-dispose)
+- [SharpLab](https://sharplab.io/) – zeigt live, in welches `try`/`finally` der Compiler ein `using` übersetzt (Ansicht „C#“).
+- [Grundlagen der Garbage Collection – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/garbage-collection/fundamentals) – warum der GC nicht-verwaltete Ressourcen nicht rechtzeitig freigibt.

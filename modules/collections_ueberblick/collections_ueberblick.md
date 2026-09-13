@@ -158,3 +158,5 @@ Hätten wir `List<Gegenstand>` als Parametertyp gewählt, müsste das Inventar e
 - [Collections und Datenstrukturen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/collections/)
 - [Auswählen einer Collection-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/collections/selecting-a-collection-class)
 - [System.Collections.Generic – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.collections.generic)
+- [Big-O Cheat Sheet](https://www.bigocheatsheet.com/) – dieselbe Entscheidungstabelle noch einmal, nur nach Datenstruktur statt nach .NET-Klasse sortiert
+- [Verkettete Listen visualisiert – VisuAlgo](https://visualgo.net/en/list) – zeigt, warum `LinkedList<T>` beim Einfügen gewinnt und beim Indexzugriff verliert

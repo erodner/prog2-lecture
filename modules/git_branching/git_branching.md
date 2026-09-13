@@ -136,10 +136,12 @@ Das Muster aus diesem Modul ist der in Teams verbreitetste Arbeitsablauf:
 2. Für jede Aufgabe entsteht ein Branch mit sprechendem Namen: `feature/bogenschuetze`, `bugfix/wache-laeuft-durch-wand`.
 3. Der Branch wird regelmäßig gepusht (`git push -u origin feature/...`) – als Sicherung und damit andere ihn sehen.
 4. Ist die Arbeit fertig, wird sie nicht lokal gemergt, sondern als **Merge Request** (GitLab) bzw. **Pull Request** (GitHub) auf dem Server eröffnet.
-5. Eine zweite Person liest den Diff, kommentiert einzelne Zeilen, bittet um Änderungen oder stimmt zu. Automatische Tests laufen (dazu mehr in [Vorlesung 12](/lectures/12/12.md)).
+5. Eine zweite Person liest den Diff, kommentiert einzelne Zeilen, bittet um Änderungen oder stimmt zu. Gleichzeitig baut der Server den Branch und lässt die Tests laufen (dazu mehr in [Vorlesung 12](/lectures/12/12.md)).
 6. Der Merge Request wird über die Weboberfläche gemergt, der Branch dabei gelöscht.
 
 Der Merge Request ist dabei kein Git-Befehl, sondern eine Funktion der Plattform: eine Diskussionsseite um einen geplanten Merge herum. Der Review-Schritt ist der eigentliche Gewinn – vier Augen sehen mehr als zwei, und man erklärt seine Änderung einmal in Worten, bevor sie Teil des Projekts wird.
+
+Schritt 5 läuft auf den Plattformen automatisch ab: Eine kleine Konfigurationsdatei im Repository beschreibt, was nach jedem Push passieren soll, und der Server erledigt es. Im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) ist das die Datei `.github/workflows/dotnet.yml` – sie führt bei jedem Push und bei jedem Pull Request `dotnet build` und `dotnet test` aus, sodass ein Branch, der nicht kompiliert, schon vor dem Review auffällt. Bei GitLab heißt dieselbe Datei `.gitlab-ci.yml`. Das Verfahren nennt sich *Continuous Integration*; die Tests dahinter schreiben wir in [Vorlesung 12](/lectures/12/12.md).
 
 Übung: Lege in deinem Repository einen Branch `feature/gegner-zaehlen` an, ergänze im `Spielfeld` eine Property `AnzahlGegner` und committe. Wechsle zu `main`, ändere dort die `README.md`, committe, und merge das Feature. Sieh dir das Ergebnis mit `git log --oneline --graph --all` an. Wiederhole das Ganze so, dass ein Fast-Forward entsteht – was musst du anders machen?
 {: .notice--info}
@@ -149,3 +151,5 @@ Der Merge Request ist dabei kein Git-Befehl, sondern eine Funktion der Plattform
 - [Branches auf einen Blick – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Branching-Branches-auf-einen-Blick)
 - [Einfaches Branching und Merging – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Branching-Einfaches-Branching-und-Merging)
 - [Merge requests – GitLab-Dokumentation](https://docs.gitlab.com/user/project/merge_requests/)
+- [Learn Git Branching (deutsch)](https://learngitbranching.js.org/?locale=de_DE) – interaktive Levels, in denen du Branches anlegst und mergst und der Graph sich vor deinen Augen umbaut; die beste Übung zu diesem Modul.
+- [GitHub Actions – Dokumentation (deutsch)](https://docs.github.com/de/actions) – zeigt, wie aus einer YAML-Datei im Repository die automatischen Builds und Tests werden, die an einem Pull Request hängen.

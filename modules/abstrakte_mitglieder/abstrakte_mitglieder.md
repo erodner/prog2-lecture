@@ -40,7 +40,7 @@ Beide Properties der Tür hängen vom selben Feld ab – eine offene Tür sieht 
 
 ## Abstrakt und konkret gemischt
 
-Der eigentliche Reiz abstrakter Klassen liegt darin, dass sie beides enthalten können: Versprechen *und* fertigen Code. Der schönste Fall in unserem Spiel ist `BeweglichesObjekt.Bewegen` – eine vollständig implementierte Methode, die über Umwege von einem abstrakten Mitglied abhängt.
+Der eigentliche Reiz abstrakter Klassen liegt darin, dass sie beides enthalten können: Versprechen *und* fertigen Code. Der schönste Fall in unserem Spiel ist `BeweglichesObjekt.Bewegen`, das wir eben nur kurz gesehen haben – eine vollständig implementierte Methode, die über Umwege von einem abstrakten Mitglied abhängt. Schauen wir genauer hin:
 
 ```csharp
 public abstract class BeweglichesObjekt : Spielobjekt
@@ -191,3 +191,5 @@ Ein häufiger Fehler ist, ein Mitglied `virtual` mit einem sinnlosen Rumpf zu ma
 - [Abstrakte und versiegelte Klassen und Klassenmember – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/abstract-and-sealed-classes-and-class-members)
 - [virtual (C#-Referenz) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/virtual)
 - [Eigenschaften – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/properties)
+- [Update Method – Game Programming Patterns](https://gameprogrammingpatterns.com/update-method.html) – genau unser `NaechsterZug`: jede Spielfigur bekommt pro Runde einen Aufruf und entscheidet selbst, was sie tut.
+- [sharplab.io](https://sharplab.io/) – zeigt, was der Compiler aus `abstract` und `override` macht: in der Ansicht *IL* sieht man die Methodentabelle, über die der polymorphe Aufruf läuft.

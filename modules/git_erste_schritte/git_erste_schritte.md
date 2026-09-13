@@ -146,14 +146,15 @@ git restore Adventure.Kern/Gegner.cs            # Änderung komplett verwerfen
 
 ## Stände benennen: Tags
 
-Ein Hash wie `a1f9c3e` ist eindeutig, aber nichts, was man sich merkt. Deshalb kann man einzelne Commits mit einem **Tag** benennen – einem festen Namen für genau diese Momentaufnahme. Anders als ein Branch wandert ein Tag nie weiter; er markiert dauerhaft einen Stand, typischerweise eine veröffentlichte Version. Das vollständige Adventure findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure), und dort ist jeder Vorlesungsstand getaggt. Wenn du es dir mit `git clone https://github.com/erodner/prog2-adventure.git` holst (mehr dazu in [Remote-Repositorys](/modules/git_remote/git_remote.md)), findest du fünf Tags und pro Vorlesung einen Commit:
+Ein Hash wie `a1f9c3e` ist eindeutig, aber nichts, was man sich merkt. Deshalb kann man einzelne Commits mit einem **Tag** benennen – einem festen Namen für genau diese Momentaufnahme. Anders als ein Branch wandert ein Tag nie weiter; er markiert dauerhaft einen Stand, typischerweise eine veröffentlichte Version. Das vollständige Adventure findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure), und dort ist jeder Vorlesungsstand getaggt. Wenn du es dir mit `git clone https://github.com/erodner/prog2-adventure.git` holst (mehr dazu in [Remote-Repositorys](/modules/git_remote/git_remote.md)), findest du im Wesentlichen einen Commit pro Vorlesung und fünf Tags, die auf diese Stände zeigen:
 
 ```bash
 git log --oneline
+# c5f7d94 CI: dotnet build und test bei jedem Push
 # e784378 Vorlesung 12: NUnit-Tests für Spielfeld, Datenhaltung und Inventar
 # 6cdc213 Vorlesung 09: Level aus Textdateien, Spielstände als JSON, Level per HTTP
 # f15b001 Vorlesung 04: Blazor-Oberfläche und Schichten (Web → Kern ← Daten)
-# a3ff341 Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen
+# a3ff341 Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen – spielbar in der Konsole
 # b946807 Vorlesung 01: Spielobjekt, Wand und Spieler – ein Raum in der Konsole
 git tag
 # v01-vererbung
@@ -163,6 +164,8 @@ git tag
 # v12-tests
 ```
 
+Der oberste Commit fällt aus der Reihe: Er gehört zu keiner Vorlesung, sondern richtet eine automatische Prüfung ein, die bei jedem Push `dotnet build` und `dotnet test` laufen lässt (siehe [Branches und Merges](/modules/git_branching/git_branching.md)). `v12-tests` zeigt auf genau diesen obersten Commit und damit immer auf den aktuellen Endstand: Ein Tag bewegt sich nie von selbst, wohl aber, wenn man ihn mit `git tag -f` ausdrücklich neu setzt.
+
 Mit `git checkout <tag>` legt Git die Arbeitskopie auf diesen Stand zurück – alle Dateien im Ordner sehen aus wie damals. Das ist genau der Weg, um den Code einer älteren Vorlesung nachzulesen:
 
 ```bash
@@ -170,7 +173,7 @@ git checkout v01-vererbung
 # Note: switching to 'v01-vererbung'.
 # You are in 'detached HEAD' state. ...
 ls Adventure.Kern
-# Position.cs  Richtung.cs  Spieler.cs  Spielfeld.cs  Spielobjekt.cs  Wand.cs
+# Adventure.Kern.csproj  Position.cs  Richtung.cs  Spieler.cs  Spielfeld.cs  Spielobjekt.cs  Wand.cs
 git switch -                              # zurück zum vorherigen Branch
 # Switched to branch 'main'
 ```
@@ -189,3 +192,4 @@ Ein Commit sollte **eine** zusammengehörige Änderung enthalten: ein Bugfix, ei
 - [Grundlagen – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Grundlagen-Ein-Git-Repository-anlegen)
 - [Änderungen nachverfolgen und im Repository speichern – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Grundlagen-%C3%84nderungen-nachverfolgen-und-im-Repository-speichern)
 - [dotnet new gitignore – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/tools/dotnet-new-sdk-templates#gitignore)
+- [Oh Shit, Git!?! (deutsch)](https://ohshitgit.com/de) – kurze Rezeptsammlung für die Momente, in denen etwas schiefgegangen ist: falsche Commit-Nachricht, falscher Branch, versehentlich verworfene Änderung.

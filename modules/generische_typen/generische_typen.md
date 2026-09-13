@@ -222,3 +222,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Generische Klassen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/generics/generic-classes)
 - [Stack&lt;T&gt;-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.collections.generic.stack-1)
 - [Generische Sammlungen in .NET – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/generics/collections)
+- [Listen und Stapel visualisiert – VisuAlgo](https://visualgo.net/en/list) – zeigt Schritt für Schritt, was `Push`, `Pop` und das Wachsen eines Arrays tatsächlich im Speicher anstellen
+- [Generics – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/generics) – der kompakte Einstiegsartikel mit allen Sprachdetails auf einer Seite

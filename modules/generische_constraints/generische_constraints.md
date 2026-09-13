@@ -220,3 +220,6 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [IComparable&lt;T&gt;-Schnittstelle – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.icomparable-1)
 - [default-Wert-Ausdrücke – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/operators/default)
 - [Generische Schnittstellen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/generics/generic-interfaces)
+- [Schnittstellen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/interfaces) – Auffrischung zu Interfaces, die hier als Constraint auftreten
+- [.NET Fiddle](https://dotnetfiddle.net/) – die Fehlermeldungen CS0311 und CS0315 in zwei Minuten selbst erzeugen, statt sie nur zu lesen
+- [SharpLab](https://sharplab.io/) – zeigt neben deinem C#-Code, was der Compiler aus einer Methode mit `where T : ISammelbar` macht: der Constraint steht danach wirklich im erzeugten Code

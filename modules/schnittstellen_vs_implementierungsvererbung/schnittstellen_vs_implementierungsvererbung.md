@@ -104,3 +104,5 @@ Dieses Prinzip „Komposition vor Vererbung“ bevorzugen viele Entwickler, weil
 - [Vererbung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/object-oriented/inheritance)
 - [Schnittstellen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/interfaces)
 - [Objektorientierte Programmierung in C# – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/tutorials/oop)
+- [Liskovsches Substitutionsprinzip – Wikipedia](https://de.wikipedia.org/wiki/Liskovsches_Substitutionsprinzip) – die Regel hinter „ist ein“: eine Unterklasse muss überall dort einsetzbar sein, wo die Basisklasse erwartet wird – sonst war Vererbung die falsche Wahl.
+- [Game Programming Patterns](https://gameprogrammingpatterns.com/) – freies Buch über Spielarchitektur; das Kapitel *Components* erzählt, warum tiefe Vererbungsbäume in Spielen regelmäßig scheitern und Komposition sie ersetzt.

@@ -156,3 +156,6 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Object.GetHashCode – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.object.gethashcode)
 - [HashCode.Combine – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.hashcode.combine)
 - [Gleichheitsvergleiche – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/statements-expressions-operators/equality-comparisons)
+- [Hashtabellen interaktiv – VisuAlgo](https://visualgo.net/en/hashtable) – Schlüssel einfügen, Kollisionen entstehen sehen und die Verkettung im Bucket beobachten
+- [Records – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/records) – warum `record` und `record struct` `Equals` und `GetHashCode` gleich mitliefern
+- [Big-O Cheat Sheet](https://www.bigocheatsheet.com/) – die Zeile „Hash Table“ zeigt schwarz auf weiß, was ein schlechter Hashcode kostet: aus O(1) im Mittel wird O(n) im schlechtesten Fall

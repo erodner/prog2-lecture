@@ -30,7 +30,7 @@ public Spielobjekt? ObjektAn(Position position)
 
 Das Muster mit `foreach` und vorzeitigem Verlassen der Schleife kennen wir aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/arrays_schleifen/arrays_schleifen/); `List<T>.Contains` und `IndexOf` arbeiten intern genauso. Der Code hat einen großen Vorteil: Er setzt nichts voraus – keine Sortierung, keinen Hashcode. Und er hat einen großen Nachteil: Steht das gesuchte Objekt hinten oder gar nicht in der Liste, wird die gesamte Liste durchlaufen. Bei n Objekten sind das im schlimmsten Fall n Vergleiche.
 
-Für ein Spielfeld ist das teurer, als es klingt. Das Level „Kerker“ ist 20 × 9 Felder groß und enthält rund 60 Objekte. `AlsText()` fragt für **jedes** der 180 Felder nach, was dort liegt – macht 180 × 60 ≈ 10.800 Positionsvergleiche für ein einziges gezeichnetes Bild. Dazu kommen `IstFrei` vor jedem Schritt und `HatSichtlinie` für jeden Verfolger, ebenfalls Feld für Feld. Bei einer großen Karte fängt das Spiel an zu ruckeln, ohne dass irgendetwas „falsch“ wäre.
+Für ein Spielfeld ist das teurer, als es klingt. Das Level „Kerker“ ist 20 × 9 Felder groß und enthält 67 Objekte – allein 61 davon sind Wände und die Tür. `AlsText()` fragt für **jedes** der 180 Felder nach, was dort liegt – macht bis zu 180 × 67 ≈ 12.000 Positionsvergleiche für ein einziges gezeichnetes Bild. Dazu kommen `IstFrei` vor jedem Schritt und `HatSichtlinie` für jeden Verfolger, ebenfalls Feld für Feld. Bei einer großen Karte fängt das Spiel an zu ruckeln, ohne dass irgendetwas „falsch“ wäre.
 
 ## Nachschlagen statt suchen
 
@@ -175,3 +175,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Array.BinarySearch – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.array.binarysearch)
 - [Array.Sort – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.array.sort) (Abschnitt „Hinweise“ beschreibt Introsort)
 - [List<T>.BinarySearch – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.collections.generic.list-1.binarysearch)
+- [Sortieralgorithmen animiert – VisuAlgo](https://visualgo.net/en/sorting) – Selection Sort, Quicksort und Heapsort nebeneinander laufen lassen und die Vergleiche mitzählen
+- [Big-O Cheat Sheet](https://www.bigocheatsheet.com/) – eine Tabelle mit dem Aufwand aller gängigen Such-, Sortier- und Collection-Operationen, inklusive Farbskala

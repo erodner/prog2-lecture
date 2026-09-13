@@ -111,3 +111,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Komponententests in .NET – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/testing/)
 - [Bewährte Methoden für Komponententests – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/testing/unit-testing-best-practices)
 - [NUnit-Dokumentation](https://docs.nunit.org/)
+- [TestPyramid – Martin Fowler](https://martinfowler.com/bliki/TestPyramid.html) – der Artikel, aus dem die Pyramide oben stammt, in zwei Bildschirmseiten.
+- [Mocks Aren't Stubs – Martin Fowler](https://martinfowler.com/articles/mocksArentStubs.html) – klärt die Begriffe rund um Test-Doubles (Fake, Stub, Spy, Mock), die im Alltag ständig durcheinandergehen.

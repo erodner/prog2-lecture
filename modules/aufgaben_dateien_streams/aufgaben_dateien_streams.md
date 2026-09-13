@@ -157,8 +157,12 @@ Für das Adventure soll ein grafischer **Level-Editor** entstehen. Das bisherige
   "karte": [
     "####################",
     "#@.....#...........#",
-    "#..k...#.....W.....#",
-    "#......D..........E#",
+    "#......#.....W.....#",
+    "#..k...#...........#",
+    "#......D...........#",
+    "#......#...V.......#",
+    "#......#.......T...#",
+    "#..!...#..........E#",
     "####################"
   ],
   "objekte": [
@@ -224,15 +228,15 @@ Ein Spielstand soll sich alternativ in einem zeilenbasierten Textformat speicher
 ```
 version;1
 level;kerker
-runde;31
-spieler;15;7
+runde;33
+spieler;15;5
 leben;2
 punkte;100
 entfernt;3;3
 tuer;7;4
 truhe;15;6
-gegner;13;2
-gegner;11;5
+gegner;8;2
+gegner;15;4
 ```
 
 **Schritt 2 — Zerlegung in Methoden:** `Speichern` und `Laden` sind nur der Dateizugriff. Die eigentliche Arbeit steckt in zwei Übersetzern, `ZeilenFuer` und `StandAus`, die beide `static` sind, keine Datei kennen und sich mit einem String-Array prüfen lassen.

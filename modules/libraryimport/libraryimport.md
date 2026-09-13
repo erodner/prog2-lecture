@@ -115,3 +115,4 @@ Der Source-Generator verarbeitet nur Typen, für die er das Marshalling kennt: Z
 - [Quellgenerierung für P/Invoke – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/pinvoke-source-generation)
 - [LibraryImportAttribute – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.runtime.interopservices.libraryimportattribute)
 - [Native AOT-Bereitstellung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/deploying/native-aot/)
+- [SharpLab](https://sharplab.io/) – macht sichtbar, was der Compiler aus deinem C#-Code wirklich erzeugt: derselbe Blick hinter die Kulissen wie beim Source-Generator oben.

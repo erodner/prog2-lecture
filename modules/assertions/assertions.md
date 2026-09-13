@@ -132,3 +132,5 @@ In älterem Code und in vielen Tutorials findest du noch `Assert.AreEqual(3, b.Z
 - [Übersicht aller Constraints – NUnit-Dokumentation](https://docs.nunit.org/articles/nunit/writing-tests/constraints/Constraints.html)
 - [TestCase-Attribut – NUnit-Dokumentation](https://docs.nunit.org/articles/nunit/writing-tests/attributes/testcase.html)
 - [Legacy-Asserts in NUnit 4 – NUnit-Dokumentation](https://docs.nunit.org/articles/nunit/release-notes/Nunit4.0-MigrationGuide.html)
+- [NUnit-Dokumentation](https://docs.nunit.org/) – Einstiegsseite; von hier aus findest du zu jedem Constraint die Liste seiner Varianten.
+- [.NET Fiddle](https://dotnetfiddle.net/) – zum schnellen Ausprobieren, ob `0.1 + 0.2` wirklich nicht exakt `0.3` ergibt.

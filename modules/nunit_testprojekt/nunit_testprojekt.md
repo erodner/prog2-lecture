@@ -13,7 +13,7 @@ Tests sind Code – aber sie gehören nicht in dasselbe Projekt wie der Code, de
 
 ## Ein Testprojekt neben den anderen
 
-Das Adventure besteht inzwischen aus fünf Projekten; das Testprojekt ist das sechste:
+Das Adventure bestand bisher aus vier Projekten; das Testprojekt ist das fünfte:
 
 ```
 Adventure.slnx
@@ -187,3 +187,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Komponententests mit NUnit – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/testing/unit-testing-csharp-with-nunit)
 - [SetUp und TearDown – NUnit-Dokumentation](https://docs.nunit.org/articles/nunit/writing-tests/attributes/setup.html)
 - [dotnet new nunit – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/tools/dotnet-new-sdk-templates)
+- [Komponententests mit NUnit – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/testing/unit-testing-with-nunit) – das offizielle Tutorial, das dieselben Schritte an einem Zahlenbeispiel durchspielt.
+- [NUnit-Dokumentation](https://docs.nunit.org/) – Nachschlagewerk für alle Attribute, die dieses Modul nur streift.

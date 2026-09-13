@@ -88,10 +88,12 @@ feld.SpielerZieht(Richtung.Links);
 feld.SpielerZieht(Richtung.Links);
 
 Console.WriteLine(zeugenDerRunde.Count);        // 2 – die Gegner von vorhin, unverändert
-Console.WriteLine(zeugenDerRunde[0].Position);  // (8, 3) – aber ihre Positionen sind aktuell!
+Console.WriteLine(zeugenDerRunde[0].Position);  // (9, 3) – aber ihre Positionen sind aktuell!
 ```
 
-Die Liste selbst ist eingefroren: Sie enthält genau die zwei Gegner, die zum Zeitpunkt der Auswertung nah waren, und behält sie, auch wenn sie längst davongelaufen sind. Eingefroren ist aber nur die **Auswahl**, nicht der Zustand der Objekte – die Liste speichert Referenzen, und ein Gegner, der sich bewegt, bewegt sich auch in dieser Liste. Dasselbe sofortige Ausführen passiert bei allen Methoden, die ein einzelnes Ergebnis brauchen und deshalb die ganze Quelle lesen müssen: `Count()`, `Max()`, `First()`. Man spricht dann von **sofortiger Ausführung** (*immediate execution*).
+Die Liste selbst ist eingefroren: Sie enthält genau die zwei Gegner, die zum Zeitpunkt der Auswertung nah waren, und behält sie, auch wenn sie längst davongelaufen sind. Eingefroren ist aber nur die **Auswahl**, nicht der Zustand der Objekte – die Liste speichert Referenzen, und ein Gegner, der sich bewegt, bewegt sich auch in dieser Liste. Die Wache stand bei der Auswertung auf `(7, 3)` und ist in den zwei Runden zwei Schritte nach rechts marschiert; in `zeugenDerRunde[0]` steckt dasselbe Objekt und damit die neue Position `(9, 3)`.
+
+Dasselbe sofortige Ausführen passiert bei allen Methoden, die ein einzelnes Ergebnis brauchen und deshalb die ganze Quelle lesen müssen: `Count()`, `Max()`, `First()`. Man spricht dann von **sofortiger Ausführung** (*immediate execution*).
 
 ## Falle 1: mehrfache Enumeration
 
@@ -162,3 +164,6 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Einführung in LINQ-Abfragen (verzögerte Ausführung) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/get-started/introduction-to-linq-queries)
 - [Klassifizierung von Standardabfrageoperatoren nach Ausführungsart – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/standard-query-operators/#classification-of-standard-query-operators-by-manner-of-execution)
 - [Enumerable.ToList – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.linq.enumerable.tolist)
+- [yield – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/statements/yield) – das Schlüsselwort, mit dem `AlleObjekte` und jeder LINQ-Operator ihre Elemente erst auf Abruf liefern
+- [101 LINQ Samples – GitHub](https://github.com/dotnet/try-samples/tree/main/101-linq-samples) – die klassische Beispielsammlung; besonders die Abschnitte zu `Take`, `First` und `ToList` zeigen den Unterschied zwischen verzögerter und sofortiger Ausführung
+- [.NET Fiddle](https://dotnetfiddle.net/) – eine Abfrage mit `Console.WriteLine` im `where` in den Browser tippen und live sehen, wann sie wirklich losläuft

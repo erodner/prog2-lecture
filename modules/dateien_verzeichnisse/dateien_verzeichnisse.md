@@ -176,3 +176,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [FileInfo-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.io.fileinfo)
 - [Path-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.io.path)
 - [Behandeln von E/A-Fehlern – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/io/handling-io-errors)
+- [RogueBasin](https://www.roguebasin.com/index.php/Main_Page) – Fundgrube für Kerker-Generatoren und Kartenformate, wenn dein `levels/`-Ordner wachsen soll.
+- [Vorgehensweise: Lesen von Text aus einer Datei – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/io/how-to-read-text-from-a-file)

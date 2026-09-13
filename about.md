@@ -10,7 +10,7 @@ permalink: /about/
 
 ## Programmierung 2 an der HTW Berlin
 
-Diese Webseite begleitet die Veranstaltung **Programmierung 2** im Bachelorstudiengang an der [HTW Berlin](https://www.htw-berlin.de). Sie setzt die Veranstaltung [Programmierung 1](https://www.erodner.de/prog-lecture/) fort und vertieft die objektorientierte Programmierung mit **C#**: Vererbung, Interfaces, Generizität, Delegaten und Ereignisse, Entwurfsmuster, grafische Oberflächen im Browser mit Blazor sowie die Werkzeuge der professionellen Softwareentwicklung (Git, NuGet, Unit-Tests).
+Diese Webseite begleitet die Veranstaltung **Programmierung 2** im Studiengang Ingenieurinformatik an der [HTW Berlin](https://www.htw-berlin.de). Sie setzt die Veranstaltung [Programmierung 1](https://www.erodner.de/prog-lecture/) fort. Im Mittelpunkt steht die objektorientierte Programmierung mit **C#**: Vererbung, Interfaces, Generizität, Delegaten und Ereignisse, Entwurfsmuster. Dazu kommen grafische Oberflächen im Browser mit Blazor und die Werkzeuge der professionellen Softwareentwicklung: Git, NuGet, native Bibliotheken und Unit-Tests.
 
 ## Dozent
 

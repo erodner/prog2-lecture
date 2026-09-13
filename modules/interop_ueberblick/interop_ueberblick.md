@@ -91,3 +91,5 @@ Ein P/Invoke-Aufruf ist ein Versprechen an die Laufzeit: „Ich habe die Signatu
 - [Native Interoperabilität – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/)
 - [Typmarshalling – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/type-marshalling)
 - [.NET-Programmierung mit C++/CLI – Microsoft Learn](https://learn.microsoft.com/de-de/cpp/dotnet/dotnet-programming-with-cpp-cli-visual-cpp)
+- [Platform Invoke (P/Invoke) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/pinvoke) – der Einstieg in den Weg, den die nächsten drei Module ausführlich gehen.
+- [pinvoke.net](https://www.pinvoke.net/) – ein Wiki voller fertiger Deklarationen: gut, um zu sehen, wie viel Handarbeit hinter einer einzigen C-Funktion steckt.

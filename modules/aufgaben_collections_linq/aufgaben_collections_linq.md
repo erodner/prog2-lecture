@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen — sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Collections dreht sich fast alles um eine einzige Frage: Welches Zugriffsmuster hat mein Problem – und welche Datenstruktur ist genau dafür gebaut? Und LINQ zwingt uns, eine Frage in ihre Bestandteile zu zerlegen: Was wird gefiltert, wonach wird sortiert, was wird gruppiert? Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen — sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Collections dreht sich fast alles um eine einzige Frage: Welches Zugriffsmuster hat mein Problem – und welche Datenstruktur ist genau dafür gebaut? Und LINQ zwingt uns, eine Frage in ihre Bestandteile zu zerlegen: Was wird gefiltert, wonach wird sortiert, was wird gruppiert? Die Aufgaben 1 und 3 spielen bewusst außerhalb des Adventures – Sitzplätze und Kurslisten zeigen, dass dieselben Regeln überall gelten –, die Aufgaben 2 und 4 rechnen am Spiel. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Mustererkennung
 
@@ -116,7 +116,7 @@ Die zweite Änderung ist unscheinbar: Aus `{ get; set; }` wurde `{ get; }`. Hät
 
 ## Aufgabe 2 — Algorithmenentwurf
 
-Die binäre Suche aus dem Modul [Such- und Sortieralgorithmen](/modules/such_und_sortieralgorithmen/such_und_sortieralgorithmen.md) liefert `-1`, wenn das gesuchte Element fehlt. Für ein Programm, das eine Liste **dauerhaft sortiert** halten will, ist das zu wenig: Es muss wissen, *an welcher Stelle* das fehlende Element eingefügt werden müsste, damit die Ordnung erhalten bleibt.
+Die binäre Suche aus dem Modul [Such- und Sortieralgorithmen](/modules/such_und_sortieralgorithmen/such_und_sortieralgorithmen.md) liefert `-1`, wenn das gesuchte Element fehlt. Für die Bestenliste des Adventures ist das zu wenig: Sie soll **dauerhaft sortiert** bleiben, also muss nach jedem Durchgang ein neuer Punktestand an genau der Stelle landen, an der die Ordnung erhalten bleibt – und dazu muss die Suche verraten, *wo* das fehlende Element hingehört.
 
 Entwirf eine Variante `BinaereSucheMitEinfuegeindex`, die bei einem Treffer wie bisher den Index liefert und andernfalls den **Einfügeindex** – und zwar ohne einen zweiten Suchdurchlauf.
 
@@ -370,143 +370,169 @@ Anna ist in beiden Kursen dasselbe Objekt – die Dictionaries speichern nur Ref
 
 ## Aufgabe 4 — Zerlegung
 
-Für diese Aufgabe verwenden wir eine schlankere Variante von `Studierender` mit den drei Properties, die uns interessieren:
+Für diese Aufgabe bauen wir ein kleines Spielfeld von Hand auf, damit sich jedes Ergebnis auf dem Papier nachrechnen lässt. Der Held steht auf `(6, 3)`, um ihn herum liegen sechs statische Objekte und drei Gegner:
 
 ```csharp
-public class Studierender
-{
-    public required string Name { get; init; }
-    public int Semester { get; init; }
-    public double Notenschnitt { get; init; }
-}
+Spielfeld feld = new Spielfeld(14, 7, new Spieler("Held", new Position(6, 3)));
+feld.Hinzufuegen(new Wand(new Position(0, 3)));
+feld.Hinzufuegen(new Wand(new Position(13, 3)));
+feld.Hinzufuegen(new Schluessel(new Position(5, 1)));
+feld.Hinzufuegen(new Trank(new Position(9, 5)));
+feld.Hinzufuegen(new Schatz(new Position(2, 2), wert: 25));
+feld.Hinzufuegen(new Truhe(new Position(11, 1), wert: 100));
+feld.Hinzufuegen(new Wache(new Position(8, 3)));
+feld.Hinzufuegen(new Verfolger(new Position(6, 5)));
+feld.Hinzufuegen(new Wache(new Position(1, 5)));
 
-List<Studierender> studierende =
-[
-    new Studierender { Name = "Anna Ahrens", Semester = 3, Notenschnitt = 1.7 },
-    new Studierender { Name = "Bela Brandt", Semester = 1, Notenschnitt = 2.9 },
-    new Studierender { Name = "Cem Celik",   Semester = 3, Notenschnitt = 2.3 },
-    new Studierender { Name = "Dana Dorn",   Semester = 5, Notenschnitt = 1.3 },
-    new Studierender { Name = "Emil Ernst",  Semester = 1, Notenschnitt = 3.4 },
-    new Studierender { Name = "Fara Fuchs",  Semester = 5, Notenschnitt = 2.0 },
-    new Studierender { Name = "Zoe Ziegler", Semester = 3, Notenschnitt = 1.7 }
-];
+Position held = feld.Spieler.Position;   // eine Kopie des Startfeldes: (6, 3)
 ```
+
+Alle Entfernungen sind Manhattan-Entfernungen aus `Position.Entfernung`, also Schritte ohne Diagonalen. Rechne sie einmal für alle Objekte aus, bevor du weiterliest – ohne diese Zahlen lässt sich keine der Abfragen vorhersagen.
 
 Zerlege jede der folgenden Fragen in ihre Bestandteile – *Quelle*, *Filter*, *Ordnung*, *Ergebnisform* – und formuliere sie als LINQ-Abfrage in Query-Syntax. Sage dann die Ausgabe voraus, **bevor** du den Code startest.
 
-- (a) Die Namen aller Studierenden mit einem Notenschnitt von höchstens 2,0, aufsteigend nach Notenschnitt. Bei gleichem Schnitt soll der Name entscheiden. Welche Reihenfolge haben Anna und Zoe?
-- (b) Alle Studierenden ab dem 3. Semester als Text `"Name (n. Semester)"`, höchstes Semester zuerst, innerhalb eines Semesters alphabetisch.
-- (c) Eine Gruppierung nach Semester, die pro Gruppe die Zeile `Semester n: Name, Name, …` ausgibt. In welcher Reihenfolge erscheinen die Gruppen – und wie bekommst du sie nach Semester sortiert?
-- (d) Zusatzfrage: Ein Kommilitone gibt das Ergebnis von (a) aus, fügt danach `Gerd Graf` (1. Semester, Schnitt 1,0) hinzu, entfernt Anna und gibt dasselbe Ergebnis erneut aus. Beide Ausgaben unterscheiden sich, obwohl er die Abfrage nicht angefasst hat. Warum – und wie hätte er die erste Ausgabe „einfrieren“ können?
+- (a) Die Namen aller Gegner, die höchstens vier Schritte entfernt sind, der nächste zuerst. Bei gleicher Entfernung soll der Name entscheiden. Welche Quelle nimmst du – `feld.Gegner` oder `feld.AlleObjekte`?
+- (b) Alle Gegenstände, die noch auf dem Boden liegen, als Text `"Name (x, y)"`, der entfernteste zuerst, bei gleicher Entfernung alphabetisch. Achtung: Die `Truhe` ist kein `Gegenstand` – warum eigentlich nicht?
+- (c) Eine Gruppierung **aller** Objekte nach ihrem `Symbol` mit der Anzahl je Gruppe. Wie viele Gruppen entstehen, welchen Typ hat `gruppe.Key`, und in welcher Reihenfolge kommen die Gruppen? Sortiere sie anschließend nach Symbol – und erkläre die Reihenfolge, die dabei herauskommt.
+- (d) Zusatzfrage: Gib das Ergebnis von (b) aus, lass den Helden dann mit `feld.SpielerZieht(...)` zweimal nach oben und einmal nach links laufen und gib **dieselbe Abfragevariable** erneut aus. Beide Ausgaben unterscheiden sich in zwei Punkten, obwohl die Abfrage nicht angefasst wurde. Welche sind das – und wie hättest du die erste Ausgabe „einfrieren“ können?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
+**Schritt 0 — Die Entfernungen:**
+
+| Objekt | Position | Entfernung zu `(6, 3)` |
+| :--- | :--- | :--- |
+| Wache | `(8, 3)` | 2 + 0 = 2 |
+| Verfolger | `(6, 5)` | 0 + 2 = 2 |
+| Wache | `(1, 5)` | 5 + 2 = 7 |
+| Schlüssel | `(5, 1)` | 1 + 2 = 3 |
+| Trank | `(9, 5)` | 3 + 2 = 5 |
+| Schatz | `(2, 2)` | 4 + 1 = 5 |
+
 **Schritt 1 — Abfrage (a) zerlegen:**
 
-Quelle `studierende`, Filter `Notenschnitt <= 2.0`, Ordnung nach `Notenschnitt` und dann `Name`, Ergebnis nur der `Name`. Zwei Sortierkriterien werden im `orderby` mit Komma getrennt – das zweite greift nur bei Gleichstand im ersten:
+Quelle `feld.Gegner` (nicht `AlleObjekte` – wir wollen ausschließlich Gegner, und `feld.Gegner` ist bereits ein `IReadOnlyList<Gegner>`, also gibt es weder Typprüfung noch Cast), Filter „Entfernung höchstens 4“, Ordnung nach Entfernung und dann `Name`, Ergebnis nur der `Name`. Zwei Sortierkriterien werden im `orderby` mit Komma getrennt – das zweite greift nur bei Gleichstand im ersten:
 
 ```csharp
-IEnumerable<string> gute =
-    from s in studierende
-    where s.Notenschnitt <= 2.0
-    orderby s.Notenschnitt, s.Name
-    select s.Name;
+IEnumerable<string> nah =
+    from g in feld.Gegner
+    where g.Position.Entfernung(held) <= 4
+    orderby g.Position.Entfernung(held), g.Name
+    select g.Name;
 
-Console.WriteLine(string.Join(", ", gute));
-// Dana Dorn, Anna Ahrens, Zoe Ziegler, Fara Fuchs
+Console.WriteLine(string.Join(", ", nah));
+// Verfolger, Wache
 ```
 
-Anna und Zoe haben beide 1,7 – das zweite Kriterium sortiert Anna vor Zoe. Ohne `, s.Name` wäre die Reihenfolge der beiden nicht garantiert vorhersagbar. Weil `select s.Name` einen `string` liefert, ist das Ergebnis ein `IEnumerable<string>`, kein `IEnumerable<Studierender>`.
+Die zweite Wache auf `(1, 5)` fällt mit sieben Schritten aus dem Filter. Die beiden übrigen sind exakt gleich weit entfernt – hier entscheidet das zweite Kriterium, und „Verfolger“ steht alphabetisch vor „Wache“. Ohne `, g.Name` wäre die Reihenfolge der beiden nicht garantiert vorhersagbar. Weil `select g.Name` einen `string` liefert, ist das Ergebnis ein `IEnumerable<string>`, kein `IEnumerable<Gegner>`.
 
 **Schritt 2 — Abfrage (b) mit absteigender Ordnung:**
 
-Neu ist `descending`, das nur für das Kriterium gilt, hinter dem es steht. Das `select` baut mit String-Interpolation ein neues Ergebnis, das es in der Quelle so nicht gibt:
+Die Quelle ist jetzt `feld.AlleObjekte`, denn Gegenstände liegen im Dictionary der statischen Objekte und haben keine eigene Property am Spielfeld. Der Filter ist eine Typprüfung mit `is`, neu ist `descending`, das nur für das Kriterium gilt, hinter dem es steht. Statt der Kopie `held` steht hier bewusst `feld.Spieler.Position` – warum das einen Unterschied macht, klärt Teil (d):
 
 ```csharp
-IEnumerable<string> hoehere =
-    from s in studierende
-    where s.Semester >= 3
-    orderby s.Semester descending, s.Name
-    select $"{s.Name} ({s.Semester}. Semester)";
+IEnumerable<string> amBoden =
+    from o in feld.AlleObjekte
+    where o is Gegenstand
+    orderby o.Position.Entfernung(feld.Spieler.Position) descending, o.Name
+    select $"{o.Name} {o.Position}";
 
-foreach (string zeile in hoehere)
+foreach (string zeile in amBoden)
 {
     Console.WriteLine(zeile);
 }
-// Dana Dorn (5. Semester)
-// Fara Fuchs (5. Semester)
-// Anna Ahrens (3. Semester)
-// Cem Celik (3. Semester)
-// Zoe Ziegler (3. Semester)
+// Schatz (2, 2)
+// Trank (9, 5)
+// Schlüssel (5, 1)
 ```
+
+Schatz und Trank sind beide fünf Schritte entfernt; alphabetisch kommt „Schatz“ vor „Trank“. Das `select` baut mit String-Interpolation ein neues Ergebnis, das es in der Quelle so nicht gibt – `Position.ToString()` liefert dabei schon die Form `(2, 2)`. Und die `Truhe` fehlt zu Recht: Sie erbt von `StatischesObjekt`, nicht von `Gegenstand`, denn man hebt sie nicht auf, sondern öffnet sie mit `Interagieren`. Ihr `Schatz` liegt *in* ihr und nicht auf dem Boden.
 
 **Schritt 3 — Abfrage (c) gruppieren:**
 
-`group s by s.Semester` ersetzt das `select`; das Ergebnis ist ein `IEnumerable<IGrouping<int, Studierender>>`. Jede Gruppe hat einen `Key` (das Semester) und ist selbst wieder eine Aufzählung, über die eine innere Abfrage die Namen einsammelt:
+`group o by o.Symbol` ersetzt das `select`; das Ergebnis ist ein `IEnumerable<IGrouping<char, Spielobjekt>>`. Der `Key` ist also ein `char`, weil `Symbol` ein `char` ist:
 
 ```csharp
-var nachSemester =
-    from s in studierende
-    group s by s.Semester;
+var nachSymbol =
+    from o in feld.AlleObjekte
+    group o by o.Symbol;
 
-foreach (IGrouping<int, Studierender> gruppe in nachSemester)
+foreach (IGrouping<char, Spielobjekt> gruppe in nachSymbol)
 {
-    IEnumerable<string> namen = from s in gruppe select s.Name;
-    Console.WriteLine($"Semester {gruppe.Key}: {string.Join(", ", namen)}");
+    Console.WriteLine($"{gruppe.Key}: {gruppe.Count()}");
 }
-// Semester 3: Anna Ahrens, Cem Celik, Zoe Ziegler
-// Semester 1: Bela Brandt, Emil Ernst
-// Semester 5: Dana Dorn, Fara Fuchs
+// #: 2
+// k: 1
+// !: 1
+// $: 1
+// T: 1
+// W: 2
+// V: 1
+// @: 1
 ```
 
-Die Gruppen erscheinen in der Reihenfolge, in der ihr Schlüssel **zum ersten Mal** in der Quelle auftaucht: Anna (Semester 3) steht an erster Stelle, also kommt Gruppe 3 zuerst – nicht Gruppe 1. Innerhalb einer Gruppe bleibt die Quellreihenfolge erhalten. Wer die Gruppen sortiert haben will, gibt ihnen mit `into` einen Namen und setzt die Abfrage damit fort:
+Acht Gruppen. Sie erscheinen in der Reihenfolge, in der ihr Schlüssel **zum ersten Mal** in der Quelle auftaucht, und `AlleObjekte` liefert erst die statischen Objekte, dann die Gegner, zuletzt den Spieler. Innerhalb der statischen Objekte gibt das Dictionary allerdings keine garantierte Reihenfolge vor – verlassen darf man sich darauf also nicht. Wer eine feste Ordnung braucht, gibt den Gruppen mit `into` einen Namen und setzt die Abfrage damit fort:
 
 ```csharp
-var nachSemesterSortiert =
-    from s in studierende
-    group s by s.Semester into gruppe
+var nachSymbolSortiert =
+    from o in feld.AlleObjekte
+    group o by o.Symbol into gruppe
     orderby gruppe.Key
     select gruppe;
-// Semester 1: Bela Brandt, Emil Ernst
-// Semester 3: Anna Ahrens, Cem Celik, Zoe Ziegler
-// Semester 5: Dana Dorn, Fara Fuchs
+// !: 1
+// #: 2
+// $: 1
+// @: 1
+// T: 1
+// V: 1
+// W: 2
+// k: 1
 ```
 
-Nach `into` ist `s` nicht mehr sichtbar – die Abfrage arbeitet ab hier mit Gruppen, nicht mehr mit einzelnen Studierenden.
+Diese Reihenfolge überrascht auf den ersten Blick: Warum steht das kleine `k` hinter dem großen `W`? Weil `char` nach seinem Zahlencode sortiert wird – `!` ist 33, `#` ist 35, `$` ist 36, `@` ist 64, die Großbuchstaben liegen bei 65 bis 90 und die Kleinbuchstaben erst bei 97 bis 122. Nach `into` ist `o` übrigens nicht mehr sichtbar: Die Abfrage arbeitet ab hier mit Gruppen, nicht mehr mit einzelnen Objekten.
 
 **Schritt 4 — Die Zusatzfrage:**
 
-```csharp
-Console.WriteLine(string.Join(", ", gute));
-// Dana Dorn, Anna Ahrens, Zoe Ziegler, Fara Fuchs
-
-studierende.Add(new Studierender { Name = "Gerd Graf", Semester = 1, Notenschnitt = 1.0 });
-studierende.RemoveAt(0); // Anna
-
-Console.WriteLine(string.Join(", ", gute));
-// Gerd Graf, Dana Dorn, Zoe Ziegler, Fara Fuchs
-```
-
-`gute` ist keine Liste mit vier Namen, sondern ein **Plan**: „nimm `studierende`, filtere, sortiere, gib die Namen“. Der Plan wird bei jedem `string.Join` neu ausgeführt – und beim zweiten Mal enthält `studierende` Gerd statt Anna. Die Abfrage hält nur eine Referenz auf die Liste, keine Kopie ihres Inhalts. Genau das beschreibt das Modul zur [verzögerten Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
-
-Einfrieren lässt sich das Ergebnis mit `ToList()` direkt bei der Definition:
+Der Held läuft von `(6, 3)` über `(6, 2)` und `(6, 1)` nach `(5, 1)` – und dort liegt der Schlüssel:
 
 ```csharp
-List<string> guteFest =
-    (from s in studierende
-     where s.Notenschnitt <= 2.0
-     orderby s.Notenschnitt, s.Name
-     select s.Name).ToList();
+foreach (string zeile in amBoden) Console.WriteLine(zeile);
+// Schatz (2, 2)
+// Trank (9, 5)
+// Schlüssel (5, 1)
+
+feld.SpielerZieht(Richtung.Oben);
+feld.SpielerZieht(Richtung.Oben);
+feld.SpielerZieht(Richtung.Links);   // hebt den Schlüssel auf
+
+foreach (string zeile in amBoden) Console.WriteLine(zeile);
+// Trank (9, 5)
+// Schatz (2, 2)
 ```
 
-`guteFest` wird einmal berechnet und ist danach von `studierende` entkoppelt – beide Ausgaben wären identisch, und Gerd tauchte nie auf.
+Zwei Unterschiede. Erstens ist der Schlüssel verschwunden: `SpielerZieht` hat ihn beim Betreten des Feldes aufgehoben und mit `statische.Remove` aus dem Dictionary gelöscht, also liefert `AlleObjekte` ihn nicht mehr. Zweitens haben Trank und Schatz die Plätze getauscht – vom neuen Standort `(5, 1)` aus ist der Trank acht Schritte entfernt, der Schatz nur noch vier.
+
+`amBoden` ist eben keine Liste mit drei Zeilen, sondern ein **Plan**: „nimm `feld.AlleObjekte`, filtere, sortiere, baue Text“. Der Plan wird bei jedem `foreach` neu ausgeführt und liest dabei den Spielstand von genau diesem Moment. Und jetzt zahlt sich aus, dass in der Abfrage `feld.Spieler.Position` steht und nicht `held`: Hätten wir die Kopie `held` genommen, würde die Abfrage weiterhin von `(6, 3)` aus rechnen, und Trank und Schatz blieben in ihrer alten Reihenfolge. Verzögert ausgeführt wird die Abfrage – eine Variable, die vorher ausgerechnet wurde, bleibt trotzdem eingefroren. Diese Feinheit beschreibt das Modul zur [verzögerten Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
+
+Einfrieren lässt sich auch das ganze Ergebnis, und zwar mit `ToList()` direkt bei der Definition:
+
+```csharp
+List<string> amBodenFest =
+    (from o in feld.AlleObjekte
+     where o is Gegenstand
+     orderby o.Position.Entfernung(feld.Spieler.Position) descending, o.Name
+     select $"{o.Name} {o.Position}").ToList();
+```
+
+`amBodenFest` wird einmal berechnet und ist danach vom Spielfeld entkoppelt – beide Ausgaben wären identisch, und der Schlüssel stünde weiterhin darin. Hier ist das sogar die ehrlichere Variante, denn die Zeilen sind fertige Texte: Sie können sich nicht mehr ändern, auch wenn sich das Spiel ändert.
 
 **Zentrale Designentscheidungen:**
 
 - **Frage zuerst zerlegen, dann tippen:** Jede Klausel beantwortet genau einen Teil der Frage – `where` das „welche“, `orderby` das „in welcher Reihenfolge“, `select` das „in welcher Form“. Wer die Zerlegung im Kopf hat, schreibt die Abfrage in der Reihenfolge der Klauseln auf, ohne über Schleifen nachzudenken.
-- **Sortierkriterien vollständig angeben:** Bei Gleichstand ist die Reihenfolge ohne zweites Kriterium zwar in der Praxis stabil, aber niemand, der den Code liest, kann sich darauf verlassen. `orderby s.Notenschnitt, s.Name` macht die Absicht explizit.
-- **Gruppen sind keine sortierten Töpfe:** `group by` ordnet nach erstem Auftreten. Wer sortierte Gruppen braucht, muss es mit `into` und `orderby gruppe.Key` sagen – der Compiler rät nicht.
-- **Plan oder Liste – bewusst entscheiden:** Ein `IEnumerable<T>` ist richtig, wenn das Ergebnis einmal durchlaufen wird und die aktuellen Daten zeigen soll. Sobald ein Ergebnis aufgehoben, mehrfach gelesen oder mit einem späteren Zustand verglichen wird, gehört `ToList()` an die Definition – nicht erst dorthin, wo das Problem auffällt.
+- **Die engste passende Quelle wählen:** `feld.Gegner` statt `feld.AlleObjekte` mit `where o is Gegner` spart nicht nur die Typprüfung, sondern liefert auch gleich den richtigen statischen Typ. `AlleObjekte` ist die richtige Quelle erst dann, wenn wirklich alles gemeint ist – oder wenn es wie bei den Gegenständen keine speziellere gibt.
+- **Sortierkriterien vollständig angeben:** Bei Gleichstand ist die Reihenfolge ohne zweites Kriterium zwar in der Praxis stabil, aber niemand, der den Code liest, kann sich darauf verlassen. `orderby … , o.Name` macht die Absicht explizit – und in einem Spielfeld mit zwei Wachen auf gleicher Entfernung ist Gleichstand der Normalfall, nicht die Ausnahme.
+- **Gruppen sind keine sortierten Töpfe:** `group by` ordnet nach erstem Auftreten, und bei einem Dictionary als Quelle ist schon das erste Auftreten nicht garantiert. Wer sortierte Gruppen braucht, muss es mit `into` und `orderby gruppe.Key` sagen – der Compiler rät nicht.
+- **Plan oder Liste – bewusst entscheiden:** Ein `IEnumerable<T>` ist richtig, wenn das Ergebnis einmal durchlaufen wird und den aktuellen Spielstand zeigen soll – für eine Statusanzeige also genau das Gewünschte. Sobald ein Ergebnis aufgehoben, mehrfach gelesen oder mit einem späteren Zustand verglichen wird, gehört `ToList()` an die Definition – nicht erst dorthin, wo das Problem auffällt.
 
 </details>

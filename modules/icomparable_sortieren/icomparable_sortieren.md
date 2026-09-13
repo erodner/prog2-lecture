@@ -65,12 +65,14 @@ Temperatur[] messungen =
 };
 Array.Sort(messungen);
 Console.WriteLine(string.Join(", ", messungen)); // nutzt ToString jedes Elements
-// -3 °C, 21.5 °C, 30.2 °C
+// -3 °C, 21,5 °C, 30,2 °C
 
 List<Temperatur> liste = new List<Temperatur>(messungen);
 liste.Sort();
-Console.WriteLine(liste[^1]); // 30.2 °C
+Console.WriteLine(liste[^1]); // 30,2 °C
 ```
+
+Im Quelltext steht `21.5` mit Punkt, in der Ausgabe erscheint `21,5` mit Komma: Das Literal folgt der C#-Syntax, die Ausgabe der Ländereinstellung deines Systems. Auf einem englischsprachigen Rechner steht dort wieder ein Punkt.
 
 `Array.Sort` und `List<T>.Sort()` rufen intern nur `CompareTo` auf – welcher Algorithmus dahintersteckt, sehen wir im Modul zu den [Such- und Sortieralgorithmen](/modules/such_und_sortieralgorithmen/such_und_sortieralgorithmen.md). Wichtig ist hier: Fehlt die Implementierung, kompiliert der Aufruf zwar, zur Laufzeit gibt es aber eine `InvalidOperationException` mit dem Hinweis, dass kein Vergleich möglich ist.
 
@@ -88,7 +90,7 @@ sortiert.Add(new Temperatur(-3.0));
 sortiert.Add(new Temperatur(21.5));
 
 Console.WriteLine(sortiert.Min); // -3 °C
-Console.WriteLine(sortiert.Max); // 30.2 °C
+Console.WriteLine(sortiert.Max); // 30,2 °C
 ```
 
 Die Reihenfolge entsteht hier nicht durch ein nachträgliches `Sort()`, sondern beim Einfügen. Das kostet pro `Add` etwas Zeit, dafür ist die Menge jederzeit sortiert. Ein Vorgeschmack auf die Abwägung, die im Modul [Collections im Überblick](/modules/collections_ueberblick/collections_ueberblick.md) systematisch wird.
@@ -169,3 +171,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [IComparer<T> – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.collections.generic.icomparer-1)
 - [Array.Sort – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.array.sort)
 - [SortedSet<T> – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.collections.generic.sortedset-1)
+- [Sortierverfahren live – VisuAlgo](https://visualgo.net/en/sorting) – zeigt animiert, wie oft ein Sortieralgorithmus `CompareTo` aufruft und in welcher Reihenfolge
+- [Introduction to A\* – Red Blob Games](https://www.redblobgames.com/pathfinding/a-star/introduction.html) – interaktive Erklärung, warum die Manhattan-Entfernung auf einem Raster genau das richtige Maß ist

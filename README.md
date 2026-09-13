@@ -19,6 +19,8 @@ bundle exec jekyll serve
 
 Die Seite ist dann unter `http://localhost:4000` erreichbar.
 
+Jeder Push auf `main` baut und veröffentlicht die Seite automatisch über GitHub Pages (`.github/workflows/pages.yml`).
+
 > **Hinweis für macOS mit Homebrew:** Falls beim Build Linker-Fehler auftreten (`ld: unsupported tapi file type`), den Xcode-Toolchain-Pfad vorschalten:
 > ```bash
 > export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:$PATH"

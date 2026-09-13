@@ -26,12 +26,12 @@ using System.Runtime.InteropServices;
 
 static class User32
 {
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern int MessageBoxW(IntPtr hWnd, string text, string caption, uint type);
 }
 ```
 
-Drei Dinge fallen auf. Erstens hat die Methode keinen Rumpf, sondern endet mit einem Semikolon – das Schlüsselwort `extern` sagt dem Compiler, dass die Implementierung von außerhalb kommt. Zweitens ist sie `static`: Eine C-Funktion gehört zu keinem Objekt, also gibt es auch kein `this`. Drittens haben die Parameter C#-Typen: Aus `HWND` (ein Fensterhandle, im Grunde ein Zeiger) wird `IntPtr`, aus `LPCWSTR` (Zeiger auf einen Unicode-String) wird `string`, aus `UINT` wird `uint`.
+Drei Dinge fallen auf. Erstens hat die Methode keinen Rumpf, sondern endet mit einem Semikolon – das Schlüsselwort `extern` sagt dem Compiler, dass die Implementierung von außerhalb kommt. Zweitens ist sie `static`: Eine C-Funktion gehört zu keinem Objekt, also gibt es auch kein `this`. Drittens haben die Parameter C#-Typen: Aus `HWND` (ein Fensterhandle, im Grunde ein Zeiger) wird `IntPtr`, aus `LPCWSTR` (Zeiger auf einen Unicode-String) wird `string`, aus `UINT` wird `uint`. Das `W` am Ende des Namens steht für *wide*, also für 16-Bit-Zeichen – deshalb `CharSet = CharSet.Unicode`; ohne diese Angabe würde der Marshaller 8-Bit-Zeichen übergeben und der Dialog zeigte Unsinn an. Mehr dazu gleich.
 
 Der Aufruf unterscheidet sich dann nicht von einer normalen statischen Methode:
 
@@ -118,3 +118,4 @@ Bei Strings immer die Dokumentation der C-Funktion lesen: Ist der Parameter `con
 - [Platform Invoke (P/Invoke) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/pinvoke)
 - [DllImportAttribute – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.runtime.interopservices.dllimportattribute)
 - [Marshalling von Zeichenfolgen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/charset)
+- [pinvoke.net](https://www.pinvoke.net/) – Nachschlagewerk mit fertigen `[DllImport]`-Deklarationen für nahezu jede Windows-API-Funktion, inklusive `MessageBox` und `GetSystemMetrics` aus der Übung.

@@ -132,3 +132,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [EventCallback – Ereignisbehandlung in Blazor – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/event-handling#eventcallback)
 - [Komponentenparameter – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/#component-parameters)
 - [Blazor-Formulare und Validierung – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/forms/)
+- [Das `<dialog>`-Element – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/HTML/Reference/Elements/dialog) – der Browser bringt inzwischen selbst einen modalen Dialog mit; lohnender Vergleich zu unserer Lösung aus zwei `<div>` und etwas CSS.
+- [Blazor University](https://blazor-university.com/) – das Kapitel zu `EventCallback` zeigt an kleinen Beispielen, warum es kein gewöhnlicher Delegat ist.

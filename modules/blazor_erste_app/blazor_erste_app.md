@@ -13,7 +13,7 @@ Bisher begann jedes unserer Programme mit `Console.WriteLine` – auch das Adven
 
 ## Projekt anlegen und starten
 
-Wie in [dotnet-CLI und Projekte](/modules/dotnet_cli_projekte/dotnet_cli_projekte.md) erzeugen wir das Projekt aus einer Vorlage. Die Vorlage heißt `blazor`, und drei Optionen legen fest, was wir bekommen:
+Wie in [dotnet-CLI und Projekte](/modules/dotnet_cli_projekte/dotnet_cli_projekte.md) erzeugen wir das Projekt aus einer Vorlage. `HalloBlazor` liegt in keinem Repository – du legst es selbst an, am besten in einem leeren Ordner neben dem Adventure, und löschst es am Ende des Moduls wieder. Die Vorlage heißt `blazor`, und drei Optionen legen fest, was wir bekommen:
 
 ```bash
 dotnet new blazor -o HalloBlazor --empty -int Server -ai
@@ -34,7 +34,7 @@ Die Vorlage erzeugt mehr Dateien als eine Konsolen-App, aber nur eine Handvoll i
 | :--- | :--- |
 | `Program.cs` | Startpunkt: Webserver konfigurieren und starten |
 | `Components/App.razor` | HTML-Grundgerüst der Seite (`<html>`, `<head>`, `<body>`) |
-| `Components/Routes.razor` | Ordnet Adressen (`/`, `/about`) den Seiten zu |
+| `Components/Routes.razor` | Ordnet Adressen wie `/` den Seiten zu |
 | `Components/Layout/MainLayout.razor` | Rahmen, der um jede Seite gelegt wird |
 | `Components/Pages/Home.razor` | Die Startseite – hier arbeiten wir |
 | `Components/_Imports.razor` | `@using`-Zeilen, die für alle Razor-Dateien gelten |
@@ -109,7 +109,7 @@ Im `@code`-Block stehen drei private Felder und eine Methode – ganz gewöhnlic
 
 Verfolgen wir einen Klick vom Anfang bis zum Ende. Der Benutzer tippt „Alrik“ in das Textfeld und klickt auf „Los“. Der Browser meldet über die SignalR-Verbindung an den Server: „Feld verlassen, neuer Text ‚Alrik‘“ und dann „Button geklickt“. Auf dem Server setzt Blazor daraufhin `name = "Alrik"` und ruft `Begruessen()` auf. Nach dem Handler rendert Blazor die Komponente neu, das heißt, es erzeugt das HTML aus dem Markup noch einmal – diesmal mit dem neuen Wert von `@ausgabe` – und vergleicht es mit dem vorherigen Stand. Nur die Unterschiede werden an den Browser geschickt, der sie in die angezeigte Seite einbaut. Für den Benutzer sieht es aus, als hätte sich der Absatz „von selbst“ geändert.
 
-Dieser Zyklus – Ereignis, Handler, neu rendern, Unterschiede übertragen – ist das Grundmuster jeder Blazor-Anwendung. Wir schreiben nur den mittleren Schritt. Wie Blazor entscheidet, wann neu gerendert wird, und was `@bind` dabei genau tut, sehen wir uns in [Datenbindung und Render-Zyklus](/modules/blazor_datenbindung/blazor_datenbindung.md) genauer an.
+Dieser Zyklus – Ereignis, Handler, neu rendern, Unterschiede übertragen – ist das Grundmuster jeder Blazor-Anwendung. Wir schreiben nur den mittleren Schritt. Wie Blazor entscheidet, wann neu gerendert wird, und was `@bind` dabei genau tut, sehen wir uns in [Datenbindung und Rendern](/modules/blazor_datenbindung/blazor_datenbindung.md) genauer an.
 
 Hot Reload hat Grenzen: Änderungen am Markup und an Methodenrümpfen übernimmt `dotnet watch` sofort, aber neue Felder, geänderte Signaturen oder Änderungen in `Program.cs` erfordern einen Neustart. Wenn sich die Seite trotz Speichern nicht ändert, hilft in der Konsole von `dotnet watch` die Taste `Strg+R` für einen vollständigen Neustart.
 {: .notice--warning}
@@ -152,3 +152,4 @@ Das vollständige Spielprojekt findest du im Repository [prog2-adventure](https:
 - [Projektstruktur einer Blazor-App – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/project-structure)
 - [Razor-Komponenten – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/)
 - [Hot Reload mit `dotnet watch` – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/test/hot-reload)
+- [Blazor-Tutorial: „Build your first Blazor app“ – Microsoft](https://dotnet.microsoft.com/en-us/learn/aspnet/blazor-tutorial/intro) – dieselbe Reise wie hier, nur mit einem Zähler statt einem Helden; gut als zweiter Durchlauf zum Festigen.

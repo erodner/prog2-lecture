@@ -149,7 +149,7 @@ Die vier Deklarationen wandern in eine private, verschachtelte Klasse. Damit ist
 Der Zeiger aus `zaehler_erzeugen` ist eine Ressource wie ein Dateihandle: Er muss genau einmal freigegeben werden. Das ist exakt der Fall für `IDisposable` aus dem Modul [`IDisposable` und `using`](/modules/idisposable_using/idisposable_using.md). Der Konstruktor holt die Ressource, `Dispose` gibt sie zurück.
 
 ```csharp
-class NativerZaehler : IDisposable
+partial class NativerZaehler : IDisposable      // partial, weil [LibraryImport] ein Source-Generator ist
 {
     private static partial class Nativ
     {

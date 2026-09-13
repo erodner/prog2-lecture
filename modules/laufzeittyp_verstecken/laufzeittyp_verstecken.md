@@ -65,7 +65,7 @@ Console.WriteLine(held);                  // Held bei (1, 1)
 
 Über die Variable `held` sieht alles richtig aus – deshalb ist dieser Fehler so tückisch. Der Unterschied zeigt sich bei `o`: `Beschreibung` ist nicht überschrieben, also entscheidet der Kompilierzeittyp, und der ist `Spielobjekt`. Besonders unangenehm ist die letzte Zeile: `ToString()` steht in `Spielobjekt` und ruft dort `Beschreibung()` auf – aus Sicht dieser Methode gibt es nur die eigene Fassung. Die Lebenspunkte verschwinden also überall dort, wo der Spieler als Spielobjekt behandelt wird: in `Console.WriteLine(held)`, in jeder Statusausgabe, in jeder Schleife über die Objektliste des Spielfelds. Dasselbe Muster mit `Symbol` in `Wand` hätte eine Karte zur Folge, deren Mauern aus `?` bestehen, obwohl `wand.Symbol` im Debugger brav `#` liefert – denn `AlsText` fragt über `ObjektAn(p)`, und das ist eine Variable vom Typ `Spielobjekt?`. Für eine `List<Spielobjekt>` gilt: **Versteckte Mitglieder sind für Polymorphie unsichtbar.**
 
-Lässt man sowohl `override` als auch `new` weg, verhält sich der Code exakt wie mit `new` – aber der Compiler warnt mit CS0108 („blendet den geerbten Member aus; verwenden Sie das Schlüsselwort `new`, wenn das Ausblenden beabsichtigt war“). Diese Warnung ist fast immer ein Zeichen für ein vergessenes `override` (oder ein vergessenes `virtual` in der Basisklasse). Nimm sie ernst: Das Programm kompiliert, tut aber nicht, was du meinst. Bewusstes Verstecken mit `new` ist in sauberem Code sehr selten nötig.
+Lässt man sowohl `override` als auch `new` weg, verhält sich der Code exakt wie mit `new` – aber der Compiler warnt mit CS0114 („blendet den geerbten Member `Spielobjekt.Beschreibung()` aus. Fügen Sie das Schlüsselwort `override` hinzu, wenn der aktuelle Member diese Implementierung überschreiben soll. Andernfalls fügen Sie das Schlüsselwort `new` hinzu.“). Diese Warnung ist fast immer ein Zeichen für ein vergessenes `override` (oder ein vergessenes `virtual` in der Basisklasse). Nimm sie ernst: Das Programm kompiliert, tut aber nicht, was du meinst. Bewusstes Verstecken mit `new` ist in sauberem Code sehr selten nötig.
 {: .notice--warning}
 
 ## Den Laufzeittyp herausfinden
@@ -102,7 +102,8 @@ sicher.Bewegen(Richtung.Unten, feld);
 ```csharp
 Spielobjekt wand = new Wand(new Position(5, 2));
 Spieler p = (Spieler)wand;
-// System.InvalidCastException: Unable to cast object of type 'Wand' to type 'Spieler'.
+// System.InvalidCastException: Unable to cast object of type 'Adventure.Kern.Wand'
+// to type 'Adventure.Kern.Spieler'.
 ```
 
 Der Compiler lässt den Cast durch, weil er zur Kompilierzeit nicht wissen kann, was in `wand` steckt. Zur Laufzeit stellt die CLR fest, dass eine `Wand` eben kein `Spieler` ist – die Ist-eine-Beziehung gilt nur in eine Richtung.
@@ -119,3 +120,4 @@ Wenn du beim Zeichnen der Karte mehrere `is`-Abfragen nacheinander schreibst (�
 - [`new`-Modifizierer – C#-Referenz – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/new-modifier)
 - [Versionsverwaltung mit `override` und `new` – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/versioning-with-the-override-and-new-keywords)
 - [Pattern Matching – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/functional/pattern-matching)
+- [.NET Fiddle – C# ohne Installation ausführen](https://dotnetfiddle.net/) – der Unterschied zwischen `override` und `new` lässt sich hier in einer Minute selbst nachstellen, ohne ein Projekt anzulegen.

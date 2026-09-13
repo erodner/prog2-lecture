@@ -163,3 +163,5 @@ Im Zweifel gilt: Ein Mitglied, das abgeleitete Klassen sinnvoll anpassen könnte
 - [Polymorphie – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/object-oriented/polymorphism)
 - [`virtual` – C#-Referenz – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/virtual)
 - [`override` – C#-Referenz – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/override)
+- [Game Programming Patterns – Robert Nystrom](https://gameprogrammingpatterns.com/) – ein kostenlos lesbares Buch darüber, wie Objektorientierung in echten Spielen eingesetzt wird (und wo sie schadet).
+- [Type Object – Game Programming Patterns](https://gameprogrammingpatterns.com/type-object.html) – zeigt die Kehrseite: Wenn ein Spiel hunderte Objektarten bekommt, wird aus jeder Unterklasse irgendwann besser ein Datensatz.

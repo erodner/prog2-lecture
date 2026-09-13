@@ -189,3 +189,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [`Lazy<T>` – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.lazy-1)
 - [Verzögerte Initialisierung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/framework/performance/lazy-initialization)
 - [`lock`-Anweisung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/statements/lock)
+- [Singleton – Game Programming Patterns](https://gameprogrammingpatterns.com/singleton.html) – ein ganzes Kapitel darüber, warum ausgerechnet dieses Muster in Spielen so beliebt und so schädlich ist.
+- [Singleton – Refactoring.Guru](https://refactoring.guru/design-patterns/singleton) – Diagramme, C#-Code und eine Gegenüberstellung der Umsetzungsvarianten.

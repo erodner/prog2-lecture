@@ -103,7 +103,7 @@ static int NachEntfernungZurEcke(Gegner a, Gegner b)
     => a.Position.Entfernung(Ecke).CompareTo(b.Position.Entfernung(Ecke));
 
 gegner.Sort(NachEntfernungZurEcke);
-Console.WriteLine(gegner[0].Beschreibung());   // der oberste linke Gegner zuerst
+Console.WriteLine(gegner[0].Beschreibung());   // Wache bei (3, 1) – Entfernung 4 statt 12
 ```
 
 Zwei Gegner mit gleicher Entfernung landen dabei in beliebiger Reihenfolge zueinander, weil `List<T>.Sort` nicht stabil ist. Das haben wir bei den [Such- und Sortieralgorithmen](/modules/such_und_sortieralgorithmen/such_und_sortieralgorithmen.md) schon gesehen. Störend ist die Konstante `Ecke`: Eigentlich wollen wir nach dem Abstand zum *Helden* sortieren, und dessen Position steht in einer lokalen Variablen, die eine benannte statische Methode nicht sehen kann. Genau dieses Problem lösen die [Lambda-Ausdrücke](/modules/lambda_ausdruecke/lambda_ausdruecke.md) im nächsten Modul.
@@ -118,7 +118,7 @@ Im Zweifel `Func` oder `Action` statt eines eigenen Delegattyps. Jeder zusätzli
 Achtung bei der Reihenfolge der Typparameter: Bei `Func<Spielfeld, Richtung>` ist `Spielfeld` der Parameter und `Richtung` der Rückgabetyp – nicht umgekehrt. `Func<Richtung, Spielfeld>` ist ein völlig anderer Typ, und der Compiler meldet beim Zuweisen einer unpassenden Methode wieder den bekannten Fehler CS0123.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 Übung: Schreibe eine Methode `Zaehle(IEnumerable<Spielobjekt> objekte, Func<Spielobjekt, bool> bedingung)`, die zählt, wie viele Objekte die Bedingung erfüllen, und rufe sie für `feld.AlleObjekte` zweimal auf – einmal für Wände, einmal für passierbare Felder. Ersetze anschließend in `Adventure.Kern` die Klassen `Wache` und `Verfolger` durch zwei `Func<Spielfeld, Gegner, Richtung?>`-Werte. Welches der beiden Verhalten lässt sich so *nicht* vollständig nachbauen – und warum?
 {: .notice--info}
@@ -129,3 +129,4 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Action<T>-Delegat – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.action-1)
 - [Predicate<T>-Delegat – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.predicate-1)
 - [Comparison<T>-Delegat – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.comparison-1)
+- [SharpLab](https://sharplab.io/) – zeigt links den C#-Code und rechts sofort, welche Klasse der Compiler aus einer Methodengruppen-Konvertierung wirklich baut.

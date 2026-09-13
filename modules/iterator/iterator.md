@@ -167,7 +167,7 @@ public IEnumerable<Position> FreieNachbarFelder(Position p)
 }
 ```
 
-`FreieNachbarFelder` ist selbst ein Iterator, der über einen Iterator läuft – genau so sind LINQ-Ketten aufgebaut. Am Rand des Feldes liefert `NachbarFelder` nur zwei oder drei Positionen, ohne dass der Aufrufer eine Randprüfung schreiben muss: Steht der Held bei (1, 1) und links von ihm eine Wand, schreibt `foreach (Position p in feld.FreieNachbarFelder(feld.Spieler.Position)) Console.Write(p + " ");` genau `(1, 0) (1, 2) (2, 1)` – in der Reihenfolge der Aufzählung `Richtung`.
+`FreieNachbarFelder` ist selbst ein Iterator, der über einen Iterator läuft – genau so sind LINQ-Ketten aufgebaut. Am Rand des Feldes liefert `NachbarFelder` nur zwei oder drei Positionen, ohne dass der Aufrufer eine Randprüfung schreiben muss. Der Held startet in jedem Level in der oberen linken Ecke bei (1, 1), also mit der Außenmauer über sich und links von sich; `foreach (Position p in feld.FreieNachbarFelder(feld.Spieler.Position)) Console.Write(p + " ");` schreibt deshalb genau `(1, 2) (2, 1)` – in der Reihenfolge der Aufzählung `Richtung`, die mit `Oben` beginnt und mit `Rechts` endet.
 
 Ein Iterator muss übrigens keine Property oder `GetEnumerator`-Methode sein und die Klasse auch nicht `IEnumerable<T>` implementieren: `Spielfeld` ist keine Collection, bietet aber drei Durchlaufstrategien an.
 
@@ -191,7 +191,7 @@ foreach (Position p in nachbarn)
 // (1, 0)
 ```
 
-Zwischen dem Aufruf von `NachbarFelder(...)` und der Schleife passiert nichts, und nach dem `break` werden `Unten`, `Links` und `Rechts` nie geprüft. Genau dieses Verhalten kennen wir schon als [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md) von LINQ – und das ist kein Zufall: `Where`, `Select` und die anderen Operatoren aus der [Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md) sind Iterator-Methoden mit `yield return`. Eine LINQ-Abfrage ist eine Kette von Iteratoren, in der jedes Glied beim nächsten `MoveNext()` ruft. Und weil nie alles auf einmal erzeugt wird, darf ein Iterator sogar unendlich sein – eine Wache, die ihre Route ewig abläuft, ist ein gültiger Rumpf, solange der Client rechtzeitig aufhört:
+Zwischen dem Aufruf von `NachbarFelder(...)` und der Schleife passiert nichts, und nach dem `break` werden `Unten`, `Links` und `Rechts` nie geprüft. Dass (1, 0) hier auftaucht, obwohl dort die Außenmauer steht, ist übrigens richtig: `NachbarFelder` fragt nur `IstInnerhalb`, das Aussortieren der Wände übernimmt erst `FreieNachbarFelder`. Genau dieses Verhalten kennen wir schon als [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md) von LINQ – und das ist kein Zufall: `Where`, `Select` und die anderen Operatoren aus der [Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md) sind Iterator-Methoden mit `yield return`. Eine LINQ-Abfrage ist eine Kette von Iteratoren, in der jedes Glied beim nächsten `MoveNext()` ruft. Und weil nie alles auf einmal erzeugt wird, darf ein Iterator sogar unendlich sein – eine Wache, die ihre Route ewig abläuft, ist ein gültiger Rumpf, solange der Client rechtzeitig aufhört:
 
 ```csharp
 public static IEnumerable<Position> Patrouille(Route route)
@@ -220,3 +220,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Iteratoren – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/iterators)
 - [`yield`-Anweisung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/statements/yield)
 - [`IEnumerable<T>`-Schnittstelle – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.collections.generic.ienumerable-1)
+- [Iterator – Refactoring.Guru](https://refactoring.guru/design-patterns/iterator) – zeigt das Muster mit handgeschriebenem Enumerator und macht damit sichtbar, was `yield` uns abnimmt.
+- [SharpLab](https://sharplab.io/) – schreibe eine Methode mit `yield return` hinein und sieh dir rechts den Zustandsautomaten an, den der Compiler daraus baut.

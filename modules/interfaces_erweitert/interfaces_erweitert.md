@@ -184,5 +184,6 @@ In Vorlesung 04 zerlegen wir das Projekt genau an dieser Linie in Schichten: `IL
 ## Weitere Quellen
 
 - [Explizite Schnittstellenimplementierung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/interfaces/explicit-interface-implementation)
-- [Standardschnittstellenmethoden – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/advanced-topics/interface-implementation/default-interface-methods-versions)
 - [Schnittstellen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/interfaces)
+- [Schnittstellen mit Standardmethoden sicher aktualisieren – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/tutorials/default-interface-methods-versions) – Tutorial zum Mitprogrammieren: ein veröffentlichtes Interface wird Schritt für Schritt erweitert, ohne bestehende Implementierungen zu brechen.
+- [Adapter – Refactoring Guru](https://refactoring.guru/design-patterns/adapter) – dasselbe Prinzip wie bei `ILevelQuelle`: Der Nutzer kennt nur den Vertrag, dahinter darf stecken, was will; mit [C#-Beispiel](https://refactoring.guru/design-patterns/adapter/csharp/example).

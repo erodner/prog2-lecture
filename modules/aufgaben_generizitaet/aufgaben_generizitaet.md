@@ -361,27 +361,42 @@ class Ringpuffer<T>
 
 **Schritt 3 — Im Spiel verwendet:**
 
+Im Kerker startet der Held auf `(1, 1)`. Wir schicken ihn erst gegen die linke Wand, dann zum Schlüssel auf `(3, 3)`, weiter zum Trank auf `(3, 7)` und zuletzt zur verschlossenen Tür auf `(7, 4)`. Nicht jede Runde erzeugt eine Meldung – wer nur über leeren Boden läuft, hat nichts zu berichten –, deshalb landen nur die nicht leeren Meldungen im Puffer:
+
 ```csharp
 var meldungen = new Ringpuffer<string>(3);
 Spielfeld feld = LevelParser.Parsen(new EingebauteLevelQuelle().Laden("Kerker"));
 
-feld.SpielerZieht(Richtung.Unten);
-meldungen.Hinzufuegen(feld.LetzteMeldung);
-feld.SpielerZieht(Richtung.Unten);
-meldungen.Hinzufuegen(feld.LetzteMeldung);
-feld.SpielerZieht(Richtung.Rechts);
-meldungen.Hinzufuegen(feld.LetzteMeldung);
-feld.SpielerZieht(Richtung.Rechts);
-meldungen.Hinzufuegen(feld.LetzteMeldung);   // überschreibt die Meldung aus Runde 1
+Richtung[] weg =
+[
+    Richtung.Links,
+    Richtung.Unten, Richtung.Unten, Richtung.Rechts, Richtung.Rechts,
+    Richtung.Unten, Richtung.Unten, Richtung.Unten, Richtung.Unten,
+    Richtung.Rechts, Richtung.Rechts, Richtung.Rechts,
+    Richtung.Oben, Richtung.Oben, Richtung.Oben,
+    Richtung.Rechts
+];
 
-Console.WriteLine(meldungen.Anzahl);                          // 3
+foreach (Richtung r in weg)
+{
+    feld.SpielerZieht(r);
+    if (feld.LetzteMeldung.Length > 0)
+    {
+        meldungen.Hinzufuegen(feld.LetzteMeldung);
+    }
+}
+
+Console.WriteLine(meldungen.Anzahl);   // 3 – mehr passt nicht hinein
 foreach (string m in meldungen.AlsArray())
 {
-    Console.WriteLine(m);                                     // Runde 2, 3, 4 – in dieser Reihenfolge
+    Console.WriteLine(m);
 }
+// Held hebt Schlüssel auf.
+// Held trinkt einen Trank (+1).
+// Du schließt die Tür auf.
 ```
 
-Nach dem vierten `Hinzufuegen` steht die jüngste Meldung physisch an Index 0 des Arrays, aber logisch ist sie die neueste – `start` zeigt jetzt auf Index 1. Im fertigen Spiel füllt man den Puffer nicht von Hand nach jedem Zug, sondern hängt sich an das Ereignis `RundeBeendet` des Spielfelds; wie das geht, lernen wir in Vorlesung 07.
+Insgesamt entstehen vier Meldungen: Die erste („Da geht es nicht weiter.“ vom Anlauf gegen die Wand) hat der Puffer beim vierten `Hinzufuegen` überschrieben. Sie steht physisch nicht mehr im Array, und `start` ist von Index 0 auf Index 1 weitergerückt – deshalb liefert `AlsArray()` trotzdem die richtige Reihenfolge. Im fertigen Spiel füllt man den Puffer nicht von Hand nach jedem Zug, sondern hängt sich an das Ereignis `RundeBeendet` des Spielfelds; wie das geht, lernen wir in Vorlesung 07.
 
 **Zentrale Designentscheidungen:**
 

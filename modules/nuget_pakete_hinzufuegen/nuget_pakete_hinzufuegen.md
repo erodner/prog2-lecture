@@ -132,3 +132,5 @@ Weil die `.csproj` die einzige Wahrheit über die Pakete ist, gilt im Team eine 
 - [PackageReference in Projektdateien – Microsoft Learn](https://learn.microsoft.com/de-de/nuget/consume-packages/package-references-in-project-files)
 - [dotnet restore und der Paket-Cache – Microsoft Learn](https://learn.microsoft.com/de-de/nuget/consume-packages/managing-the-global-packages-and-cache-folders)
 - [Pakete in Visual Studio installieren und verwalten – Microsoft Learn](https://learn.microsoft.com/de-de/nuget/consume-packages/install-use-packages-visual-studio)
+- [Was ist NuGet? – Microsoft Learn](https://learn.microsoft.com/de-de/nuget/what-is-nuget) – der Überblick über Feeds, Cache und Werkzeuge, in den sich die Befehle dieses Moduls einordnen.
+- [Semantic Versioning 2.0.0 (deutsch)](https://semver.org/lang/de/) – zum Nachschlagen, bevor du eine Versionsnummer in der `.csproj` hochziehst.

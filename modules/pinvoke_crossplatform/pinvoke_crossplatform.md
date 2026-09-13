@@ -141,3 +141,4 @@ Verwechsle die `DllNotFoundException` nicht mit der `EntryPointNotFoundException
 - [Laden nativer Bibliotheken – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/native-library-loading)
 - [Plattformübergreifendes P/Invoke – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/native-interop/cross-platform)
 - [NativeLibrary-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.runtime.interopservices.nativelibrary)
+- [pinvoke.net](https://www.pinvoke.net/) – zeigt an hunderten Beispielen, wie stark sich Deklarationen je nach Bibliothek und Plattform unterscheiden.

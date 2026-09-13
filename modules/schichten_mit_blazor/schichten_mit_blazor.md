@@ -166,7 +166,7 @@ Bleibt die Frage, wer `new EingebauteLevelQuelle()` schreibt. Der Kern darf es n
 builder.Services.AddSingleton<ILevelQuelle, EingebauteLevelQuelle>();
 ```
 
-Die Zeile registriert: „Wer einen `ILevelQuelle` braucht, bekommt eine `EingebauteLevelQuelle`.“ Das ist **Dependency Injection**: Objekte bekommen ihre Abhängigkeiten von außen geliefert, statt sie selbst zu erzeugen. Deshalb braucht das Web-Projekt überhaupt eine Referenz auf `Adventure.Daten` – nur für diese eine Zeile. Die Konsolenversion hat kein `Program.cs` mit Container und schreibt die Entscheidung direkt hin (`ILevelQuelle levelQuelle = new EingebauteLevelQuelle();`) – auch das ist in Ordnung, denn es ist wieder *eine* Stelle, ganz oben im Programm.
+Die Zeile registriert: „Wer einen `ILevelQuelle` braucht, bekommt eine `EingebauteLevelQuelle`.“ Das ist **Dependency Injection**: Objekte bekommen ihre Abhängigkeiten von außen geliefert, statt sie selbst zu erzeugen. Deshalb braucht das Web-Projekt überhaupt eine Referenz auf `Adventure.Daten` – nur für diese eine Zeile. Die Konsolenversion kommt ohne Container aus und schreibt die Entscheidung in die erste Zeile ihrer `Program.cs` (`ILevelQuelle levelQuelle = new EingebauteLevelQuelle();`) – auch das ist in Ordnung, denn es ist wieder *eine* Stelle, ganz oben im Programm.
 
 In der Komponente holt eine Anweisung das fertige Objekt ab:
 
@@ -195,3 +195,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Dependency Injection in ASP.NET Core Blazor – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/fundamentals/dependency-injection)
 - [Abhängigkeitsinjektion in .NET – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/extensions/dependency-injection)
 - [dotnet sln – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/tools/dotnet-sln)
+- [Singleton – Game Programming Patterns](https://gameprogrammingpatterns.com/singleton.html) – zeigt, warum global erreichbare Objekte in Spielen so verführerisch und so teuer sind; die Antwort darauf ist genau das, was `builder.Services` für uns übernimmt.
+- [Blazor University](https://blazor-university.com/) – das Kapitel zu Dependency Injection erklärt den Unterschied zwischen `Singleton`, `Scoped` und `Transient` an kleinen Blazor-Beispielen.

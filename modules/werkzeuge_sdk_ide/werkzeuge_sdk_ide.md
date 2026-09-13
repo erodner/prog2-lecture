@@ -76,5 +76,6 @@ KI-Assistenten wie GitHub Copilot oder die Chat-Funktionen der IDEs sind in der 
 
 - [.NET herunterladen – Microsoft](https://dotnet.microsoft.com/download)
 - [.NET installieren unter Windows, macOS und Linux – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/install/)
-- [C# in Visual Studio Code – Visual Studio Code Docs](https://code.visualstudio.com/docs/csharp)
+- [C# in Visual Studio Code – Visual Studio Code Docs](https://code.visualstudio.com/docs/languages/csharp)
 - [JetBrains Rider](https://www.jetbrains.com/rider/)
+- [SharpLab – C# im Browser ausprobieren](https://sharplab.io/) – tippt man links C#, erscheint rechts sofort das Ergebnis: Ausgabe, IL-Code oder das, was der Compiler wirklich daraus macht – ideal, solange die eigene Installation noch klemmt.

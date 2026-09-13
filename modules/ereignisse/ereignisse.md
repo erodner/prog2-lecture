@@ -177,7 +177,7 @@ feld.RundeBeendet += (sender, e) => protokoll.Add(e.Meldung);
 
 Das Spielfeld hat keine Ahnung, wer da zuhört. Es hat nicht einmal eine Liste von Empfängern – die steckt im Delegaten. Käme morgen eine Klasse `Erfolgsverwaltung` oder ein Netzwerkclient hinzu, müsste an `Spielfeld` nichts geändert werden. Das ist genau die lose Kopplung, die dem Sturzsensor gefehlt hat.
 
-Wer sich registriert, sollte sich auch wieder abmelden. Solange eine Methode im Delegaten des Spielfelds hängt, hält das Spielfeld eine Referenz auf ihr Objekt – und der [Garbage Collector](/modules/garbage_collection/garbage_collection.md) kann es nicht freigeben, selbst wenn es sonst nirgends mehr gebraucht wird. Bei einem langlebigen Sender und vielen kurzlebigen Empfängern (Dialoge, Anzeigen) ist das ein klassisches Speicherleck. Und Vorsicht bei der Konsolenversion: Nach `F9` (Spielstand laden) entsteht ein *neues* `Spielfeld` mit einem neuen `Spieler`, weshalb `Program.cs` `SchatzGefunden` dort erneut abonniert. Wer stattdessen dasselbe Objekt zweimal abonniert, hört den Ton doppelt – und Lambdas lassen sich nicht mit `-=` abmelden, weil man keine Referenz darauf hat.
+Wer sich registriert, sollte sich auch wieder abmelden. Solange eine Methode im Delegaten des Spielfelds hängt, hält das Spielfeld eine Referenz auf ihr Objekt – und der [Garbage Collector](/modules/garbage_collection/garbage_collection.md) kann es nicht freigeben, selbst wenn es sonst nirgends mehr gebraucht wird. Bei einem langlebigen Sender und vielen kurzlebigen Empfängern (Dialoge, Anzeigen) ist das ein klassisches Speicherleck. Und Vorsicht bei der Konsolenversion, sobald sie in [Vorlesung 09](/lectures/09/09.md) Spielstände laden kann: Nach `F9` entsteht ein *neues* `Spielfeld` mit einem neuen `Spieler`, weshalb `Program.cs` `SchatzGefunden` dort erneut abonnieren muss. Wer stattdessen dasselbe Objekt zweimal abonniert, hört den Ton doppelt – und Lambdas lassen sich nicht mit `-=` abmelden, weil man keine Referenz darauf hat.
 {: .notice--warning}
 
 ## Der Tastendruck aus Vorlesung 04
@@ -202,7 +202,7 @@ private void TasteGedrueckt(KeyboardEventArgs e)
 
 Das `div` ist der Sender, die Komponente der Empfänger, `KeyboardEventArgs` sind die Ereignisdaten – dieselben drei Rollen wie beim Schatz. Einen `sender`-Parameter gibt es in Blazor nicht, und wer die Ereignisdaten nicht braucht, lässt den Parameter einfach weg. Das Muster dahinter – ein Sender veröffentlicht, viele Empfänger registrieren sich – ist so grundlegend, dass es einen eigenen Namen hat: das [Observer-Muster](/modules/observer/observer.md), das wir in Vorlesung 08 als eines der klassischen Entwurfsmuster genauer anschauen.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 Übung: Ergänze `Spielfeld` um ein Ereignis `SpielBeendet` ohne Zusatzdaten (Typ `EventHandler`), das ausgelöst wird, sobald `Status` von `Laeuft` auf `Gewonnen` oder `Verloren` wechselt. Registriere in der Konsolenversion einen Empfänger, der die Endabrechnung ausgibt, und einen zweiten, der den Spielstand automatisch speichert. An welcher Stelle in `SpielerZieht` muss das Ereignis ausgelöst werden, damit `Status` und `LetzteMeldung` beide schon stimmen – und warum darf der Speicher-Empfänger den Sender nicht kennen?
 {: .notice--info}
@@ -213,3 +213,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Behandeln und Auslösen von Ereignissen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/events/)
 - [EventHandler<TEventArgs>-Delegat – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.eventhandler-1)
 - [Ereignisbehandlung in ASP.NET Core Blazor – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/event-handling)
+- [Observer – Game Programming Patterns](https://gameprogrammingpatterns.com/observer.html) – das freie Buch erklärt am Beispiel eines Erfolgssystems im Spiel, warum Ereignisse Sender und Empfänger entkoppeln und wo die Grenzen liegen.
+- [Game Programming Patterns – das ganze Buch](https://gameprogrammingpatterns.com/) – kostenlos online, mit vielen Mustern, die genau zu unserem Adventure passen.

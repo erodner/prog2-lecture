@@ -173,4 +173,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Erstellen von HTTP-Anforderungen mit der HttpClient-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/fundamentals/networking/http/httpclient)
 - [`HttpClientJsonExtensions` (System.Net.Http.Json) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.net.http.json.httpclientjsonextensions)
 - [Asynchrone Programmierung mit async und await – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/asynchronous-programming/)
-- [Open-Meteo API-Dokumentation](https://open-meteo.com/en/docs)
+- [Open-Meteo API-Dokumentation](https://open-meteo.com/en/docs) – kostenlose Wetter-API ohne Anmeldung: URL im Browser zusammenklicken, Antwort ansehen, Modellklasse schreiben.
+- [JSON – die komplette Syntax auf einer Seite (deutsch)](https://www.json.org/json-de.html) – hilfreich, wenn du die Antwort einer fremden API zum ersten Mal entzifferst.

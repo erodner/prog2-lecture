@@ -46,7 +46,7 @@ Ein `@` vor einem Ausdruck im Markup fügt seinen Wert an dieser Stelle ein. Das
 <Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="feld.LetzteMeldung" />
 ```
 
-Auch die Parameter einer Komponente sind eine Einweg-Bindung: `Runde="feld.Runde"` liest den aktuellen Wert und gibt ihn nach unten weiter. Innerhalb der `Statusleiste` entsteht daraus die Herzenanzeige, und zwar nicht in einem Handler, sondern in einer berechneten Property:
+Auch die Parameter einer Komponente sind eine Einweg-Bindung: `Runde="feld.Runde"` liest den aktuellen Wert und gibt ihn nach unten weiter. Innerhalb der `Statusleiste` – der Komponente aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) – entsteht daraus die Herzenanzeige, und zwar nicht in einem Handler, sondern in einer berechneten Property:
 
 ```csharp
 private string Herzen => new string('♥', Spieler.Lebenspunkte)
@@ -70,7 +70,7 @@ Bei Eingabeelementen soll die Verbindung in beide Richtungen gehen: Das Feld fü
 
 Blazor macht daraus zwei Dinge: Es setzt den `value` des `<select>` aus dem Feld `levelName`, und es registriert einen Handler für das Ereignis `change`, der `levelName` aus der Auswahl aktualisiert. Der gewählte `value` einer `<option>` ist ein `string`, und `levelName` ist ein `string` – die Typen passen zusammen. Bei einem `<input type="number">` würde Blazor den Text automatisch in ein `int` oder `double` umwandeln, bei einer Checkbox in ein `bool` und dabei `checked` statt `value` verwenden.
 
-Bei einem Textfeld feuert `change` erst, wenn das Feld den Fokus verliert oder der Benutzer Enter drückt. Soll das Feld bei jedem Tastendruck aktuell sein, wechselt man das Ereignis mit `@bind:event="oninput"`. Und wer nach der Eingabe noch etwas tun will, hängt `@bind:after="Methode"` an – ein eigener `@onchange`-Handler am selben Element wäre ein Compilerfehler, weil `@bind` das Ereignis bereits belegt.
+Bei einem Textfeld feuert `change` erst, wenn das Feld den Fokus verliert oder der Benutzer Enter drückt. Soll das Feld bei jedem Tastendruck aktuell sein, wechselt man das Ereignis mit `@bind:event="oninput"`. Warum am selben Element kein eigener `@onchange`-Handler stehen darf und wofür stattdessen `@bind:after` da ist, steht in [Ereignisse in Blazor](/modules/blazor_ereignisse/blazor_ereignisse.md).
 {: .notice--warning}
 
 ## Der Render-Zyklus
@@ -123,3 +123,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Datenbindung in ASP.NET Core Blazor – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/data-binding)
 - [Rendern von Razor-Komponenten – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/rendering)
 - [Lebenszyklus von Razor-Komponenten – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/lifecycle)
+- [Blazor University](https://blazor-university.com/) – die Kapitel zu One-way und Two-way Binding zerlegen `@bind` Schritt für Schritt in das, was der Compiler daraus macht.
+- [Game Loop – Game Programming Patterns](https://gameprogrammingpatterns.com/game-loop.html) – der Vergleich lohnt sich: Ein Actionspiel rendert 60-mal pro Sekunde, unsere Seite nur nach einem Ereignis.

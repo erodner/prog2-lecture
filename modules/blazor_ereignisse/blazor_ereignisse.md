@@ -29,9 +29,9 @@ Die Grundform kennen wir: Das Attribut `@onclick` bekommt den Namen einer Method
 }
 ```
 
-Der Handler ist eine gewöhnliche Methode ohne Parameter und ohne Rückgabewert. Er tut genau das, was sein Name sagt – ein frisches Spielfeld aus dem gewählten Level bauen – und überlässt die eigentliche Arbeit dem `LevelParser` aus dem Spielkern. Auffällig ist wieder, was fehlt: Nirgends steht, dass die 200 Zellen des Spielfelds neu gezeichnet werden sollen.
+Der Handler ist eine gewöhnliche Methode ohne Parameter und ohne Rückgabewert. Er tut genau das, was sein Name sagt – ein frisches Spielfeld aus dem gewählten Level bauen – und überlässt die eigentliche Arbeit dem `LevelParser` aus dem Spielkern. Auffällig ist wieder, was fehlt: Nirgends steht, dass die 180 Zellen des Spielfelds neu gezeichnet werden sollen.
 
-Nach jedem Ereignisbehandler rendert Blazor die Komponente **automatisch neu**. Die beiden `for`-Schleifen laufen erneut, diesmal über das neue `feld`, und die Statusleiste bekommt die neuen Parameterwerte. Wir ändern nur Felder; die Anzeige folgt. Wann genau Blazor neu rendert und wie man das in Sonderfällen selbst anstößt, sehen wir in [Datenbindung und Render-Zyklus](/modules/blazor_datenbindung/blazor_datenbindung.md).
+Nach jedem Ereignisbehandler rendert Blazor die Komponente **automatisch neu**. Die beiden `for`-Schleifen laufen erneut, diesmal über das neue `feld`, und die Statusleiste bekommt die neuen Parameterwerte. Wir ändern nur Felder; die Anzeige folgt. Wann genau Blazor neu rendert und wie man das in Sonderfällen selbst anstößt, sehen wir in [Datenbindung und Rendern](/modules/blazor_datenbindung/blazor_datenbindung.md).
 {: .notice--primary}
 
 Der Name im Markup wird beim Kompilieren aufgelöst: `@onclick="NeuStarten"` ist kein String, sondern ein Verweis auf die Methode. Ein Tippfehler wie `@onclick="NeuStaten"` führt deshalb zu einem **Compilerfehler**, nicht zu einem stillen Fehlverhalten zur Laufzeit – ein großer Vorteil gegenüber Frameworks, die Handler über Zeichenketten verknüpfen.
@@ -149,7 +149,7 @@ private void Button_Click(object? sender, EventArgs e)
 }
 ```
 
-Die Idee ist dieselbe: Eine Methode wird bei einem Steuerelement für ein Ereignis **registriert** – hier mit `+=` im Code statt mit `@onclick` im Markup. Die feste Signatur mit `sender` und `EventArgs` gibt es bei Blazor nicht; die Methode nimmt nur, was sie braucht. Genau diese klassische Form verwendet übrigens unser Spielkern selbst: `Spielfeld.RundeBeendet` und `Spieler.SchatzGefunden` sind C#-Ereignisse, an die sich die Konsolenversion mit `+=` hängt. Dass dahinter ein Sprachmittel steckt, mit dem wir eigene Ereignisse in eigenen Klassen definieren können, lernen wir in [Ereignisse](/modules/ereignisse/ereignisse.md).
+Die Idee ist dieselbe: Eine Methode wird bei einem Steuerelement für ein Ereignis **registriert** – hier mit `+=` im Code statt mit `@onclick` im Markup. Die feste Signatur mit `sender` und `EventArgs` gibt es bei Blazor nicht; die Methode nimmt nur, was sie braucht. Genau diese klassische Form verwendet übrigens unser Spielkern selbst: `Spielfeld.RundeBeendet` und `Spieler.SchatzGefunden` sind C#-Ereignisse, an die sich jede Oberfläche mit `+=` hängen darf. Die Konsolenversion macht von `SchatzGefunden` Gebrauch und lässt bei jedem Fund einen Ton erklingen. Dass dahinter ein Sprachmittel steckt, mit dem wir eigene Ereignisse in eigenen Klassen definieren können, lernen wir in [Ereignisse](/modules/ereignisse/ereignisse.md).
 
 Übung: Ergänze die Steuerung um eine Wartetaste: Drückt der Spieler die Leertaste, soll eine Runde vergehen, in der er stehen bleibt, die Gegner sich aber bewegen. Überlege zuerst, wo diese Regel hingehört – in `TasteGedrueckt` oder in den Spielkern – und begründe deine Antwort damit, was die Konsolenversion davon mitbekommen soll. Ergänze anschließend `@onkeydown` um die Taste `r` für „neu starten“.
 {: .notice--info}
@@ -162,3 +162,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Ereignisargumenttypen – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/event-handling#event-arguments)
 - [Lebenszyklus von Razor-Komponenten – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/lifecycle)
 - [Tastaturereignisse: `KeyboardEvent.key` – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/API/KeyboardEvent/key)
+- [Das `keydown`-Ereignis – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/API/Element/keydown_event) – mit einem Probierfeld auf der Seite, in dem du dir für jede Taste den `Key`-Namen anzeigen lassen kannst.
+- [Command – Game Programming Patterns](https://gameprogrammingpatterns.com/command.html) – beginnt mit genau unserem Problem: Tastendrücke möglichst früh in Befehle des Spiels übersetzen, statt die Steuerung überall zu verteilen.

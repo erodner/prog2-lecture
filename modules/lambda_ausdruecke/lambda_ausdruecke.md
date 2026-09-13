@@ -87,10 +87,14 @@ static List<Gegner> Filtern(IEnumerable<Gegner> gegner, Func<Gegner, bool> bedin
     return ergebnis;
 }
 
-Position held = feld.Spieler.Position;
+// feld ist das eingebaute Level „Kerker“: eine Wache bei (13, 2), ein Verfolger bei (11, 5)
+Position held = feld.Spieler.Position;          // (1, 1)
 
 List<Gegner> jaeger = Filtern(feld.Gegner, g => g is Verfolger);
-List<Gegner> nah = Filtern(feld.Gegner, g => g.Position.Entfernung(held) <= 5);
+List<Gegner> nah = Filtern(feld.Gegner, g => g.Position.Entfernung(held) <= 15);
+
+Console.WriteLine(jaeger.Count);                // 1
+Console.WriteLine(nah.Count);                   // 2
 ```
 
 `Filtern` ist ein einziges Mal geschrieben und funktioniert mit jeder denkbaren Bedingung. Genau so arbeitet auch die Klasse `Inventar<T>` aus [Vorlesung 05](/lectures/05/05.md) – nur dass sie die Schleife nicht selbst schreibt, sondern an fertige LINQ-Methoden übergibt:
@@ -112,14 +116,14 @@ public bool Entfernen<TArt>() where TArt : T
 
 ## Closures: Zugriff auf äußere Variablen
 
-Im Beispiel oben ist etwas passiert, das eine benannte Methode nicht könnte: Das Lambda `g => g.Position.Entfernung(held) <= 5` benutzt die lokale Variable `held` der umgebenden Methode. Ein Lambda darf auf alles aus seiner Umgebung zugreifen – lokale Variablen, Parameter, Felder. Man sagt, es **schließt** diese Variablen **ein** (*closure*):
+Ein Lambda kann noch mehr als eine benannte Methode: Es darf auf alles aus seiner Umgebung zugreifen – lokale Variablen, Parameter, Felder. Im Beispiel oben ist das die Variable `held` der umgebenden Methode; eine statische Methode wie `NachEntfernungZurEcke` aus dem [letzten Modul](/modules/func_action/func_action.md) kam gerade deshalb nicht an sie heran. Man sagt, das Lambda **schließt** diese Variablen **ein** (*closure*):
 
 ```csharp
-int sichtweite = 5;
+int sichtweite = 15;
 List<Gegner> gefahr = Filtern(feld.Gegner, g => g.Position.Entfernung(held) <= sichtweite);
-Console.WriteLine(gefahr.Count);      // 2
+Console.WriteLine(gefahr.Count);      // 2 – Wache (13) und Verfolger (14) liegen darunter
 
-sichtweite = 2;
+sichtweite = 5;
 gefahr = Filtern(feld.Gegner, g => g.Position.Entfernung(held) <= sichtweite);
 Console.WriteLine(gefahr.Count);      // 0 – dieselbe Zeile, anderes Ergebnis
 ```
@@ -145,7 +149,7 @@ Alle drei Lambdas teilen sich *dieselbe* Variable `i`. Wenn sie ausgeführt werd
 
 Beides ergibt denselben Delegaten, die Wahl ist eine Frage der Lesbarkeit. Ein Lambda ist die richtige Wahl, wenn das Verhalten kurz ist, nur an dieser einen Stelle gebraucht wird und ohne Namen verständlich bleibt – `g => g is Verfolger` sagt alles. Eine benannte Methode lohnt sich, wenn die Logik mehrere Zeilen umfasst, an mehreren Stellen wiederverwendet wird, getestet werden soll oder wenn der Name eine Fachbedeutung transportiert: `HatSichtlinie` liest sich besser als ein zwanzigzeiliges Lambda mit dem Bresenham-Algorithmus. Und wer eine Methode später wieder mit `-=` von einem Delegaten abmelden will, braucht eine Referenz darauf – ein anonym hingeschriebenes Lambda lässt sich nicht wiederfinden. Darauf kommen wir im Modul [Ereignisse](/modules/ereignisse/ereignisse.md) zurück.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 Übung: Schreibe mit `Filtern` und passenden Lambdas drei Abfragen über `feld.Gegner`: alle Wachen, alle Gegner mit gerader X-Koordinate, alle Gegner, die zwischen zwei lokalen Grenzen `nah` und `fern` vom Helden entfernt stehen. Sage anschließend voraus, was die Schleifenfalle ausgibt, wenn du `for` durch `foreach (int i in new[] { 0, 1, 2 })` ersetzt – und prüfe es.
 {: .notice--info}
@@ -155,3 +159,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Lambdaausdrücke – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/operators/lambda-expressions)
 - [Anonyme Funktionen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/operators/delegate-operator)
 - [Erfassung äußerer Variablen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/operators/lambda-expressions#capture-of-outer-variables-and-variable-scope-in-lambda-expressions)
+- [SharpLab](https://sharplab.io/) – macht die Klasse sichtbar, die der Compiler für ein Closure anlegt; damit wird die Schleifenfalle oben schlagartig verständlich.
+- [.NET Fiddle](https://dotnetfiddle.net/) – die Schleifenfalle in zehn Sekunden selbst nachstellen, mit `for` und mit `foreach`.

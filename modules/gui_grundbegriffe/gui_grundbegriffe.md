@@ -86,3 +86,5 @@ Der Preis des Server-Modus ist die Latenz: Jeder Tastendruck ist eine Netzwerkna
 - [Blazor-Rendermodi – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/render-modes)
 - [Was ist .NET MAUI? – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/maui/what-is-maui)
 - [Avalonia UI – Dokumentation](https://docs.avaloniaui.net/)
+- [Blazor-Tutorial für Einsteiger – Microsoft](https://dotnet.microsoft.com/en-us/learn/aspnet/blazor-tutorial/intro) – führt in wenigen Schritten vom leeren Projekt zur ersten interaktiven Seite, zum Mittippen statt zum Nachschlagen.
+- [Blazor University](https://blazor-university.com/) – freies Online-Buch, das jedes Blazor-Konzept an einem winzigen lauffähigen Beispiel erklärt.

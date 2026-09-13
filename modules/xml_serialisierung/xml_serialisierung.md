@@ -31,16 +31,16 @@ using (StreamReader reader = File.OpenText(pfad))
 }
 ```
 
-`Deserialize` liefert `object`, weshalb der Cast auf `Spielstand` nötig ist – der Typ wurde ja schon dem Konstruktor übergeben. Die `using`-Blöcke schließen die Datei nach dem Schreiben, bevor sie zum Lesen wieder geöffnet wird; eine `using`-Deklaration würde hier nicht genügen, weil sie erst am Ende der Methode freigibt. Das Ergebnis auf der Platte sieht so aus (gekürzt um die leeren Listen):
+`Deserialize` liefert `object`, weshalb der Cast auf `Spielstand` nötig ist – der Typ wurde ja schon dem Konstruktor übergeben. Die `using`-Blöcke schließen die Datei nach dem Schreiben, bevor sie zum Lesen wieder geöffnet wird; eine `using`-Deklaration würde hier nicht genügen, weil sie erst am Ende der Methode freigibt. Es ist derselbe Spielstand wie im vorigen Modul, diesmal auf der Platte als XML (gekürzt um `EntfernteGegenstaende` und `GeoeffneteTruhen`, die genauso aufgebaut sind wie `OffeneTueren`):
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Spielstand xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <LevelName>kerker</LevelName>
-  <Runde>31</Runde>
+  <Runde>33</Runde>
   <SpielerPosition>
     <X>15</X>
-    <Y>7</Y>
+    <Y>5</Y>
   </SpielerPosition>
   <Lebenspunkte>2</Lebenspunkte>
   <Punkte>100</Punkte>
@@ -53,14 +53,18 @@ using (StreamReader reader = File.OpenText(pfad))
   </OffeneTueren>
   <GegnerPositionen>
     <Position>
-      <X>13</X>
+      <X>8</X>
       <Y>2</Y>
+    </Position>
+    <Position>
+      <X>15</X>
+      <Y>4</Y>
     </Position>
   </GegnerPositionen>
 </Spielstand>
 ```
 
-Jede Property wird zu einem Element mit öffnendem und schließendem Tag; der Klassenname wird zum Wurzelelement, und die Elemente einer Liste bekommen den Namen ihres Elementtyps (`<Position>`). Die `xmlns`-Attribute in der zweiten Zeile schreibt der Serialisierer immer, auch wenn man sie nicht braucht. Vergleicht man die Datei mit der JSON-Fassung, fällt sofort auf: Dieselbe Information braucht rund die doppelte Menge Text, weil jeder Name zweimal dasteht.
+Jede Property wird zu einem Element mit öffnendem und schließendem Tag; der Klassenname wird zum Wurzelelement, und die Elemente einer Liste bekommen den Namen ihres Elementtyps (`<Position>`). Eine leere Liste wie `Inventar` schrumpft auf ein einzelnes `<Inventar />`. Die `xmlns`-Attribute in der zweiten Zeile schreibt der Serialisierer immer, auch wenn man sie nicht braucht. Vergleicht man die Datei mit der JSON-Fassung, fällt sofort auf: Dieselbe Information braucht rund die doppelte Menge Text, weil jeder Name zweimal dasteht.
 
 ## Anforderungen an die Klasse
 
@@ -94,8 +98,8 @@ public class Spielstand
     [XmlIgnore]
     public DateTime Gespeichert { get; set; }
 }
-// <spielstand xmlns:xsi="..." xmlns:xsd="..." level="kerker" runde="31">
-//   <spieler><X>15</X><Y>7</Y></spieler>
+// <spielstand xmlns:xsi="..." xmlns:xsd="..." level="kerker" runde="33">
+//   <spieler><X>15</X><Y>5</Y></spieler>
 // </spielstand>
 ```
 
@@ -129,3 +133,4 @@ In älteren Lehrbüchern findest du den `BinaryFormatter`: Klasse mit `[Serializ
 - [XML-Serialisierung – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/serialization/introducing-xml-serialization)
 - [`XmlSerializer`-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.xml.serialization.xmlserializer)
 - [Sicherheitsrisiken von BinaryFormatter – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/serialization/binaryformatter-security-guide)
+- [JSON – die komplette Syntax auf einer Seite (deutsch)](https://www.json.org/json-de.html) – zum direkten Vergleich: JSON passt auf eine Seite, die XML-Spezifikation auf ein Buch.

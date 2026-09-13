@@ -120,3 +120,5 @@ Das GitLab ist ein Ort für Quelltexte, Projektdateien und Dokumentation im Text
 - [Mit Remotes arbeiten – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Grundlagen-Mit-Remotes-arbeiten)
 - [Git auf dem Server – SSH-Schlüssel erzeugen – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-auf-dem-Server-Erstellung-eines-SSH-Public-Keys)
 - [GitLab-Dokumentation: SSH keys](https://docs.gitlab.com/user/ssh/)
+- [GitLab](https://about.gitlab.com/) – die Plattform hinter dem HTW-GitLab; lohnt sich zum Stöbern, was ein Server neben `git push` sonst noch anbietet (Issues, Merge Requests, CI).
+- [Learn Git Branching – „Push & Pull: Git Remotes“ (deutsch)](https://learngitbranching.js.org/?locale=de_DE) – im zweiten Kursteil kannst du `clone`, `fetch`, `pull` und `push` an einem animierten Graphen durchspielen.

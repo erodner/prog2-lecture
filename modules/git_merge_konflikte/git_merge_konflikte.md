@@ -154,3 +154,4 @@ Konflikte lassen sich nicht ganz verhindern, aber selten und klein halten:
 - [Einfaches Branching und Merging – Merge-Konflikte – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Branching-Einfaches-Branching-und-Merging#_basic_merge_conflicts)
 - [Fortgeschrittenes Merging – Pro Git (git-scm.com)](https://git-scm.com/book/de/v2/Git-Tools-Fortgeschrittenes-Merging)
 - [Mergekonflikte in Visual Studio auflösen – Microsoft Learn](https://learn.microsoft.com/de-de/visualstudio/version-control/git-resolve-conflicts)
+- [Oh Shit, Git!?! (deutsch)](https://ohshitgit.com/de) – Rezepte für den Moment nach dem misslungenen Merge: abbrechen, zurückdrehen, eine einzelne Datei von einer Seite holen.

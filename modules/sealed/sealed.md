@@ -154,3 +154,4 @@ Im Zweifel nicht `sealed` – außer du hast einen Grund. Jedes Siegel nimmt sp�
 - [`sealed` – C#-Referenz – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/sealed)
 - [Statische Klassen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/static-classes-and-static-class-members)
 - [Vererbung in C# – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/object-oriented/inheritance)
+- [Liskovsches Substitutionsprinzip – Wikipedia](https://de.wikipedia.org/wiki/Liskovsches_Substitutionsprinzip) – die theoretische Begründung für das Siegel: Eine `Glaswand`, durch die man laufen kann, verletzt genau dieses Prinzip.

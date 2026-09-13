@@ -55,7 +55,7 @@ Das Standardmodell für Anwendungen mit einem nennenswerten Fachmodell – CAD-P
 │  zeigt an, nimmt Eingaben entgegen                           │
 │                                                              │
 │   Adventure.Konsole            Adventure.Web                 │
-│   AlsText(), ReadKey           Home.razor, Statusleiste       │
+│   AlsText(), ReadKey           Home.razor, Statusleiste      │
 ├──────────────────────────────────────────────────────────────┤
 │            │ beide nutzen dieselben Dienste                  │
 │            ▼                                                 │
@@ -106,3 +106,5 @@ Die **Zwei-Schichten-Architektur** fasst Oberfläche und Fachkonzept zu einer An
 - [Allgemeine Webanwendungsarchitekturen (Schichten) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures)
 - [Architekturprinzipien – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/architecture/modern-web-apps-azure/architectural-principles)
 - [Schichtenarchitektur – Wikipedia](https://de.wikipedia.org/wiki/Schichtenarchitektur)
+- [Game Programming Patterns – freies Online-Buch](https://gameprogrammingpatterns.com/) – das Einleitungskapitel „Architecture, Performance, and Games“ beschreibt genau unseren Zielkonflikt zwischen sauberer Trennung und Geschwindigkeit.
+- [Liskovsches Substitutionsprinzip – Wikipedia](https://de.wikipedia.org/wiki/Liskovsches_Substitutionsprinzip) – die Regel dahinter, dass eine Schicht ihre Nachbarin gegen jede Implementierung derselben Schnittstelle tauschen darf.

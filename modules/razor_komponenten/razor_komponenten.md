@@ -55,6 +55,8 @@ Der interessanteste Teil der Seite ist die Karte. Ein `Spielfeld` kennt seine `B
 </div>
 ```
 
+Im Projekt trägt dieses `<div>` noch drei weitere Attribute, die mit der Tastatursteuerung zu tun haben; sie kommen in [Ereignisse in Blazor](/modules/blazor_ereignisse/blazor_ereignisse.md) dazu. Für den Aufbau des Rasters spielen sie keine Rolle, deshalb fehlen sie hier.
+
 Zwei Feinheiten stecken darin. Erstens braucht nur die **äußere** Schleife das `@` – es schaltet einmal nach C# um, und alles im Rumpf ist bereits C#. Die innere `for`-Schleife und die Zuweisung `Spielobjekt? objekt = ...` stehen deshalb ohne `@` da; nur die Zeile, die mit `<` beginnt, wird wieder als Markup erkannt. Zweitens erzeugen die beiden Schleifen einen *flachen* Strom von `<div>`-Elementen, ohne Zeilenumbrüche im Markup. Dass daraus ein Raster wird, entscheidet das CSS-Grid – dazu mehr in [Layout mit HTML und CSS](/modules/blazor_layout/blazor_layout.md).
 
 Was die einzelne Zelle anzeigt, entscheiden zwei statische Hilfsmethoden im `@code`-Block. Sie sind das Gegenstück zu `Spielobjekt.Symbol` aus dem Kern: Dort steht ein `char` für die Konsole, hier ein Emoji für den Browser.
@@ -150,7 +152,7 @@ Die Property `Herzen` zeigt nebenbei, was in eine Komponente gehören darf: eine
 Komponenten machen sich als Tags nur bemerkbar, wenn ihr Namespace bekannt ist. Die Datei `_Imports.razor` enthält dafür `@using`-Zeilen, die für alle Razor-Dateien gelten. Verschiebt man eine Komponente in einen neuen Unterordner, ändert sich ihr Namespace, und der Compiler meldet, das Tag sei unbekannt – dann fehlt eine `@using`-Zeile.
 {: .notice--warning}
 
-Übung: Zerlege die Werkzeugleiste in eine eigene Komponente `Levelauswahl.razor`. Sie bekommt die Liste der Levelnamen als Parameter und meldet die Auswahl über einen Rückkanal an die Startseite. Überlege zuerst auf Papier: Welche Parameter braucht sie, und welchen Typ muss der Rückkanal haben? Den passenden Typ dafür lernst du in [Dialoge als Komponenten](/modules/blazor_dialoge/blazor_dialoge.md) kennen.
+Übung: Zerlege die Werkzeugleiste in eine eigene Komponente `Levelauswahl.razor`. Sie bekommt die Liste der Levelnamen als Parameter und meldet die Auswahl über einen Rückkanal an die Startseite. Überlege zuerst auf Papier: Welche Parameter braucht sie, und welchen Typ muss der Rückkanal haben? Den passenden Typ dafür lernst du in [Dialoge als Komponenten](/modules/blazor_dialoge/blazor_dialoge.md) kennen. Eine ausgearbeitete Lösung steht als Aufgabe 1 in [Aufgaben und Beispiele](/modules/aufgaben_gui_schichten/aufgaben_gui_schichten.md) – schau erst hinein, wenn dein eigener Entwurf steht.
 {: .notice--info}
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
@@ -161,3 +163,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Razor-Komponenten in ASP.NET Core – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/)
 - [Attribute und Parameter von Komponenten – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/#component-parameters)
 - [Mustervergleich mit `switch`-Ausdrücken – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/operators/patterns)
+- [HTML-Elementreferenz – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/HTML/Reference/Elements) – das vollständige Sortiment an „Steuerelementen“, aus dem du dir in Blazor bedienst.
+- [Mustervergleich üben – SharpLab](https://sharplab.io/) – zeigt dir, in welchen C#-Code der Compiler einen `switch`-Ausdruck mit Typmustern übersetzt.

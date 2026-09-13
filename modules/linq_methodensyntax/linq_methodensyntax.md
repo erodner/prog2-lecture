@@ -55,9 +55,12 @@ static class SpielobjektErweiterungen
     }
 }
 
-Console.WriteLine(feld.AlleObjekte.AnzahlBegehbar());                    // 7
-Console.WriteLine(SpielobjektErweiterungen.AnzahlBegehbar(feld.AlleObjekte)); // 7 – dasselbe
+// feld ist das eingebaute Level „Kerker“, 20 × 9 Felder
+Console.WriteLine(feld.AlleObjekte.AnzahlBegehbar());                    // 3
+Console.WriteLine(SpielobjektErweiterungen.AnzahlBegehbar(feld.AlleObjekte)); // 3 – dasselbe
 ```
+
+Nur drei? `AlleObjekte` enthält keine Bodenfelder – leerer Boden ist im Adventure schlicht das Fehlen eines Objekts. Passierbar sind im Kerker deshalb genau der Schlüssel, der Trank und der Ausgang; die Tür ist es erst, wenn sie offen ist.
 
 Beide Aufrufe sind gleichwertig; die Punktschreibweise ist nur bequemer. Weil der erste Parameter `IEnumerable<Spielobjekt>` ist, funktioniert die Methode auf `feld.AlleObjekte`, auf einer `List<Spielobjekt>`, auf einem Array und auf den Ergebnissen anderer LINQ-Abfragen – auf allem, was wir im [Collections-Überblick](/modules/collections_ueberblick/collections_ueberblick.md) als aufzählbar kennengelernt haben. Genau so sind die LINQ-Methoden gebaut, nur generisch für jedes `T`.
 
@@ -86,25 +89,25 @@ Die Query-Syntax kennt nur eine Handvoll Schlüsselwörter. Die Methodensyntax b
 Die Methoden lassen sich beliebig verketten, weil die meisten wieder ein `IEnumerable<T>` zurückgeben. Das Adventure bietet dafür zwei Quellen an: `feld.Gegner` ist eine `IReadOnlyList<Gegner>`, und `feld.AlleObjekte` liefert *jedes* Objekt auf der Karte – erst die statischen, dann die Gegner, zuletzt den Spieler. Damit lassen sich Fragen über das Level formulieren, für die es sonst eine Schleife mit Zähler bräuchte:
 
 ```csharp
-Position held = feld.Spieler.Position;
+Position held = feld.Spieler.Position;          // (1, 1) im Level „Kerker“
 
 var bedrohung = feld.AlleObjekte
     .OfType<Gegner>()
-    .Where(g => g.Position.Entfernung(held) <= 5)
+    .Where(g => g.Position.Entfernung(held) <= 15)
     .OrderBy(g => g.Position.Entfernung(held))
     .Select(g => $"{g.Name} in {g.Position.Entfernung(held)} Schritten")
     .Take(3)
     .ToList();
 
 Console.WriteLine(string.Join(", ", bedrohung));
-// Verfolger in 3 Schritten, Wache in 5 Schritten
+// Wache in 13 Schritten, Verfolger in 14 Schritten
 
-Console.WriteLine(feld.AlleObjekte.Count(o => o is Wand));        // 42
+Console.WriteLine(feld.AlleObjekte.Count(o => o is Wand));        // 60
 Console.WriteLine(feld.AlleObjekte.Any(o => o is Schluessel));    // True
-Console.WriteLine(string.Join("", feld.Gegner.Select(g => g.Symbol)));  // WVV
+Console.WriteLine(string.Join("", feld.Gegner.Select(g => g.Symbol)));  // WV
 ```
 
-Beim Lesen hilft es, jede Zeile als Frage zu formulieren: „Welche Objekte sind Gegner? Welche davon stehen höchstens fünf Schritte entfernt? Sortiere sie nach Entfernung. Mache aus jedem einen Text. Nimm die ersten drei. Packe sie in eine Liste.“ `OfType<Gegner>()` erledigt dabei zwei Dinge auf einmal: Es filtert *und* liefert ein `IEnumerable<Gegner>` statt `IEnumerable<Spielobjekt>` – erst dadurch darf das nächste Lambda auf gegnerspezifische Mitglieder zugreifen. Ein `Where(o => o is Gegner)` allein würde den statischen Typ nicht ändern.
+Beim Lesen hilft es, jede Zeile als Frage zu formulieren: „Welche Objekte sind Gegner? Welche davon stehen höchstens fünfzehn Schritte entfernt? Sortiere sie nach Entfernung. Mache aus jedem einen Text. Nimm die ersten drei. Packe sie in eine Liste.“ `OfType<Gegner>()` erledigt dabei zwei Dinge auf einmal: Es filtert *und* liefert ein `IEnumerable<Gegner>` statt `IEnumerable<Spielobjekt>` – erst dadurch darf das nächste Lambda auf gegnerspezifische Mitglieder zugreifen. Ein `Where(o => o is Gegner)` allein würde den statischen Typ nicht ändern.
 
 Auch im Spielcode selbst steckt die Methodensyntax längst. `Spielfeld.IstFrei` fragt mit `All`, ob wirklich kein Gegner auf dem Zielfeld steht, und `Inventar<T>` beantwortet die Frage nach einem Schlüssel mit `Any`:
 
@@ -125,7 +128,7 @@ Beide Schreibweisen sind gleichwertig: Der Compiler übersetzt die Query-Syntax 
 Auch in Methodensyntax gilt die **verzögerte Ausführung** aus dem Modul [Deferred Execution](/modules/linq_deferred_execution/linq_deferred_execution.md): `Where`, `Select` und `OrderBy` bauen nur eine Abfrage zusammen, ausgeführt wird sie erst beim Durchlaufen – durch `foreach`, `ToList`, `Count`, `First` und ähnliche Methoden. Wer die Abfrage vor der Runde baut und nach der Runde durchläuft, sieht die neuen Gegnerpositionen. Und wer eine teure Abfrage zweimal durchläuft, rechnet zweimal.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
 Übung: Schreibe in Methodensyntax: (a) die Namen aller Truhen auf dem Feld, alphabetisch; (b) die durchschnittliche Entfernung aller Gegner zum Helden; (c) ein `Dictionary<Position, char>` von Position auf Symbol für alle nicht passierbaren Objekte; (d) die drei Objekte, die dem Helden am nächsten liegen, ihn selbst ausgenommen. Welche der vier Abfragen ließen sich auch in Query-Syntax schreiben?
 {: .notice--info}
@@ -136,3 +139,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Abfragesyntax und Methodensyntax in LINQ – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/get-started/write-linq-queries)
 - [Erweiterungsmethoden – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/extension-methods)
 - [Enumerable-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.linq.enumerable)
+- [101 LINQ-Beispiele – dotnet/try-samples](https://github.com/dotnet/try-samples/tree/main/101-linq-samples) – für jeden Operator ein winziges lauffähiges Beispiel; ideal zum Nachschlagen, wenn man den Namen der passenden Methode sucht.
+- [.NET Fiddle](https://dotnetfiddle.net/) – eine Methodenkette Glied für Glied verlängern und nach jedem Schritt das Zwischenergebnis ansehen.

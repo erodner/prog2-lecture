@@ -198,3 +198,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Vererbung in C# – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/object-oriented/inheritance)
 - [Vererbung – Tutorial mit Beispielen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/tutorials/inheritance)
 - [Zugriffsmodifizierer (`protected`) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/access-modifiers)
+- [Roguelike – Wikipedia](https://de.wikipedia.org/wiki/Roguelike) – ordnet unser Adventure in ein Spielgenre ein, das seit 1980 von genau solchen Rastern, Symbolen und rundenbasierten Zügen lebt.
+- [RogueBasin – Wiki der Roguelike-Entwicklung](https://www.roguebasin.com/index.php/Main_Page) – eine Fundgrube an Artikeln zu Levelerzeugung, Sichtlinien und Gegner-KI, wenn du das Spiel über die Vorlesung hinaus weiterbauen willst.

@@ -35,7 +35,7 @@ Dreizehn Tests in unter einer Zehntelsekunde – neun aus `SpielfeldTests`, vier
     Expected: (0, 0)
     But was:  (1, 0)
   Stack Trace:
-     at Adventure.Tests.SpielfeldTests.Tuer_Ohne_Schluessel_Bleibt_Zu() in .../SpielfeldTests.cs:line 38
+     at Adventure.Tests.SpielfeldTests.Tuer_Ohne_Schluessel_Bleibt_Zu() in .../SpielfeldTests.cs:line 39
 
 Failed!  - Failed:     1, Passed:    12, Skipped:     0, Total:    13, Duration: 88 ms - Adventure.Tests.dll (net10.0)
 ```
@@ -93,23 +93,31 @@ Wenn ein Test nach einer Änderung rot wird, gibt es genau zwei Möglichkeiten: 
 
 ## Ausblick: Tests auf dem Server (CI)
 
-Weil `dotnet test` ohne IDE läuft, kann es auch ein Server ausführen – und zwar automatisch nach jedem Push, wie wir es beim [Arbeiten mit Remotes](/modules/git_remote/git_remote.md) kennengelernt haben. Das nennt man **Continuous Integration (CI)**. Bei GitHub Actions reicht dafür eine kleine Datei `.github/workflows/tests.yml` im Repository:
+Weil `dotnet test` ohne IDE läuft, kann es auch ein Server ausführen – und zwar automatisch nach jedem Push, wie wir es beim [Arbeiten mit Remotes](/modules/git_remote/git_remote.md) kennengelernt haben. Das nennt man **Continuous Integration (CI)**. Bei GitHub Actions genügt dafür eine kleine YAML-Datei im Ordner `.github/workflows/`. Genau diese Datei liegt im Adventure-Repository unter `.github/workflows/dotnet.yml`:
 
 ```yaml
-name: Tests
-on: [push, pull_request]
+name: Build und Test
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-      - run: dotnet test --verbosity normal
+          dotnet-version: "10.0.x"
+      - run: dotnet build --configuration Release
+      - run: dotnet test --configuration Release --no-build
 ```
 
-Nach jedem Push holt sich ein frischer Linux-Rechner den Code, installiert das SDK und führt die dreizehn Tests aus. Schlägt einer fehl, wird der Commit auf GitHub rot markiert und ein Pull Request lässt sich nicht mehr guten Gewissens mergen. Dass das Adventure eine Konsolen- *und* eine Web-Oberfläche hat, spielt dabei keine Rolle: Getestet wird der Kern, und der braucht weder Bildschirm noch Tastatur. In GitLab CI (etwa im HTW-GitLab) sieht die Datei `.gitlab-ci.yml` sehr ähnlich aus: ein Job mit dem Image `mcr.microsoft.com/dotnet/sdk:10.0` und dem Skript `dotnet test`. So wird aus „bei mir läuft es“ ein „es läuft überall, und wir sehen es sofort“.
+Von oben nach unten gelesen: `on` legt fest, *wann* der Ablauf startet – bei einem Push auf `main` und bei jedem Pull Request. `runs-on: ubuntu-latest` fordert einen frischen Linux-Rechner an, den GitHub für diesen Lauf startet und danach wieder wegwirft. Die vier `steps` laufen darauf der Reihe nach: `actions/checkout@v4` holt den Code, `actions/setup-dotnet@v4` installiert das .NET-SDK in der Version `10.0.x`, dann wird gebaut und getestet. Das `--no-build` im letzten Schritt sagt `dotnet test`, dass es das Ergebnis des vorherigen Schritts benutzen soll, statt alles ein zweites Mal zu übersetzen – deshalb muss dort dieselbe Konfiguration `Release` stehen wie beim Bauen.
+
+Nach jedem Push führt dieser Rechner also die dreizehn Tests aus. Schlägt einer fehl, liefert `dotnet test` einen Exit-Code ungleich 0, der Schritt gilt als fehlgeschlagen, und der Commit bekommt auf GitHub einen roten Haken – ein Pull Request lässt sich dann nicht mehr guten Gewissens mergen. Dass das Adventure eine Konsolen- *und* eine Web-Oberfläche hat, spielt dabei keine Rolle: Getestet wird der Kern, und der braucht weder Bildschirm noch Tastatur. In GitLab CI (etwa im HTW-GitLab) sieht die Datei `.gitlab-ci.yml` sehr ähnlich aus: ein Job mit dem Image `mcr.microsoft.com/dotnet/sdk:10.0` und dem Skript `dotnet test`. So wird aus „bei mir läuft es“ ein „es läuft überall, und wir sehen es sofort“.
 
 ## Ausblick: Testabdeckung mit coverlet
 
@@ -132,3 +140,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Komponententests filtern – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/testing/selective-unit-tests)
 - [Codeabdeckung mit coverlet – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/testing/unit-testing-code-coverage)
 - [Tests ausführen – NUnit-Dokumentation](https://docs.nunit.org/articles/nunit/running-tests/Index.html)
+- [GitHub Actions – Dokumentation (deutsch)](https://docs.github.com/de/actions) – erklärt Workflows, Jobs und Schritte genau in der Reihenfolge, in der sie oben in `dotnet.yml` stehen.
+- [GitHub Actions – Überblick](https://github.com/features/actions) – zeigt an Beispielen, was neben Tests sonst noch automatisch nach einem Push laufen kann.

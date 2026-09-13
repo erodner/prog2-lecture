@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Delegaten und Ereignisse sind dafür besonders geeignet, weil sie erlauben, das *Was* vom *Wer* zu trennen – und weil man bei Closures und Multicast-Delegaten sehr genau hinschauen muss, was zur Laufzeit wirklich passiert. Alle Aufgaben spielen im Adventure, dem durchgehenden Beispiel des Kurses – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Delegaten und Ereignisse sind dafür besonders geeignet, weil sie erlauben, das *Was* vom *Wer* zu trennen – und weil man bei Closures und Multicast-Delegaten sehr genau hinschauen muss, was zur Laufzeit wirklich passiert. Alle Aufgaben spielen im Adventure, dem durchgehenden Beispiel des Kurses – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Algorithmenentwurf
 
@@ -99,7 +99,7 @@ Jedes hingeschriebene Lambda erzeugt ein *neues* Delegatobjekt. Das Lambda in de
 **Zentrale Designentscheidungen:**
 
 - **Closures fangen Variablen ein, keine Werte:** Wer einen Wert festhalten will, muss ihn innerhalb des Schleifenrumpfs in eine neue lokale Variable kopieren (`int kopie = i;`). Bei `foreach` ist das seit C# 5 nicht nötig.
-- **`-=` ist kein „alle entfernen“:** Hat man eine Methode mehrfach registriert – ein häufiger Fehler, wenn `+=` in einer Methode steht, die mehrfach aufgerufen wird –, muss man sie ebenso oft abmelden. Genau das passiert in der Konsolenversion beinahe, wenn nach `F9` erneut `SchatzGefunden += …` ausgeführt wird; dort ist es nur deshalb korrekt, weil `Spielfeld.Wiederherstellen` einen *neuen* Spieler liefert.
+- **`-=` ist kein „alle entfernen“:** Hat man eine Methode mehrfach registriert – ein häufiger Fehler, wenn `+=` in einer Methode steht, die mehrfach aufgerufen wird –, muss man sie ebenso oft abmelden. Genau das passiert in der Konsolenversion ab [Vorlesung 09](/lectures/09/09.md) beinahe, wenn nach `F9` erneut `SchatzGefunden += …` ausgeführt wird; dort ist es nur deshalb korrekt, weil `Spielfeld.Wiederherstellen` einen *neuen* Spieler liefert.
 - **Wer sich abmelden will, braucht eine benannte Methode:** Ein anonym hingeschriebenes Lambda lässt sich nicht wiederfinden. Alternativ merkt man sich den Delegaten in einer Variablen und meldet diese wieder ab.
 - **Der Sender bemerkt von alldem nichts:** `Spielfeld.SpielerZieht` enthält genau eine Zeile mit `RundeBeendet?.Invoke(...)` – ob dahinter null, ein oder fünf Empfänger stehen, ändert den Sender nicht.
 
@@ -325,7 +325,7 @@ Erkenne das Muster, das sich in allen Zweigen wiederholt, und ersetze den `switc
 - Was haben alle Zweige gemeinsam – welche Abbildung steckt dahinter?
 - Wie kommt der Fall „unbekannte Taste“ ohne `default` aus?
 - Wie kann jemand zur Laufzeit eine zweite Tastenbelegung ergänzen (etwa `h j k l`), ohne die Spielschleife zu ändern?
-- F5 und F9 tun etwas anderes als eine Richtung zu liefern. Wie passt das in dieselbe Tabelle – und sollte es das?
+- In Vorlesung 09 kommen F5 (speichern) und F9 (laden) dazu; die liefern keine Richtung. Wie passt das in dieselbe Tabelle – und sollte es das?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -381,7 +381,7 @@ An `Tastenbelegung` wurde für die vier neuen Tasten keine Zeile geändert. Ein 
 
 **Schritt 4 — F5 und F9:**
 
-Diese Tasten liefern keine Richtung, sondern führen eine Aktion aus. Man *kann* sie in dieselbe Tabelle legen, wenn man den Werttyp verallgemeinert – dann ist es ein `Dictionary<ConsoleKey, Action<Spielfeld>>`, und auch das Ziehen wird zu einer Aktion:
+Diese Tasten liefern keine Richtung, sondern führen eine Aktion aus – im Spielstand-Modul der [Vorlesung 09](/lectures/09/09.md) speichern und laden sie. Man *kann* sie in dieselbe Tabelle legen, wenn man den Werttyp verallgemeinert – dann ist es ein `Dictionary<ConsoleKey, Action<Spielfeld>>`, und auch das Ziehen wird zu einer Aktion:
 
 ```csharp
 Dictionary<ConsoleKey, Action<Spielfeld>> befehle = new()

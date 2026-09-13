@@ -246,7 +246,7 @@ Mit der ursprünglichen Fassung wäre dieser Test nicht schreibbar gewesen: Die 
 
 ## Aufgabe 3 — Algorithmenentwurf
 
-Die Statusleiste zeigt das Inventar bisher als eine Zeile Text: `@Spieler.Inventar` ruft `Inventar<T>.ToString()` auf, das die Namen mit Komma verbindet. Entwirf stattdessen ein **Inventar-Panel**: eine Komponente, die jeden Gegenstand als Kachel mit Symbol und Namen zeigt, gleiche Gegenstände zusammenfasst („🔑 Schlüssel ×2“) und bei leerem Inventar einen Hinweis anzeigt.
+Die Statusleiste zeigt das Inventar bisher als eine Zeile Text: `@Spieler.Inventar` ruft `Inventar<T>.ToString()` auf, das die Namen mit Komma verbindet. Entwirf stattdessen eine Komponente `Inventarpanel.razor`, die jeden Gegenstand als Kachel mit Symbol und Namen zeigt, gleiche Gegenstände zusammenfasst („🔑 Schlüssel ×2“) und bei leerem Inventar einen Hinweis anzeigt.
 
 - Welchen Typ hat der Parameter – `Inventar<Gegenstand>`, `IEnumerable<Gegenstand>` oder `List<string>`? Was gewinnt und was verliert man jeweils?
 - Wie fasst du gleiche Gegenstände zusammen, ohne den Kern zu ändern?
@@ -261,6 +261,8 @@ Die Statusleiste zeigt das Inventar bisher als eine Zeile Text: `@Spieler.Invent
 `SymbolFuer` wird an zwei Stellen gebraucht: auf dem Spielfeld und im Panel. Doppelt schreiben wäre die Garantie dafür, dass ein neues Objekt irgendwann an einer Stelle als Fragezeichen erscheint. Also wandert die Methode in eine eigene statische Klasse – **im Web-Projekt**, nicht im Kern:
 
 ```csharp
+using Adventure.Kern;
+
 namespace Adventure.Web;
 
 /// <summary>Die Übersetzung von Spielobjekten in Emojis – reine Darstellung.</summary>
@@ -285,6 +287,7 @@ Der Kern wäre der falsche Ort: Er hat mit `Spielobjekt.Symbol` bereits eine Dar
 **Schritt 2 — Die Komponente:**
 
 ```razor
+@* Components/Inventarpanel.razor *@
 @using Adventure.Kern
 
 <div class="inventar">

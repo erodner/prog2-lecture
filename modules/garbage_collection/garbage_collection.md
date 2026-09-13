@@ -95,16 +95,16 @@ long nachher = GC.GetTotalMemory(forceFullCollection: true);
 Console.WriteLine($"Vorher:     {vorher / 1024} KB");
 Console.WriteLine($"Mittendrin: {mittendrin / 1024} KB");
 Console.WriteLine($"Nachher:    {nachher / 1024} KB");
-// Vorher:     84 KB
-// Mittendrin: 2371 KB      (Wert schwankt – hängt davon ab, wann der GC zuletzt lief)
-// Nachher:    85 KB
+// Vorher:     126 KB
+// Mittendrin: 3271 KB      (Wert schwankt – hängt davon ab, wann der GC zuletzt lief)
+// Nachher:    118 KB
 ```
 
 `GC.GetTotalMemory(true)` wartet auf eine vollständige Sammlung und liefert dann den belegten Speicher. Die 100.000 Wände sind danach vollständig verschwunden, obwohl nirgends etwas freigegeben wurde. Der Wert „mittendrin“ zeigt, dass der GC nicht sofort nach jedem Durchlauf aufräumt, sondern erst, wenn es sich lohnt.
 
 ## Finalizer und `IDisposable`
 
-Der GC kümmert sich um **verwalteten** Speicher – also um Objekte, die mit `new` in .NET erzeugt wurden. Manche Objekte halten aber Ressourcen außerhalb der Laufzeitumgebung: eine geöffnete Datei, eine Netzwerkverbindung, ein Fensterhandle des Betriebssystems. Von diesen weiß der GC nichts. Eine Klasse kann dafür einen **Finalizer** (`~Spielfeld() { ... }`) definieren, der vor der Freigabe aufgerufen wird – aber man weiß nie, *wann* das passiert, vielleicht erst Minuten später oder beim Programmende. Für Dateien und Verbindungen ist das unbrauchbar. Der richtige Weg ist das Interface `IDisposable` zusammen mit der `using`-Anweisung, die Ressourcen **deterministisch** freigibt, sobald man sie nicht mehr braucht. Das schauen wir uns in [Vorlesung 09](/modules/idisposable_using/idisposable_using.md) genau an, wenn wir Spielstände in Dateien schreiben.
+Der GC kümmert sich um **verwalteten** Speicher – also um Objekte, die mit `new` in .NET erzeugt wurden. Manche Objekte halten aber Ressourcen außerhalb der Laufzeitumgebung: eine geöffnete Datei, eine Netzwerkverbindung, ein Fensterhandle des Betriebssystems. Von diesen weiß der GC nichts. Eine Klasse kann dafür einen **Finalizer** (`~Spielfeld() { ... }`) definieren, der vor der Freigabe aufgerufen wird – aber man weiß nie, *wann* das passiert, vielleicht erst Minuten später oder beim Programmende. Für Dateien und Verbindungen ist das unbrauchbar. Der richtige Weg ist das Interface `IDisposable` zusammen mit der `using`-Anweisung, die Ressourcen **deterministisch** freigibt, sobald man sie nicht mehr braucht. Das schauen wir uns im Modul [`IDisposable` und `using`](/modules/idisposable_using/idisposable_using.md) in Vorlesung 09 genau an, wenn wir Spielstände in Dateien schreiben.
 
 Im Zweifel: Vertraue dem Garbage Collector. Schreibe keine Finalizer, rufe nicht `GC.Collect()` auf, und setze Variablen nicht reflexartig auf `null` – der GC erkennt selbst, wenn eine lokale Variable nicht mehr gebraucht wird. Achte stattdessen darauf, keine Referenzen auf Objekte zu horten, die du nicht mehr brauchst.
 {: .notice--primary}
@@ -118,3 +118,4 @@ Im Zweifel: Vertraue dem Garbage Collector. Schreibe keine Finalizer, rufe nicht
 - [Speicherverwaltung und Garbage Collection in .NET – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/garbage-collection/)
 - [`GC.GetTotalMemory` – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.gc.gettotalmemory)
 - [Bereinigen nicht verwalteter Ressourcen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/garbage-collection/unmanaged)
+- [.NET Fiddle – C# ohne Installation ausführen](https://dotnetfiddle.net/) – die Messung mit `GC.GetTotalMemory` oben lässt sich hier in einer Minute nachbauen; die Zahlen sehen auf jedem Rechner ein wenig anders aus.

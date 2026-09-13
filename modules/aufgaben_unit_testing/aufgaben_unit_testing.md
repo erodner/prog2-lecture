@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen — sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Beim Testen heißt das vor allem: systematisch überlegen, welche Fälle es gibt, Fehlermuster in fremdem Code erkennen und Klassen so entwerfen, dass sie sich überhaupt testen lassen. Alle Aufgaben arbeiten am Adventure aus dem Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v12-tests`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Beim Testen heißt das vor allem: systematisch überlegen, welche Fälle es gibt, Fehlermuster in fremdem Code erkennen und Klassen so entwerfen, dass sie sich überhaupt testen lassen. Alle Aufgaben arbeiten am Adventure aus dem Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v12-tests`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Zerlegung
 
@@ -178,7 +178,7 @@ public class SpielTests
 
 **Schritt 2 — Tests, die nie rot werden:**
 
-`OhneSchluessel` besteht immer: `SpielerZieht` wirft hier überhaupt keine Exception, also wird das `catch` nie betreten und der Test endet ohne eine einzige Prüfung. Selbst wenn eine Exception flöge, prüfte `Assert.That(true)` nichts. `Verfolger` hat gar kein Assert – `Console.WriteLine` ist keine Prüfung, sondern nur eine Zeile, die niemand liest. `NUnit.Analyzers` warnt bei beidem bereits beim Kompilieren.
+`OhneSchluessel` besteht immer: `SpielerZieht` wirft hier überhaupt keine Exception, also wird das `catch` nie betreten und der Test endet ohne eine einzige Prüfung. Selbst wenn eine Exception flöge, prüfte `Assert.That(true)` nichts. `Verfolger` hat gar kein Assert – `Console.WriteLine` ist keine Prüfung, sondern nur eine Zeile, die niemand liest. Der Compiler schweigt bei beidem: `NUnit.Analyzers` meldet zwar konstante Vergleichswerte wie `Assert.That(true, Is.True)` (Warnung `NUnit2007`), aber weder das einsame `Assert.That(true)` noch einen Test ganz ohne Prüfung. Solche Tests findet man nur, indem man den geprüften Code absichtlich kaputt macht und nachsieht, ob überhaupt etwas rot wird.
 
 **Schritt 3 — Der Test, der später kaputtgeht:**
 
@@ -322,8 +322,9 @@ public class HttpLevelQuelle : ILevelQuelle
 {
     private static readonly HttpClient http = new();
     private readonly string basisUrl;
+    private readonly List<string> namen;
 
-    public static async Task<HttpLevelQuelle> ErzeugenAsync(string basisUrl) { /* ... index.json ... */ }
+    public static async Task<HttpLevelQuelle> ErzeugenAsync(string basisUrl) { /* ... index.json holen ... */ }
 
     public IReadOnlyList<string> LevelNamen => namen;
 

@@ -15,7 +15,7 @@ Niemand baut ein Haus, indem er zuerst Ziegel brennt. Genauso schreibt niemand e
 
 Ein NuGet-Paket ist eine ZIP-Datei mit der Endung `.nupkg`. Darin liegen die kompilierten Bibliotheken (`.dll`) – oft mehrfach, für verschiedene Zielframeworks wie `netstandard2.0` oder `net8.0` – und eine Beschreibungsdatei `.nuspec` mit den **Metadaten**: Name, Version, Autor, Lizenz, Beschreibung und die Liste der Pakete, von denen dieses Paket selbst abhängt. Ein Paket ist also mehr als eine `.dll`, die man irgendwo herunterlädt: Es ist eine **versionierte Bibliothek mit Beipackzettel**.
 
-Genau dieser Beipackzettel macht den Unterschied zum manuellen Kopieren einer `.dll`. NuGet weiß, welche Version ihr benutzt, kann prüfen, ob es eine neuere gibt, und lädt die Abhängigkeiten gleich mit. Wenn du das Testprojekt `Adventure.Tests` unseres Spiels gebaut hast, hast du genau das erlebt: fünf Zeilen in der `.csproj`, und beim ersten Bauen kamen über zwanzig Pakete von selbst. Blazor dagegen ist nie als Paket gekommen, obwohl `Adventure.Web` damit gebaut ist – es gehört zu ASP.NET Core, das mit dem SDK installiert wird.
+Genau dieser Beipackzettel macht den Unterschied zum manuellen Kopieren einer `.dll`. NuGet weiß, welche Version ihr benutzt, kann prüfen, ob es eine neuere gibt, und lädt die Abhängigkeiten gleich mit. Wenn du das Testprojekt `Adventure.Tests` unseres Spiels gebaut hast, hast du genau das erlebt: fünf Zeilen in der `.csproj`, und beim ersten Bauen kamen zehn weitere Pakete von selbst dazu. Blazor dagegen ist nie als Paket gekommen, obwohl `Adventure.Web` damit gebaut ist – es gehört zu ASP.NET Core, das mit dem SDK installiert wird.
 
 ## Woher kommen die Pakete?
 
@@ -50,22 +50,27 @@ Ein Paket hängt oft von weiteren Paketen ab, und diese wieder von anderen. Alle
 
 ```bash
 dotnet list package --include-transitive
-# Top-level Package                Requested   Resolved
-# > coverlet.collector             6.0.4       6.0.4
-# > Microsoft.NET.Test.Sdk         17.14.0     17.14.0
-# > NUnit                          4.3.2       4.3.2
-# > NUnit.Analyzers                4.7.0       4.7.0
-# > NUnit3TestAdapter              5.0.0       5.0.0
+# Top-level Package                                      Requested   Resolved
+# > coverlet.collector                                   6.0.4       6.0.4
+# > Microsoft.NET.Test.Sdk                               17.14.0     17.14.0
+# > NUnit                                                4.3.2       4.3.2
+# > NUnit.Analyzers                                      4.7.0       4.7.0
+# > NUnit3TestAdapter                                    5.0.0       5.0.0
 #
-# Transitive Package               Resolved
-# > Microsoft.CodeCoverage         17.14.0
-# > Microsoft.TestPlatform.TestHost 17.14.0
-# > Newtonsoft.Json                13.0.1
-# > System.Reflection.Metadata     1.6.0
-# ...                              (insgesamt über 25 Pakete)
+# Transitive Package                                     Resolved
+# > Microsoft.ApplicationInsights                        2.22.0
+# > Microsoft.CodeCoverage                               17.14.0
+# > Microsoft.Testing.Extensions.Telemetry               1.5.3
+# > Microsoft.Testing.Extensions.TrxReport.Abstractions  1.5.3
+# > Microsoft.Testing.Extensions.VSTestBridge            1.5.3
+# > Microsoft.Testing.Platform                           1.5.3
+# > Microsoft.Testing.Platform.MSBuild                   1.5.3
+# > Microsoft.TestPlatform.ObjectModel                   17.14.0
+# > Microsoft.TestPlatform.TestHost                      17.14.0
+# > Newtonsoft.Json                                      13.0.3
 ```
 
-Fünf Zeilen in der `.csproj` ziehen also einen ganzen Baum nach sich – die Testplattform, die die Tests startet, deren JSON-Bibliothek und mehr. Noch deutlicher wird es bei Paketen wie `SkiaSharp` oder `SQLitePCLRaw`: Die bringen für jedes Betriebssystem gleich die passende native Bibliothek mit. Genau die Art von nativer Bibliothek, die wir in der [Vorlesung 10](/lectures/10/10.md) noch von Hand eingebunden haben, kommt hier also fertig verpackt. NuGet löst dabei auch Konflikte: Verlangen zwei Pakete unterschiedliche Versionen derselben Abhängigkeit, wählt es die kleinste Version, die beide Anforderungen erfüllt.
+Fünf Zeilen in der `.csproj` ziehen also einen ganzen Baum nach sich – die Testplattform, die die Tests startet, deren JSON-Bibliothek und mehr. Von den fünfzehn Paketen hat sich niemand die zehn unteren je ausgesucht. Noch deutlicher wird es bei Paketen wie `SkiaSharp` oder `SQLitePCLRaw`: Die bringen für jedes Betriebssystem gleich die passende native Bibliothek mit. Genau die Art von nativer Bibliothek, die wir in der [Vorlesung 10](/lectures/10/10.md) noch von Hand eingebunden haben, kommt hier also fertig verpackt. NuGet löst dabei auch Konflikte: Verlangen zwei Pakete unterschiedliche Versionen derselben Abhängigkeit, wählt es die kleinste Version, die beide Anforderungen erfüllt.
 
 Transitive Abhängigkeiten sind auch der Grund, warum eine Sicherheitslücke in einem winzigen Hilfspaket Tausende Anwendungen treffen kann, deren Entwickler das Paket nie bewusst ausgewählt haben. `dotnet list package --vulnerable` prüft eure Abhängigkeiten gegen eine Datenbank bekannter Schwachstellen – ein Befehl, der in jede Build-Pipeline gehört.
 {: .notice--warning}
@@ -90,3 +95,4 @@ Im Zweifel: Nimm das Paket mit den meisten Downloads, einem Release in den letzt
 - [Paketversionsverwaltung – Microsoft Learn](https://learn.microsoft.com/de-de/nuget/concepts/package-versioning)
 - [Abhängigkeitsauflösung – Microsoft Learn](https://learn.microsoft.com/de-de/nuget/concepts/dependency-resolution)
 - [Bewährte Methoden für die sichere Nutzung von Paketen – Microsoft Learn](https://learn.microsoft.com/de-de/nuget/concepts/security-best-practices)
+- [Semantic Versioning 2.0.0 (deutsch)](https://semver.org/lang/de/) – die vollständigen Regeln auf einer Seite; kurz genug, um sie einmal ganz zu lesen.

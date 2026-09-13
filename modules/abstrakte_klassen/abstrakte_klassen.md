@@ -80,7 +80,8 @@ Was passiert jetzt mit dem Codestück von oben?
 
 ```csharp
 Spielobjekt ding = new Spielobjekt("Ding", new Position(3, 4));
-// error CS0144: Eine Instanz der abstrakten Klasse "Spielobjekt" kann nicht erstellt werden.
+// error CS0144: Eine Instanz des abstrakten Typs oder der abstrakten Schnittstelle
+//               "Spielobjekt" kann nicht erstellt werden.
 ```
 
 Der Compiler verweigert das – und das ist genau gewollt. Aus einem Laufzeitproblem („warum steht da ein `?`“) ist ein Kompilierzeitfehler geworden. `Spielobjekt` existiert nur noch, damit andere Klassen von ihr erben; als Typ für Variablen, Parameter und Sammlungen bleibt sie uneingeschränkt erlaubt.
@@ -184,3 +185,5 @@ Der entscheidende Punkt: Das `?` kann in dieser Ausgabe nicht mehr auftauchen. D
 - [abstract (C#-Referenz) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/abstract)
 - [Abstrakte und versiegelte Klassen und Klassenmember – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/abstract-and-sealed-classes-and-class-members)
 - [Compilerfehler CS0144 – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/misc/cs0144)
+- [Type Object – Game Programming Patterns](https://gameprogrammingpatterns.com/type-object.html) – freies Buch über Spielarchitektur; das Kapitel zeigt, wann eine Klassenhierarchie für Gegnerarten an ihre Grenzen stößt.
+- [dotnetfiddle.net](https://dotnetfiddle.net/) – C# im Browser ausprobieren: ideal, um CS0144 und ein vergessenes `override` in zwei Minuten selbst zu provozieren.

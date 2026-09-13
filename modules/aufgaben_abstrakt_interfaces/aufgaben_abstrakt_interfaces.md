@@ -88,6 +88,17 @@ Damit die Falle auch in Karten vorkommen kann, braucht `LevelParser.ObjektFuer` 
 Ein `Zauberbuch` soll sowohl eingesteckt als auch gelesen werden können. Beide Interfaces verlangen zufällig ein Mitglied `Beschreibung()`. Sage die Ausgabe des folgenden Programms voraus, bevor du es ausführst:
 
 ```csharp
+// Program.cs – bei Top-Level-Anweisungen stehen die Typen unten, der Ablauf oben.
+Zauberbuch b = new Zauberfolio();
+Console.WriteLine(b.Beschreibung());
+Console.WriteLine(((ISammelbar)b).Beschreibung());
+Console.WriteLine(((IInteragierbar)b).Beschreibung());
+Zauberfolio f = (Zauberfolio)b;
+Console.WriteLine(f.Beschreibung());
+ISammelbar s = f;
+Console.WriteLine(s.Beschreibung());
+Console.WriteLine(b is IInteragierbar);
+
 interface ISammelbar { string Beschreibung(); }
 interface IInteragierbar { string Beschreibung(); }
 
@@ -102,16 +113,6 @@ class Zauberfolio : Zauberbuch
 {
     public new string Beschreibung() => "Ein dickes Folio";
 }
-
-Zauberbuch b = new Zauberfolio();
-Console.WriteLine(b.Beschreibung());
-Console.WriteLine(((ISammelbar)b).Beschreibung());
-Console.WriteLine(((IInteragierbar)b).Beschreibung());
-Zauberfolio f = (Zauberfolio)b;
-Console.WriteLine(f.Beschreibung());
-ISammelbar s = f;
-Console.WriteLine(s.Beschreibung());
-Console.WriteLine(b is IInteragierbar);
 ```
 
 - Welche `Beschreibung` ist über eine `Zauberbuch`-Variable erreichbar, welche nur über einen Interface-Typ?
@@ -227,6 +228,12 @@ Der Teleporter implementiert das größere Interface, alle anderen bleiben unber
 Der folgende Code soll einen Brunnen ins Spiel bringen, aus dem der Held trinken kann. Er enthält drei Fehler. Finde sie, erkläre jede Meldung und korrigiere den Code so, dass die Absicht erhalten bleibt.
 
 ```csharp
+// Program.cs – auch hier stehen die Anweisungen oben und die Typen darunter.
+Spielobjekt s = new Spielobjekt("Ding");
+IInteragierbar b = new Brunnen();
+
+class Spieler { }          // nur ein Platzhalter, damit das Beispiel für sich steht
+
 interface IInteragierbar
 {
     string Interagieren(Spieler spieler);
@@ -245,9 +252,6 @@ class Brunnen : Spielobjekt, IInteragierbar
     public char Symbol => 'o';
     string Interagieren(Spieler spieler) => "Du trinkst aus dem Brunnen.";
 }
-
-Spielobjekt s = new Spielobjekt("Ding");
-IInteragierbar b = new Brunnen();
 ```
 
 <details markdown="1">
@@ -255,15 +259,15 @@ IInteragierbar b = new Brunnen();
 
 **Schritt 1 — Fehlendes `override`:**
 
-`Symbol` in `Brunnen` hat dieselbe Signatur wie das abstrakte `Symbol` in `Spielobjekt`, aber kein `override`. Für den Compiler ist das ein neues Property, das das geerbte versteckt – das abstrakte bleibt unimplementiert: *CS0534: „Brunnen“ implementiert den geerbten abstrakten Member „Spielobjekt.Symbol.get“ nicht*, dazu die Warnung *CS0114*, die genau sagt, was fehlt („To make the current member override that implementation, add the override keyword“). Korrektur: `public override char Symbol => 'o';`.
+`Symbol` in `Brunnen` hat dieselbe Signatur wie das abstrakte `Symbol` in `Spielobjekt`, aber kein `override`. Für den Compiler ist das ein neues Property, das das geerbte versteckt – das abstrakte bleibt unimplementiert: *CS0534: „Brunnen“ implementiert den geerbten abstrakten Member „Spielobjekt.Symbol.get“ nicht.* Dazu kommt die Warnung *CS0114*, die genau sagt, was fehlt: *„Brunnen.Symbol“ blendet den vererbten Member „Spielobjekt.Symbol“ aus. Damit der aktuelle Member diese Implementierung überschreibt, fügen Sie das override-Schlüsselwort hinzu.* Korrektur: `public override char Symbol => 'o';`.
 
 **Schritt 2 — Interface nicht öffentlich implementiert:**
 
-`Interagieren` steht ohne Sichtbarkeit da – in einer Klasse bedeutet das `private`. Das Interface verlangt ein öffentliches Mitglied: *CS0737: „Brunnen“ implementiert den Schnittstellenmember „IInteragierbar.Interagieren(Spieler)“ nicht. „Brunnen.Interagieren(Spieler)“ kann den Schnittstellenmember nicht implementieren, da er nicht öffentlich ist.* Korrektur: `public string Interagieren(Spieler spieler) => ...`. Wäre eine explizite Implementierung gewollt, hieße die Zeile `string IInteragierbar.Interagieren(Spieler spieler) => ...` – dann bliebe sie über den Interface-Typ erreichbar.
+`Interagieren` steht ohne Sichtbarkeit da – in einer Klasse bedeutet das `private`. Das Interface verlangt ein öffentliches Mitglied: *CS0737: „Brunnen“ implementiert den Schnittstellenmember „IInteragierbar.Interagieren(Spieler)“ nicht. „Brunnen.Interagieren(Spieler)“ ist nicht öffentlich und kann daher keinen Schnittstellenmember implementieren.* Korrektur: `public string Interagieren(Spieler spieler) => ...`. Wäre eine explizite Implementierung gewollt, hieße die Zeile `string IInteragierbar.Interagieren(Spieler spieler) => ...` – dann bliebe sie über den Interface-Typ erreichbar.
 
 **Schritt 3 — Abstrakte Klasse instanziiert:**
 
-`new Spielobjekt("Ding")` ist *CS0144: Es kann keine Instanz des abstrakten Typs oder der Schnittstelle „Spielobjekt“ erstellt werden.* Wer ein Objekt braucht, schreibt eine konkrete Klasse mit `override char Symbol`. Die Variable `Spielobjekt s` selbst ist in Ordnung – als Kompilierzeittyp ist eine abstrakte Klasse erlaubt.
+`new Spielobjekt("Ding")` ist *CS0144: Eine Instanz des abstrakten Typs oder der abstrakten Schnittstelle „Spielobjekt“ kann nicht erstellt werden.* Wer ein Objekt braucht, schreibt eine konkrete Klasse mit `override char Symbol`. Die Variable `Spielobjekt s` selbst ist in Ordnung – als Kompilierzeittyp ist eine abstrakte Klasse erlaubt.
 
 Kleines Detail beim Ausprobieren: Solange die beiden Fehler in der Klassendeklaration bestehen, meldet der Compiler CS0144 noch gar nicht – Methodenrümpfe werden erst geprüft, wenn die Typen selbst fehlerfrei sind. Fehlermeldungen abarbeiten heißt deshalb immer: oben anfangen und neu übersetzen.
 

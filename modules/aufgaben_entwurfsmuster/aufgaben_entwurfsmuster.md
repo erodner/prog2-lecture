@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen — sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Entwurfsmustern ist die Mustererkennung wörtlich gemeint: Die Kunst besteht weniger darin, ein Muster zu implementieren, als darin, es in fremdem Code wiederzuerkennen, das passende auszuwählen – und zu merken, wenn eines fehl am Platz ist. Alle vier Aufgaben spielen im Adventure. Nimm dir für jede Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Entwurfsmustern ist die Mustererkennung wörtlich gemeint: Die Kunst besteht weniger darin, ein Muster zu implementieren, als darin, es in fremdem Code wiederzuerkennen, das passende auszuwählen – und zu merken, wenn eines fehl am Platz ist. Alle vier Aufgaben spielen im Adventure – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`). Nimm dir für jede Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Mustererkennung
 
@@ -326,7 +326,7 @@ Verfolger (2, 2)
 Wache (1, 2)
 ```
 
-Neun Zeilen, davon vier Gegner. Prüfzeilen und Treffer sind *verzahnt* – nicht erst alle Prüfungen, dann alle Namen. Das ist das elementweise Verhalten aus dem Modul [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
+Zehn Zeilen: fünf Prüfungen, vier Treffer und die Meldung ganz oben. Prüfzeilen und Treffer sind *verzahnt* – nicht erst alle Prüfungen, dann alle Namen. Das ist das elementweise Verhalten aus dem Modul [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
 
 **Schritt 4 — `First()`:**
 

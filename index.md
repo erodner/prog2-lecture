@@ -41,7 +41,7 @@ Die Vorlesung besteht aus:
 
 ### Teil 2: Zusammenarbeit
 
-3. [Git – Versionsverwaltung](/lectures/03/03.md) – Konzepte, Kommandozeile, Branches, Merge-Konflikte, IDE-Integration
+3. [Git – Versionsverwaltung](/lectures/03/03.md) – Konzepte, Kommandozeile, Remote-Repositorys, Branches, Merge-Konflikte, IDE-Integration
 
 ### Teil 3: Anwendungen bauen
 
@@ -51,7 +51,7 @@ Die Vorlesung besteht aus:
 
 5. [Generizität](/lectures/05/05.md) – Generische Methoden und Typen, Constraints
 6. [Collections, Algorithmen und LINQ](/lectures/06/06.md) – Hashing, Sortieren, Suchen, Collections, LINQ-Abfragen
-7. [Delegaten, Lambdas und Ereignisse](/lectures/07/07.md) – `delegate`, `Func`/`Action`, Lambda-Ausdrücke, `event`
+7. [Delegaten, Lambdas und Ereignisse](/lectures/07/07.md) – `delegate`, `Func`/`Action`, Lambda-Ausdrücke, LINQ-Methodensyntax, `event`
 
 ### Teil 5: Entwurf
 
@@ -64,7 +64,7 @@ Die Vorlesung besteht aus:
 ### Teil 7: Werkzeuge der Softwareentwicklung
 
 10. [Native Bibliotheken – P/Invoke](/lectures/10/10.md) – `DllImport`, `LibraryImport`, Marshalling
-11. [NuGet – Paketverwaltung](/lectures/11/11.md) – Pakete finden, einbinden, bewerten
+11. [NuGet – Paketverwaltung](/lectures/11/11.md) – Pakete finden, einbinden, bewerten, Logging mit NLog
 12. [Unit-Testing](/lectures/12/12.md) – NUnit, Assertions, `dotnet test`
 
 ---
@@ -79,16 +79,20 @@ Am Ende dieser Veranstaltung kannst du:
 4. Gängige **Entwurfsmuster** erkennen und anwenden.
 5. Eine **grafische Oberfläche** mit Blazor bauen und die Anwendung in **Schichten** strukturieren.
 6. Daten mit **Dateien, Streams und JSON** dauerhaft speichern und über HTTP laden.
-7. Mit **Git** im Team arbeiten, **NuGet-Pakete** einbinden und deinen Code mit **Unit-Tests** absichern.
+7. **Native Bibliotheken** über P/Invoke aufrufen und einschätzen, wann sich das lohnt.
+8. Mit **Git** im Team arbeiten, **NuGet-Pakete** einbinden und deinen Code mit **Unit-Tests** absichern.
 
 ## ➤ Bewertung
 
 Alle relevanten Informationen zur Prüfungsleistung findest du auf **Moodle**.
 
-## Literaturempfehlungen
+## ➤ Literaturempfehlungen
 
 1. [Microsoft C# Dokumentation](https://learn.microsoft.com/de-de/dotnet/csharp/) – offizielle Referenz, auf Deutsch verfügbar
 2. Wurm, Roman: *Schrödinger programmiert C#* (Rheinwerk) – unterhaltsamer Einstieg, viele Kapitel decken diese Vorlesung ab
 3. [ASP.NET Core Blazor – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/) – Referenz für das GUI-Framework der Vorlesung
 4. [Pro Git](https://git-scm.com/book/de/v2) – das freie Git-Buch, auf Deutsch
 5. Gamma, Helm, Johnson, Vlissides: *Entwurfsmuster* (Addison-Wesley) – das Original der „Gang of Four“
+6. [Game Programming Patterns – Robert Nystrom](https://gameprogrammingpatterns.com/) – freies Online-Buch, das die Entwurfsmuster aus Vorlesung 08 am Beispiel von Spielen erklärt
+7. [Red Blob Games – Amit Patel](https://www.redblobgames.com/) – interaktive Erklärungen zu Rasterkarten, Sichtlinien und Wegsuche, also genau der Mathematik hinter dem Adventure
+8. [Learn Git Branching](https://learngitbranching.js.org/?locale=de_DE) – Branches und Merges im Browser üben, bevor du sie an deinem eigenen Repository ausprobierst

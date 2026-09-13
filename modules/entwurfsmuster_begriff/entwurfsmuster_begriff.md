@@ -64,7 +64,7 @@ Die fünf fett gedruckten Muster behandeln wir in dieser Vorlesung. Sie sind so 
 
 ## Die Muster im Adventure
 
-Das durchgehende Beispiel dieses Kurses ist dafür eine Fundgrube. Fast jedes Muster dieser Vorlesung steckt schon irgendwo im Spiel, und die restlichen ergänzen wir in den folgenden Modulen:
+Das durchgehende Beispiel dieses Kurses ist dafür eine Fundgrube. Fast jedes Muster dieser Vorlesung steckt schon irgendwo im Spiel, und die restlichen ergänzen wir in den folgenden Modulen. Die ersten fünf Zeilen der Tabelle sind unsere fünf Muster; die drei darunter behandeln wir nicht, sie zeigen nur, wie dicht der Katalog im ganz normalen Code steckt:
 
 | Muster | Wo es im Adventure steckt |
 | :--- | :--- |
@@ -93,5 +93,7 @@ Die richtige Reihenfolge ist deshalb immer: Erst das Problem verstehen, dann pr�
 ## Weitere Quellen
 
 - [Entwurfsmuster – Wikipedia](https://de.wikipedia.org/wiki/Entwurfsmuster)
-- [Design Patterns – Katalog mit C#-Beispielen – Refactoring.Guru](https://refactoring.guru/de/design-patterns/csharp)
+- [Design Patterns in C# – Refactoring.Guru](https://refactoring.guru/design-patterns/csharp) – alle 23 Muster mit lauffähigem C#-Code, Diagrammen und einer ehrlichen Liste der Nachteile.
+- [Musterkatalog nach Kategorien – Refactoring.Guru](https://refactoring.guru/design-patterns/catalog) – die Übersicht zum Stöbern, wenn du ein Problem hast und das passende Muster suchst.
+- [Game Programming Patterns – Robert Nystrom](https://gameprogrammingpatterns.com/) – das komplette Buch kostenlos online, mit Mustern, die für Spiele wie unser Adventure gedacht sind.
 - [Architekturprinzipien – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/architecture/modern-web-apps-azure/architectural-principles)

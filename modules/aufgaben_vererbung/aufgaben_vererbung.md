@@ -79,11 +79,11 @@ Magier.Melden             // Kette von Spieler.Melden, überschrieben
 
 ## Aufgabe 2 — Abstraktion
 
-Das Spielfeld soll um **Gegenstände** erweitert werden. Ein **Schlüssel** (`k`) wird eingesammelt und später gebraucht, um eine Tür zu öffnen. Ein **Trank** (`!`) heilt beim Einsammeln zwei Lebenspunkte, aber höchstens bis zum Maximum von fünf. Ein **Schatz** (`$`) bringt Punkte. Alle drei liegen auf einem Feld, tragen einen Namen, werden gezeichnet, dürfen vom Helden **betreten** werden und verschwinden beim Einsammeln vom Spielfeld.
+Das Spielfeld soll um **Gegenstände** erweitert werden. Ein **Schlüssel** (`k`) wird eingesammelt und später gebraucht, um eine Tür zu öffnen. Ein **Trank** (`!`) heilt beim Einsammeln zwei Lebenspunkte, aber höchstens bis zum Maximum von drei – mehr Leben als zu Spielbeginn soll der Held nicht haben. Ein **Schatz** (`$`) bringt Punkte. Alle drei liegen auf einem Feld, tragen einen Namen, werden gezeichnet, dürfen vom Helden **betreten** werden und verschwinden beim Einsammeln vom Spielfeld.
 
 - Welche Klasse ist die Basis, was ist gemeinsam, was ist speziell?
 - Welches Mitglied muss `virtual` sein, damit das Einsammeln mit einer einzigen Codestelle im Spielfeld funktioniert?
-- Wohin gehört die Regel „höchstens fünf Lebenspunkte“ – in den Trank, in den Spieler oder ins Spielfeld?
+- Wohin gehört die Regel „höchstens drei Lebenspunkte“ – in den Trank, in den Spieler oder ins Spielfeld?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -159,7 +159,7 @@ public void SpielerZieht(Richtung richtung)
 **Zentrale Designentscheidungen:**
 
 - **`IstPassierbar => true` steht einmal in `Gegenstand`:** Kein konkreter Gegenstand muss daran denken. Ein vergessenes `override` hätte sonst einen Schlüssel zur Folge, der wie eine Wand blockiert.
-- **Die 5-Lebenspunkte-Grenze gehört in `Spieler.Heilen`:** Sie ist eine Eigenschaft des Helden, nicht des Tranks. Sonst müsste jeder heilende Gegenstand die Regel kennen und kopieren – und beim Einführen eines zweiten Trankes stünde sie zweimal im Code.
+- **Die Obergrenze gehört in `Spieler.Heilen`:** Sie ist eine Eigenschaft des Helden, nicht des Tranks – im fertigen Spiel steht sie als Konstante `Spieler.MaxLebenspunkte` genau dort. Sonst müsste jeder heilende Gegenstand die Regel kennen und kopieren – und beim Einführen eines zweiten Trankes stünde sie zweimal im Code.
 - **`Trank` ruft `base.Einsammeln(spieler)`:** Kommen später Punkte für jedes aufgenommene Objekt hinzu, profitiert der Trank automatisch davon.
 - **`protected` beim Konstruktor von `Gegenstand`:** Ein „Gegenstand“ ohne nähere Bestimmung soll gar nicht erzeugbar sein. In [Vorlesung 02](/lectures/02/02.md) wird daraus eine `abstract class` – und aus dem Einsammeln ein Interface `ISammelbar`, damit auch Dinge einsammelbar sein können, die keine Gegenstände sind.
 - **Genau eine `is`-Abfrage:** `is Gegenstand g` fragt nach der *Kategorie*, nicht nach dem konkreten Typ. Drei Abfragen (`is Schluessel`, `is Trank`, `is Schatz`) wären das Anzeichen für eine fehlende `virtual`-Methode.

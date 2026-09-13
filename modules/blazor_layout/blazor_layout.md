@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Mit den Steuerelementen aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) können wir alles auf die Seite bringen, was das Spiel braucht – aber der Browser stellt es dann untereinander dar, wie einen Fließtext. Die 200 `<div>`-Elemente des Spielfelds würden zu einer endlosen Kolonne, die Werkzeugleiste stünde in drei Zeilen, und die Statusleiste läge irgendwo darunter statt daneben. Aus dieser Kolonne ein Raster zu machen, ist die Aufgabe des **Layouts**. Auf dem Desktop übernehmen das spezielle Container-Steuerelemente, im Web erledigt es **CSS**. Die gute Nachricht: Für eine aufgeräumte Oberfläche reichen zwei CSS-Werkzeuge, Flexbox und Grid, und wenige Zeilen pro Bereich – das gesamte Layout von `Adventure.Web` passt auf eine knappe Bildschirmseite.
+Mit den Steuerelementen aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) können wir alles auf die Seite bringen, was das Spiel braucht – aber der Browser stellt es dann untereinander dar, wie einen Fließtext. Die 180 `<div>`-Elemente, die das Level „Kerker“ mit seinen 20 × 9 Feldern erzeugt, würden zu einer endlosen Kolonne, die Werkzeugleiste stünde in drei Zeilen, und die Statusleiste läge irgendwo darunter statt daneben. Aus dieser Kolonne ein Raster zu machen, ist die Aufgabe des **Layouts**. Auf dem Desktop übernehmen das spezielle Container-Steuerelemente, im Web erledigt es **CSS**. Die gute Nachricht: Für eine aufgeräumte Oberfläche reichen zwei CSS-Werkzeuge, Flexbox und Grid, und wenige Zeilen pro Bereich – das gesamte Layout von `Adventure.Web` passt auf eine knappe Bildschirmseite.
 
 ## Struktur und Gestaltung trennen
 
@@ -133,3 +133,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [CSS-Isolation in Blazor – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/css-isolation)
 - [Flexbox – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/CSS/CSS_flexible_box_layout/Basic_concepts_of_flexbox)
 - [Grid-Layout – MDN Web Docs](https://developer.mozilla.org/de/docs/Web/CSS/CSS_grid_layout/Basic_concepts_of_grid_layout)
+- [Flexbox Froggy](https://flexboxfroggy.com/#de) – 24 Level, in denen du Frösche mit `justify-content` und `align-items` auf ihre Seerosen schiebst; danach sitzt Flexbox.
+- [CSS Grid Garden](https://cssgridgarden.com/#de) – dasselbe Prinzip für Grid: Karotten gießen mit `grid-template-columns` und `repeat()`, genau den Regeln aus unserem Spielfeld.

@@ -163,7 +163,7 @@ public static bool operator !=(Koordinate? a, Koordinate? b) => !(a == b);
 
 Ein `record` erledigt genau das automatisch, weshalb `p1 == p2` bei Positionen funktioniert. Für eigene Klassen ist es eine Abwägung: Ein Wert wie `Koordinate` profitiert davon, für ein `Spielobjekt` wäre es irreführend – zwei Wände auf demselben Feld wären dann „dieselbe“ Wand, obwohl es zwei Objekte mit eigener Geschichte sind. Mit `(object)a == (object)b` kann man jederzeit auf den Referenzvergleich zurückgreifen.
 
-`Equals` und `GetHashCode` gehören **immer zusammen** überschrieben. Der Vertrag lautet: Sind zwei Objekte laut `Equals` gleich, müssen sie denselben Hashcode liefern. `Dictionary` und `HashSet` verlassen sich darauf – sie suchen zuerst per Hashcode und vergleichen erst dann mit `Equals`. Wer nur `Equals` überschreibt, bekommt einen Compiler-Hinweis (CS0659) und ein `HashSet<Koordinate>`, das (1, 2) zweimal enthält. Warum genau, sehen wir in [Vorlesung 06](/modules/hashcodes_equals/hashcodes_equals.md) – dort wird aus der Objektliste des Spielfelds übrigens ein `Dictionary<Position, ...>`, das ohne korrektes `GetHashCode` nicht funktionieren würde.
+`Equals` und `GetHashCode` gehören **immer zusammen** überschrieben. Der Vertrag lautet: Sind zwei Objekte laut `Equals` gleich, müssen sie denselben Hashcode liefern. `Dictionary` und `HashSet` verlassen sich darauf – sie suchen zuerst per Hashcode und vergleichen erst dann mit `Equals`. Wer nur `Equals` überschreibt, bekommt einen Compiler-Hinweis (CS0659) und ein `HashSet<Koordinate>`, das (1, 2) zweimal enthält. Warum genau, sehen wir im Modul [Hashcodes und `Equals`](/modules/hashcodes_equals/hashcodes_equals.md) in Vorlesung 06 – dort wird aus der Objektliste des Spielfelds übrigens ein `Dictionary<Position, ...>`, das ohne korrektes `GetHashCode` nicht funktionieren würde.
 {: .notice--warning}
 
 ## `MemberwiseClone` – die flache Kopie
@@ -198,3 +198,4 @@ Die neue Wand taucht im Original auf, obwohl wir sie der Kopie hinzugefügt habe
 - [Datensatztypen (`record`) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/builtin-types/record)
 - [Gleichheitsoperatoren überladen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/operators/equality-operators)
 - [`Object.MemberwiseClone` – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.object.memberwiseclone)
+- [SharpLab – sehen, was der Compiler erzeugt](https://sharplab.io/) – links einen `record struct` eintippen, rechts „C#“ als Ausgabe wählen: Dort stehen die generierten `Equals`, `GetHashCode` und `==` ausgeschrieben.

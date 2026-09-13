@@ -20,7 +20,7 @@ dotnet new console -o HalloWelt
 cd HalloWelt
 ```
 
-Im Ordner liegen jetzt zwei Dateien: `Program.cs` mit einer einzigen Zeile `Console.WriteLine("Hello, World!");` und die Projektdatei `HalloWelt.csproj`. Die kurze `Program.cs` ohne `Main` und Klasse kennst du aus Programmierung 1 als *Top-Level-Statements* – der Compiler erzeugt die umgebende Klasse selbst.
+Im Ordner liegen jetzt zwei Dateien: `Program.cs` mit einer einzigen Zeile `Console.WriteLine("Hello, World!");` und die Projektdatei `HalloWelt.csproj`; dazu kommt ein Ordner `obj/`, in dem das SDK Zwischenergebnisse ablegt. Die kurze `Program.cs` ohne `Main` und Klasse kennst du aus Programmierung 1 als *Top-Level-Statements* – der Compiler erzeugt die umgebende Klasse selbst.
 
 ## Anatomie einer .csproj
 
@@ -116,13 +116,13 @@ Neben `console`, `classlib` und `sln` bringt das SDK viele weitere Vorlagen mit 
 
 ```bash
 dotnet new list
-# Vorlagenname          Kurzname       Sprache     Tags
-# ---------------------------------------------------------------
-# Blazor Web App        blazor         [C#]        Web/Blazor
-# Console App           console        [C#],F#,VB  Common/Console
-# Class Library         classlib       [C#],F#,VB  Common/Library
-# NUnit 3 Test Project  nunit          [C#],F#,VB  Test/NUnit
-# Solution File         sln            ...         Solution
+# Template Name       Short Name    Language    Tags
+# --------------------------------------------------------------------
+# Blazor Web App      blazor        [C#]        Web/Blazor/WebAssembly
+# Class Library       classlib      [C#],F#,VB  Common/Library
+# Console App         console       [C#],F#,VB  Common/Console
+# NUnit Test Project  nunit         [C#],F#,VB  Test/NUnit/Desktop/Web
+# Solution File       sln,solution              Solution
 ```
 
 Die Vorlage `nunit` werden wir in der [Vorlesung 12](/lectures/12/12.md) für Unit-Tests einsetzen – daraus entsteht `Adventure.Tests`; aus `blazor` wird in der Vorlesung 04 das Projekt `Adventure.Web`. Alles, was du hier per CLI anlegst, kannst du anschließend ganz normal in Rider, Visual Studio oder VS Code öffnen.
@@ -136,3 +136,4 @@ Die Vorlage `nunit` werden wir in der [Vorlesung 12](/lectures/12/12.md) für Un
 - [Übersicht über die .NET-CLI – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/tools/)
 - [Projektdateien und MSBuild-Eigenschaften – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/project-sdk/overview)
 - [dotnet sln – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/core/tools/dotnet-sln)
+- [GitHub Actions – Dokumentation](https://docs.github.com/de/actions) – zeigt, wozu die CLI wirklich gut ist: Genau diese `dotnet build`- und `dotnet test`-Befehle laufen dort bei jedem Push automatisch auf einem Server ohne IDE.

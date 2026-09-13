@@ -114,7 +114,7 @@ Spielfeld feld = LevelParser.Parsen(level);
 feld.Spieler.SchatzGefunden += (sender, e) => Console.Beep();
 ```
 
-`Adventure.Web` reagiert auf dasselbe Ereignis ganz anders: Die Seite merkt sich eine Jubelmeldung und lässt sich neu zeichnen. Blazor rendert eine Komponente zwar nach jedem Tastendruck automatisch neu – aber nur, weil die Komponente den Tastendruck selbst behandelt hat. Kommt die Änderung aus dem Modell (später etwa durch einen Timer oder einen zweiten Spieler), muss die Komponente selbst zuhören und `StateHasChanged()` aufrufen:
+In `Adventure.Web` hängen wir uns als zweiten Beobachter an dasselbe Ereignis – und tun etwas ganz anderes: Die Seite merkt sich eine Jubelmeldung und lässt sich neu zeichnen. Bisher braucht `Home.razor` das nicht, weil Blazor eine Komponente nach jedem Tastendruck ohnehin neu rendert – aber eben nur, weil die Komponente den Tastendruck selbst behandelt hat. Kommt die Änderung aus dem Modell (später etwa durch einen Timer oder einen zweiten Spieler), muss die Komponente selbst zuhören und `StateHasChanged()` aufrufen. Diese Ergänzung zu `Home.razor` sieht so aus:
 
 ```razor
 @implements IDisposable
@@ -194,7 +194,7 @@ Subjekt und Beobachter sind nur über das Interface bzw. die Delegat-Signatur ge
 
 Die Nachteile folgen aus derselben Unsichtbarkeit. Wer `spieler.SchatzEinsammeln(schatz)` liest, sieht nicht, dass dahinter fünf Beobachter loslaufen – und wenn einer davon selbst wieder ein Subjekt ist, entsteht eine Kaskade von Benachrichtigungen, die schwer zu durchschauen und bei einem Zyklus endlos ist. Bei vielen Beobachtern und häufigen Ereignissen kostet der Rundruf spürbar Zeit.
 
-Das Subjekt hält Referenzen auf alle registrierten Beobachter. Ein Beobachter, der sich nie mit `-=` abmeldet, wird vom [Garbage Collector](/modules/garbage_collection/garbage_collection.md) nicht freigegeben, solange das Subjekt lebt – bei einem langlebigen Subjekt und vielen kurzlebigen Beobachtern (Dialoge, Anzeigen, Browsersitzungen) ist das ein klassisches Speicherleck. Im Adventure sieht man beide Fehler nebeneinander: `Program.cs` registriert nach `F9` einen zweiten Lambda-Beobachter am neuen Spieler, weil sich der alte weder abmelden lässt noch abgemeldet werden muss; würde dabei versehentlich derselbe Spieler zweimal abonniert, piepst die Konsole doppelt. Deshalb: Wer sich mit einer benannten Methode registriert, kann sich abmelden. Wer sich mit einem Lambda registriert, kann es nicht.
+Das Subjekt hält Referenzen auf alle registrierten Beobachter. Ein Beobachter, der sich nie mit `-=` abmeldet, wird vom [Garbage Collector](/modules/garbage_collection/garbage_collection.md) nicht freigegeben, solange das Subjekt lebt – bei einem langlebigen Subjekt und vielen kurzlebigen Beobachtern (Dialoge, Anzeigen, Browsersitzungen) ist das ein klassisches Speicherleck. Im Adventure sieht man das ab [Vorlesung 09](/lectures/09/09.md): `Program.cs` registriert nach `F9` einen zweiten Lambda-Beobachter am neuen Spieler, weil sich der alte weder abmelden lässt noch abgemeldet werden muss; würde dabei versehentlich derselbe Spieler zweimal abonniert, piepste die Konsole doppelt. Deshalb: Wer sich mit einer benannten Methode registriert, kann sich abmelden. Wer sich mit einem Lambda registriert, kann es nicht.
 {: .notice--warning}
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
@@ -207,3 +207,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Beobachterentwurfsmuster – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/events/observer-design-pattern)
 - [`INotifyPropertyChanged`-Schnittstelle – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.componentmodel.inotifypropertychanged)
 - [`IObservable<T>`-Schnittstelle – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.iobservable-1)
+- [Observer – Game Programming Patterns](https://gameprogrammingpatterns.com/observer.html) – baut das Muster am Beispiel eines Erfolgssystems auf und diskutiert ausführlich, wann es zu langsam oder zu unübersichtlich wird.
+- [Observer – Refactoring.Guru](https://refactoring.guru/design-patterns/observer) – Rollen, Diagramme und C#-Code der klassischen Variante mit Interface und Liste.

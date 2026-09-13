@@ -162,3 +162,5 @@ Ohne Constraint ist `T` ein völlig unbekannter Typ. Der Compiler erlaubt nur, w
 - [Generische Methoden – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/generics/generic-methods)
 - [Generics (C#-Programmierhandbuch) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/types/generics)
 - [Boxing und Unboxing – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/types/boxing-and-unboxing)
+- [SharpLab](https://sharplab.io/) – zeigt links deinen C#-Code und rechts, was der Compiler daraus macht: sehr lehrreich, um `Tausche<T>` und die Boxing-Variante zu vergleichen
+- [.NET Fiddle](https://dotnetfiddle.net/) – C# im Browser ausprobieren, ideal um die Compilerfehler aus diesem Modul selbst zu provozieren

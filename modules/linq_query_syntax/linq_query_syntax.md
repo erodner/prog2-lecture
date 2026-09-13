@@ -160,3 +160,5 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 - [Abfrageschlüsselwörter – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/query-keywords)
 - [Gruppieren von Abfrageergebnissen – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/standard-query-operators/grouping-data)
 - [Standardabfrageoperatoren im Überblick – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/standard-query-operators/)
+- [101 LINQ Samples – GitHub](https://github.com/dotnet/try-samples/tree/main/101-linq-samples) – 101 kurze, lauffähige Abfragen als Nachschlagewerk: für fast jede Frage steht hier ein Muster
+- [.NET Fiddle](https://dotnetfiddle.net/) – Abfragen im Browser ausprobieren und die Ergebnistypen mit `var` und Mouseover erkunden
