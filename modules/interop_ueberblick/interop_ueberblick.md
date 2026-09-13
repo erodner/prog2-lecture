@@ -61,13 +61,52 @@ Der Wrapper übersetzt in beide Richtungen: `System::String^` zu `std::string`, 
 
 Egal welcher Weg: Zwischen den beiden Welten müssen Daten übersetzt werden. Ein C#-`int` und ein C-`int` sind zufällig gleich aufgebaut, aber ein C#-`string` und ein C-`char*` haben nichts gemeinsam. Der C#-String liegt auf dem verwalteten Heap, besteht aus UTF-16-Zeichen und kennt seine Länge. Das `char*` zeigt auf Bytes, die mit einem Nullbyte enden. Diese Übersetzung nennt man **Marshalling**, und der Teil der Laufzeit, der sie erledigt, heißt **Marshaller**.
 
-```
-verwalteter Heap                                nativer Speicher
-+----------------------------+     Marshaller    +----------------------+
-| string "Hallo"             | ---------------> | 48 61 6C 6C 6F 00     |
-| Länge 5, UTF-16, beweglich |    kopiert +     | Bytes, nullterminiert |
-+----------------------------+    konvertiert   +----------------------+
-```
+<svg viewBox="0 0 720 285" role="img" aria-labelledby="titel-interop-grenze" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif">
+  <title id="titel-interop-grenze">Links der verwaltete Code der CLR, rechts native C-Bibliotheken, dazwischen die Grenze, an der der Marshaller die Daten umwandelt.</title>
+  <defs>
+    <marker id="pfeil-interop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <rect x="330" y="56" width="60" height="158" fill="currentColor" fill-opacity="0.12"/>
+  <g fill="none" stroke="#d33682" stroke-width="1.5" stroke-dasharray="5 4">
+    <path d="M330 56 V214"/>
+    <path d="M390 56 V214"/>
+  </g>
+
+  <g stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.06">
+    <rect x="16" y="70" width="250" height="140" rx="6"/>
+    <rect x="454" y="70" width="250" height="140" rx="6"/>
+  </g>
+
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <path d="M268 120 H452" marker-end="url(#pfeil-interop)"/>
+    <path d="M452 176 H268" marker-end="url(#pfeil-interop)"/>
+  </g>
+
+  <g fill="currentColor">
+    <text x="360" y="20" font-size="15" text-anchor="middle">Die Grenze zwischen verwaltetem und nativem Code</text>
+
+    <text x="30" y="98" font-size="13">Verwalteter Code (CLR)</text>
+    <text x="30" y="128" font-size="12" font-family="ui-monospace,monospace">Adventure.Kern</text>
+    <text x="30" y="156" font-size="13">Garbage Collector</text>
+    <text x="30" y="184" font-size="13">Typsicherheit, Exceptions</text>
+
+    <text x="468" y="98" font-size="13">Nativer Code</text>
+    <text x="468" y="128" font-size="13"><tspan font-family="ui-monospace,monospace" font-size="12">libmathe</tspan> (eigene C-Bibliothek)</text>
+    <text x="468" y="156" font-size="13"><tspan font-family="ui-monospace,monospace" font-size="12">libc</tspan> (C-Standardbibliothek)</text>
+    <text x="468" y="184" font-size="13">malloc/free, keine Typinfos</text>
+
+    <text x="360" y="110" font-size="12" font-family="ui-monospace,monospace" text-anchor="middle">strlen("Hallo")</text>
+    <text x="360" y="166" font-size="13" text-anchor="middle">Rückgabewert 5</text>
+
+    <text x="360" y="244" font-size="13" text-anchor="middle">Der Marshaller kopiert und wandelt um: aus "Hallo" werden die Bytes 48 61 6C 6C 6F 00.</text>
+    <text x="360" y="266" font-size="13" text-anchor="middle">Jenseits der Grenze gibt es keinen Garbage Collector, keine Typprüfung und keine Exceptions.</text>
+  </g>
+
+  <text x="360" y="44" font-size="13" fill="#d33682" text-anchor="middle">Marshalling</text>
+</svg>
 
 Der Marshaller kopiert also, konvertiert die Kodierung und hängt das Nullbyte an. Nach dem Aufruf gibt er den nativen Speicher wieder frei. Ein wichtiger Grund für das Kopieren ist der Garbage Collector: Er darf Objekte auf dem verwalteten Heap jederzeit verschieben, um Lücken zu schließen. Ein nativer Zeiger auf einen C#-String wäre deshalb nach der nächsten Aufräumrunde ungültig. Für einfache Zahlentypen ist kein Kopieren nötig – sie werden direkt übergeben. Solche Typen heißen **blittable**, und je mehr blittable Parameter ein Aufruf hat, desto billiger ist er.
 

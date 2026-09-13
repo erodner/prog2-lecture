@@ -89,16 +89,9 @@ Git muss nichts zusammenführen – es schiebt den Zeiger `main` einfach nach vo
 
 In unserem Szenario hat `main` sich aber bewegt: Der Bugfix an `Spieler.Heilen` liegt als `C4` dort, das Feature `C5` im anderen Zweig. Beide haben `C3` als gemeinsamen Vorfahren. Git erzeugt jetzt einen neuen **Merge-Commit** mit zwei Eltern, der die Änderungen beider Seiten enthält:
 
-```
- vorher:                            nachher (Merge-Commit):
+<svg viewBox="0 0 700 212" role="img" aria-labelledby="git-merge-graph-titel" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif"><title id="git-merge-graph-titel">Commit-Graph: der Branch feature/falle zweigt von main ab, erhält zwei Commits und wird durch einen Merge-Commit wieder in main zusammengeführt.</title><defs><marker id="pfeil-branching" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker></defs><g stroke="currentColor" stroke-width="1.5" fill="none" marker-end="url(#pfeil-branching)"><line x1="44" y1="80" x2="107" y2="80"/><line x1="133" y1="80" x2="317" y2="80"/><line x1="343" y1="80" x2="547" y2="80"/><line x1="268" y1="170" x2="387" y2="170"/><path d="M 127 92 C 160 130, 190 162, 243 166"/><path d="M 411 163 C 470 150, 500 130, 551 90"/><line x1="615" y1="80" x2="578" y2="80"/></g><g stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.06"><circle cx="120" cy="80" r="13"/><circle cx="330" cy="80" r="13"/><circle cx="255" cy="170" r="13"/><circle cx="400" cy="170" r="13"/></g><circle cx="560" cy="80" r="13" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.12"/><g fill="currentColor" font-size="13" text-anchor="middle"><text x="120" y="56">Spielfeld: Objekte entfernen</text><text x="330" y="56">Spieler: Heilen begrenzen</text><text x="560" y="56">Merge branch 'feature/falle'</text><text x="246" y="200">Falle anlegen</text><text x="410" y="200">Falle ins Spielfeld einbauen</text></g><g fill="currentColor" font-family="ui-monospace,monospace" font-size="12"><text x="225" y="104" text-anchor="middle">main</text><text x="327" y="152" text-anchor="middle">feature/falle</text><text x="622" y="84">HEAD</text><text x="30" y="85" text-anchor="middle">…</text></g></svg>
 
- C2 ◄── C3 ◄── C4                   C2 ◄── C3 ◄── C4 ◄── M
-         ▲     ▲                            ▲            ▲  ▲
-         │    main                          │          main │
-         └──── C5                           └──── C5 ◄──────┘
-               ▲                                  ▲
-            feature                            feature
-```
+Von links nach rechts gelesen zeigt das Bild die Reihenfolge der Commits; Git selbst speichert die Pfeile umgekehrt, denn jeder Commit kennt seinen Vorgänger, nicht seinen Nachfolger. Ein Feature-Branch sammelt üblicherweise mehrere Commits, hier zwei – im Beispiel unten haben wir der Kürze halber nur einen gemacht. Entscheidend ist der Merge-Commit: Er ist der einzige Knoten mit **zwei** eingehenden Kanten und vereint den Bugfix aus `main` mit der Arbeit aus `feature/falle`. `HEAD` steht danach wieder auf `main`, während der Zeiger `feature/falle` unverändert auf seinem letzten eigenen Commit stehen bleibt.
 
 ```bash
 git switch main

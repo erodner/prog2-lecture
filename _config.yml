@@ -15,9 +15,11 @@ logo                     : /assets/images/logo.png
 words_per_minute         : 200
 comments:
   provider               : # false (default)
-search                   : # true, false (default)
-search_full_content      : # true, false (default)
-search_provider          : # lunr (default)
+search                   : true
+search_full_content      : true
+search_provider          : lunr
+lunr:
+  search_within_pages    : true
 
 # Site Author
 author:

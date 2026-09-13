@@ -43,7 +43,7 @@ Ein `@` vor einem Ausdruck im Markup fügt seinen Wert an dieser Stelle ein. Das
     <div class="feld @KlasseFuer(objekt)" title="@objekt?.Beschreibung()">@SymbolFuer(objekt)</div>
 </div>
 
-<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="feld.LetzteMeldung" />
+<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="@feld.LetzteMeldung" />
 ```
 
 Auch die Parameter einer Komponente sind eine Einweg-Bindung: `Runde="feld.Runde"` liest den aktuellen Wert und gibt ihn nach unten weiter. Innerhalb der `Statusleiste` – der Komponente aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) – entsteht daraus die Herzenanzeige, und zwar nicht in einem Handler, sondern in einer berechneten Property:
@@ -76,6 +76,53 @@ Bei einem Textfeld feuert `change` erst, wenn das Feld den Fokus verliert oder d
 ## Der Render-Zyklus
 
 Warum sieht man den Zug des Spielers, obwohl `TasteGedrueckt` nur `feld.SpielerZieht(r)` aufruft? Weil Blazor nach **jedem Ereignishandler** die Komponente neu rendert: Es wertet das gesamte Markup mit dem aktuellen Zustand aus, vergleicht das Ergebnis mit dem vorigen Rendern und schickt nur die **Unterschiede** über die SignalR-Verbindung an den Browser.
+
+<svg viewBox="0 0 720 320" role="img" aria-labelledby="titel-render-zyklus" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif">
+  <title id="titel-render-zyklus">Kreislauf aus vier Stationen: Tastendruck, Handleraufruf, Zustandsänderung, erneutes Rendern – und zurück zum Tastendruck.</title>
+  <defs>
+    <marker id="pfeil-render" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <g stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.06">
+    <rect x="40" y="52" width="280" height="88" rx="6"/>
+    <rect x="400" y="52" width="280" height="88" rx="6"/>
+    <rect x="400" y="200" width="280" height="88" rx="6"/>
+    <rect x="40" y="200" width="280" height="88" rx="6"/>
+  </g>
+
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <path d="M328 96 H392" marker-end="url(#pfeil-render)"/>
+    <path d="M540 148 V192" marker-end="url(#pfeil-render)"/>
+    <path d="M392 244 H328" marker-end="url(#pfeil-render)"/>
+    <path d="M180 192 V148" marker-end="url(#pfeil-render)"/>
+  </g>
+
+  <g fill="currentColor">
+    <text x="360" y="24" font-size="15" text-anchor="middle">Der Render-Zyklus einer Blazor-Komponente</text>
+
+    <text x="54" y="78" font-size="13">1. Benutzer drückt eine Taste</text>
+    <text x="54" y="100" font-size="12" font-family="ui-monospace,monospace">@onkeydown="TasteGedrueckt"</text>
+    <text x="54" y="120" font-size="13">auf dem Spielfeld-div</text>
+
+    <text x="414" y="78" font-size="13">2. Blazor ruft den Handler auf</text>
+    <text x="414" y="100" font-size="12" font-family="ui-monospace,monospace">TasteGedrueckt(e)</text>
+    <text x="414" y="120" font-size="13">in Home.razor</text>
+
+    <text x="414" y="226" font-size="13">3. Der Zustand ändert sich</text>
+    <text x="414" y="248" font-size="12" font-family="ui-monospace,monospace">feld.SpielerZieht(r)</text>
+    <text x="414" y="268" font-size="13">Spieler zieht, Gegner ziehen</text>
+
+    <text x="54" y="226" font-size="13">4. Blazor erzeugt das Markup neu,</text>
+    <text x="54" y="248" font-size="13">vergleicht es mit dem letzten Stand</text>
+    <text x="54" y="268" font-size="13">und schickt nur die Unterschiede</text>
+
+    <text x="360" y="308" font-size="13" text-anchor="middle">Nur Schritt 3 steht in deinem Code – Schritt 4 erledigt Blazor von allein.</text>
+  </g>
+</svg>
+
+Der Zyklus schließt sich bei jedem Tastendruck neu. Von den vier Stationen schreiben wir nur die dritte selbst – `TasteGedrueckt` ändert Zustand und sonst nichts; die vierte erledigt Blazor, ohne dass im Handler ein einziger Befehl zum Zeichnen steht.
 
 Konkret: Die beiden `for`-Schleifen laufen erneut über alle Zellen und fragen für jede `feld.ObjektAn(...)`. Der allergrößte Teil des erzeugten HTML ist identisch mit dem vorigen Stand – geändert haben sich vielleicht vier Zellen (alte und neue Position des Spielers, alte und neue Position einer Wache) und ein paar Zeilen in der Statusleiste. Nur diese Unterschiede gehen über die Leitung. Wir schreiben Code, als würden wir die ganze Seite neu bauen; der Browser bekommt trotzdem nur die vier Zellen.
 

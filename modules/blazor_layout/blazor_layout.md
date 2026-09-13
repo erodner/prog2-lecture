@@ -65,10 +65,13 @@ Flexbox denkt immer in **einer Richtung** – das ist ihre Stärke und ihre Gren
 Unter der Werkzeugleiste liegt der Arbeitsbereich: links das Spielfeld, rechts die Statusleiste in fester Breite. Das ist der erste Einsatz von **CSS-Grid**, und er ist noch harmlos:
 
 ```css
-.arbeitsbereich { display: grid; grid-template-columns: auto 240px; gap: 1.5rem; align-items: start; }
+.arbeitsbereich { display: grid; grid-template-columns: max-content 240px; justify-content: start; gap: 1.5rem; align-items: start; }
 ```
 
-`grid-template-columns: auto 240px` definiert zwei Spalten: Die erste ist so breit wie ihr Inhalt – das Spielfeld –, die zweite immer 240 Pixel. Die beiden Kinder des Containers, das Spielfeld und die `<Statusleiste />`, füllen sie der Reihe nach. `align-items: start` sorgt dafür, dass die Statusleiste oben beginnt und nicht auf die Höhe des Spielfelds gestreckt wird. Die Einheit `fr` (*fraction*) wäre die Alternative: `1fr 2fr` verteilt den verfügbaren Platz im Verhältnis 1 : 2.
+`grid-template-columns: max-content 240px` definiert zwei Spalten: Die erste ist genau so breit wie ihr Inhalt – das Spielfeld –, die zweite immer 240 Pixel. Die beiden Kinder des Containers, das Spielfeld und die `<Statusleiste />`, füllen sie der Reihe nach. `align-items: start` sorgt dafür, dass die Statusleiste oben beginnt und nicht auf die Höhe des Spielfelds gestreckt wird. Die Einheit `fr` (*fraction*) wäre die Alternative: `1fr 2fr` verteilt den verfügbaren Platz im Verhältnis 1 : 2.
+
+Hier lohnt ein genauer Blick auf den Unterschied zwischen `max-content` und `auto`. Beide machen die Spalte so breit wie ihr Inhalt – aber `auto` nimmt zusätzlich den übrigen freien Platz auf. Auf einem breiten Bildschirm wächst die Spielfeld-Spalte dann weit über das Spielfeld hinaus und schiebt die Statusleiste an den rechten Rand, wo sie schnell aus dem Bild rutscht. `justify-content: start` schiebt das ganze Raster zusätzlich nach links, statt es zu zentrieren. Solche Kleinigkeiten sieht man dem CSS nicht an; man sieht sie erst im Browser, und zwar erst, wenn man die Fensterbreite verändert.
+{: .notice--warning}
 
 Das eigentlich Interessante ist das Spielfeld selbst. Die Razor-Schleifen erzeugen einen flachen Strom von `<div class="feld">`-Elementen ohne jede Schachtelung – aus ihm wird erst durch Grid ein Raster:
 

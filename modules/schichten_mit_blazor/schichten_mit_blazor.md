@@ -185,6 +185,30 @@ Ab da steht `LevelQuelle` in Markup und `@code` als Property zur Verfügung – 
 
 Drei Dinge, die ohne die Trennung nicht gingen. Erstens lässt sich die Levelquelle **austauschen, ohne eine Komponente anzufassen** – eine Zeile in `Program.cs`. Zweitens lässt sich der Kern **ohne Browser testen**: Ein NUnit-Test baut sich ein `Spielfeld` mit dem `LevelParser`, ruft `SpielerZieht` und prüft `Status`, `Lebenspunkte` oder `Punkte`, ohne dass eine Seite gerendert wird. Genau das holen wir in [Vorlesung 12](/lectures/12/12.md) nach; warum das so wertvoll ist, vertieft das Modul [Warum Unit-Tests?](/modules/unit_tests_motivation/unit_tests_motivation.md). Und drittens konnte diese ganze Vorlesung existieren: Eine neue Oberfläche zu bauen war möglich, *ohne* das Spiel neu zu schreiben.
 
+## Dieselbe Oberfläche, zweimal ausgeliefert
+
+Wie weit die Trennung trägt, zeigt ein letztes Projekt: `Adventure.Wasm`. Es liefert dasselbe Spiel aus, aber als **WebAssembly** – der C#-Code läuft dann nicht auf einem Server, sondern im Browser des Spielers. Probier es aus: [Adventure im Browser spielen](https://www.erodner.de/prog2-adventure/). Nach dem ersten Laden braucht die Seite keinen Server mehr, sie liegt als reine Dateisammlung auf GitHub Pages.
+
+Bemerkenswert daran ist, was dafür *nicht* nötig war. Weder `Adventure.Kern` noch die Komponenten wurden angefasst. Das neue Projekt verweist auf dieselben `.razor`-Dateien wie `Adventure.Web`:
+
+```xml
+<ItemGroup>
+  <Content Include="..\Adventure.Web\Components\Pages\Home.razor" LinkBase="Components/Pages" />
+  <Content Include="..\Adventure.Web\Components\Statusleiste.razor" LinkBase="Components" />
+  <Content Include="..\Adventure.Web\Components\SpielEndeDialog.razor" LinkBase="Components" />
+</ItemGroup>
+```
+
+Neu ist nur der Rahmen: eine eigene `Program.cs`, die den Browser statt einen Webserver hochfährt, und eine `index.html`. Und eine Entscheidung, die uns das Interface abnimmt – im Browser gibt es kein Dateisystem, also kann dort keine `TextdateiLevelQuelle` laufen:
+
+```csharp
+// Adventure.Wasm/Program.cs
+builder.Services.AddSingleton<ILevelQuelle, EingebauteLevelQuelle>();
+```
+
+Eine Zeile, eine andere Umgebung, dasselbe Spiel. Dass das überhaupt geht, ist kein Verdienst von Blazor, sondern der Schichtung: Weil das Fachkonzept nie eine Datei geöffnet hat, sondern immer nur `ILevelQuelle` kannte, ist der Wechsel von der Festplatte in den Browser eine Konfigurationsfrage geblieben.
+{: .notice--primary}
+
 Übung: Das Spiel soll einen Spielstand speichern und laden können. Schreibe auf, was in welches Projekt kommt: das Interface für den Speicher, die Klasse, die tatsächlich in eine Datei schreibt, die Buttons „Speichern“ und „Laden“, die Methode, die den Zustand des Spielfelds einsammelt, und die Zeile, die entscheidet, in welche Datei geschrieben wird. Prüfe deine Verteilung mit der Konsolen-Probe – und überlege, welche der fünf Teile die Konsolenversion mitbenutzen könnte.
 {: .notice--info}
 

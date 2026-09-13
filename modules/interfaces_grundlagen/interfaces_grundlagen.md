@@ -122,6 +122,70 @@ public sealed class Trank : Gegenstand
 
 `Schluessel` und `Trank` erfüllen `ISammelbar`, ohne es je zu erwähnen: `Name` kommt aus `Spielobjekt`, `Aufheben` aus `Gegenstand`. Ein Interface wird mitvererbt – wer von einer Klasse erbt, die es implementiert, implementiert es ebenfalls.
 
+Damit stehen die beiden Verträge neben dem Vererbungsbaum aus dem [vorigen Modul](/modules/abstrakte_klassen/abstrakte_klassen.md):
+
+<svg viewBox="0 0 700 310" role="img" aria-labelledby="titel-interfaces-quer" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif">
+<title id="titel-interfaces-quer">Tuer, Truhe und Gegenstand erben von StatischesObjekt; quer dazu implementieren Tuer und Truhe das Interface IInteragierbar und Gegenstand das Interface ISammelbar.</title>
+<defs>
+<marker id="uml-spitze-interfaces" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 0 L10 5 L0 10 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="none" stroke-linejoin="round"/>
+</marker>
+</defs>
+<text x="8" y="18" font-size="15" fill="currentColor">Interfaces liegen quer zur Vererbungshierarchie</text>
+<g fill="none" stroke="currentColor" stroke-width="1.5">
+<path d="M60 96 H300"/>
+<path d="M60 96 V114"/>
+<path d="M145 96 V114"/>
+<path d="M300 96 V114"/>
+<path d="M180 96 V88" marker-end="url(#uml-spitze-interfaces)"/>
+<path d="M220 170 H393"/>
+<path d="M220 170 V188"/>
+<path d="M313 170 V188"/>
+<path d="M393 170 V188"/>
+<path d="M300 170 V162" marker-end="url(#uml-spitze-interfaces)"/>
+</g>
+<g fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4">
+<path d="M345 133 H440" marker-end="url(#uml-spitze-interfaces)"/>
+<path d="M60 140 V250"/>
+<path d="M145 140 V250"/>
+<path d="M60 250 H440" marker-end="url(#uml-spitze-interfaces)"/>
+</g>
+<g fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.5">
+<rect x="114" y="40" width="132" height="38" rx="4"/>
+<rect x="32" y="114" width="56" height="26" rx="4"/>
+<rect x="117" y="114" width="56" height="26" rx="4"/>
+<rect x="255" y="114" width="90" height="38" rx="4"/>
+<rect x="177" y="188" width="86" height="26" rx="4"/>
+<rect x="285" y="188" width="56" height="26" rx="4"/>
+<rect x="363" y="188" width="60" height="26" rx="4"/>
+</g>
+<g fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.5">
+<rect x="450" y="114" width="160" height="38" rx="4"/>
+<rect x="450" y="231" width="160" height="38" rx="4"/>
+</g>
+<g fill="currentColor" text-anchor="middle">
+<text x="180" y="55" font-size="11">«abstrakt»</text>
+<text x="180" y="71" font-size="12" font-style="italic" font-family="ui-monospace,monospace">StatischesObjekt</text>
+<text x="60" y="131" font-size="12" font-family="ui-monospace,monospace">Tuer</text>
+<text x="145" y="131" font-size="12" font-family="ui-monospace,monospace">Truhe</text>
+<text x="300" y="129" font-size="11">«abstrakt»</text>
+<text x="300" y="145" font-size="12" font-style="italic" font-family="ui-monospace,monospace">Gegenstand</text>
+<text x="220" y="205" font-size="12" font-family="ui-monospace,monospace">Schluessel</text>
+<text x="313" y="205" font-size="12" font-family="ui-monospace,monospace">Trank</text>
+<text x="393" y="205" font-size="12" font-family="ui-monospace,monospace">Schatz</text>
+<text x="530" y="129" font-size="11">«interface»</text>
+<text x="530" y="145" font-size="12" font-family="ui-monospace,monospace">ISammelbar</text>
+<text x="530" y="246" font-size="11">«interface»</text>
+<text x="530" y="262" font-size="12" font-family="ui-monospace,monospace">IInteragierbar</text>
+</g>
+<g fill="currentColor" font-size="12">
+<text x="8" y="284">«abstrakt» + Kursivschrift = abstrakte Klasse · «interface» = Schnittstelle</text>
+<text x="8" y="300">durchgezogene Linie = »erbt von« · gestrichelte Linie = »implementiert«</text>
+</g>
+</svg>
+
+Die durchgezogenen Linien sind derselbe Baum wie im Modul über [abstrakte Klassen](/modules/abstrakte_klassen/abstrakte_klassen.md): Jede Klasse hat genau eine Basisklasse, und die Pfeile zeigen nach oben auf sie. Die gestrichelten Linien laufen dagegen **quer** dazu – sie verbinden Klassen aus verschiedenen Ästen des Baums mit derselben Fähigkeit. `Tuer` und `Truhe` sind Geschwister und beide `IInteragierbar`, während ihr drittes Geschwister `Gegenstand` stattdessen `ISammelbar` erfüllt und diesen Vertrag an `Schluessel`, `Trank` und `Schatz` weitervererbt. Genau das kann Vererbung nicht leisten: Eine Zwischenklasse `InteragierbaresObjekt` müsste im Baum stehen und würde die Fähigkeit an eine feste Stelle nageln. Ein Interface hängt an keiner Stelle – es lässt sich an jede Klasse anheften, egal wo sie im Baum sitzt, und eine Klasse darf beliebig viele davon tragen.
+
 ## Das Interface als Typ
 
 Ein Interface kann überall dort als Typ stehen, wo auch eine Klasse stehen könnte: bei Variablen, Parametern, Rückgabewerten und in Sammlungen. Genau das nutzt die Zugregel des Spielfelds. Wenn der Spieler in eine Richtung zieht, schaut sie zuerst nach, was dort steht:

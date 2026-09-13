@@ -122,6 +122,86 @@ public abstract class BeweglichesObjekt : Spielobjekt
 
 `StatischesObjekt` enthält nichts als einen Konstruktor und ist trotzdem `abstract` – sie ist eine reine Einordnung, und „ein statisches Objekt“ ohne genauere Art gibt es nicht. `BeweglichesObjekt` bringt zusätzlich echten Code mit, den sich Spieler und Gegner teilen. Beide erben das abstrakte `Symbol` weiter, ohne es zu implementieren: Eine abstrakte Klasse darf einen abstrakten Vertrag an ihre Erben durchreichen.
 
+Mit diesen beiden Zwischenklassen steht das Gerüst, das uns bis zum Semesterende trägt:
+
+<svg viewBox="0 0 700 310" role="img" aria-labelledby="titel-hierarchie" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif">
+<title id="titel-hierarchie">Klassenhierarchie des Adventure: die abstrakte Wurzel Spielobjekt, darunter die abstrakten Zwischenklassen StatischesObjekt und BeweglichesObjekt und deren konkrete Unterklassen.</title>
+<defs>
+<marker id="uml-spitze-hierarchie" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 0 L10 5 L0 10 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+</marker>
+</defs>
+<text x="8" y="18" font-size="15" fill="currentColor">Die Klassenhierarchie des Adventure</text>
+<g fill="none" stroke="currentColor" stroke-width="1.5">
+<path d="M190 86 H574"/>
+<path d="M190 86 V104"/>
+<path d="M574 86 V104"/>
+<path d="M382 86 V78" marker-end="url(#uml-spitze-hierarchie)"/>
+<path d="M36 160 H327"/>
+<path d="M36 160 V178"/>
+<path d="M107 160 V178"/>
+<path d="M178 160 V178"/>
+<path d="M244 160 V178"/>
+<path d="M327 160 V178"/>
+<path d="M190 160 V152" marker-end="url(#uml-spitze-hierarchie)"/>
+<path d="M533 160 H612"/>
+<path d="M533 160 V178"/>
+<path d="M612 160 V178"/>
+<path d="M574 160 V152" marker-end="url(#uml-spitze-hierarchie)"/>
+<path d="M259 234 H408"/>
+<path d="M259 234 V252"/>
+<path d="M340 234 V252"/>
+<path d="M408 234 V252"/>
+<path d="M327 234 V226" marker-end="url(#uml-spitze-hierarchie)"/>
+<path d="M567 234 H645"/>
+<path d="M567 234 V252"/>
+<path d="M645 234 V252"/>
+<path d="M612 234 V226" marker-end="url(#uml-spitze-hierarchie)"/>
+</g>
+<g fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.5">
+<rect x="334" y="30" width="96" height="38" rx="4"/>
+<rect x="124" y="104" width="132" height="38" rx="4"/>
+<rect x="504" y="104" width="140" height="38" rx="4"/>
+<rect x="8" y="178" width="56" height="26" rx="4"/>
+<rect x="74" y="178" width="66" height="26" rx="4"/>
+<rect x="150" y="178" width="56" height="26" rx="4"/>
+<rect x="216" y="178" width="56" height="26" rx="4"/>
+<rect x="282" y="178" width="90" height="38" rx="4"/>
+<rect x="500" y="178" width="66" height="26" rx="4"/>
+<rect x="576" y="178" width="72" height="38" rx="4"/>
+<rect x="216" y="252" width="86" height="26" rx="4"/>
+<rect x="312" y="252" width="56" height="26" rx="4"/>
+<rect x="378" y="252" width="60" height="26" rx="4"/>
+<rect x="539" y="252" width="56" height="26" rx="4"/>
+<rect x="605" y="252" width="80" height="26" rx="4"/>
+</g>
+<g fill="currentColor" text-anchor="middle">
+<text x="382" y="45" font-size="11">«abstrakt»</text>
+<text x="382" y="61" font-size="12" font-style="italic" font-family="ui-monospace,monospace">Spielobjekt</text>
+<text x="190" y="119" font-size="11">«abstrakt»</text>
+<text x="190" y="135" font-size="12" font-style="italic" font-family="ui-monospace,monospace">StatischesObjekt</text>
+<text x="574" y="119" font-size="11">«abstrakt»</text>
+<text x="574" y="135" font-size="12" font-style="italic" font-family="ui-monospace,monospace">BeweglichesObjekt</text>
+<text x="36" y="195" font-size="12" font-family="ui-monospace,monospace">Wand</text>
+<text x="107" y="195" font-size="12" font-family="ui-monospace,monospace">Ausgang</text>
+<text x="178" y="195" font-size="12" font-family="ui-monospace,monospace">Tuer</text>
+<text x="244" y="195" font-size="12" font-family="ui-monospace,monospace">Truhe</text>
+<text x="327" y="193" font-size="11">«abstrakt»</text>
+<text x="327" y="209" font-size="12" font-style="italic" font-family="ui-monospace,monospace">Gegenstand</text>
+<text x="533" y="195" font-size="12" font-family="ui-monospace,monospace">Spieler</text>
+<text x="612" y="193" font-size="11">«abstrakt»</text>
+<text x="612" y="209" font-size="12" font-style="italic" font-family="ui-monospace,monospace">Gegner</text>
+<text x="259" y="269" font-size="12" font-family="ui-monospace,monospace">Schluessel</text>
+<text x="340" y="269" font-size="12" font-family="ui-monospace,monospace">Trank</text>
+<text x="408" y="269" font-size="12" font-family="ui-monospace,monospace">Schatz</text>
+<text x="567" y="269" font-size="12" font-family="ui-monospace,monospace">Wache</text>
+<text x="645" y="269" font-size="12" font-family="ui-monospace,monospace">Verfolger</text>
+</g>
+<text x="8" y="298" font-size="12" fill="currentColor">«abstrakt» + Kursivschrift = abstrakte Klasse · Pfeil mit leerer Spitze = »erbt von«</text>
+</svg>
+
+Jeder Pfeil im Bild zeigt mit seiner leeren Spitze nach oben auf die Basisklasse und liest sich als „erbt von“: `Wache` erbt von `Gegner`, `Gegner` von `BeweglichesObjekt`, `BeweglichesObjekt` von `Spielobjekt`. Kursiv gesetzt und mit `«abstrakt»` überschrieben sind genau die Klassen, die `abstract` sind – von ihnen kann `new` kein Objekt erzeugen, sie beschreiben nur den gemeinsamen Nenner ihrer Erben. Entstehen können Objekte ausschließlich aus den aufrecht gesetzten Kästen: `Wand`, `Ausgang`, `Spieler` und ihre Geschwister. Die beiden Zwischenklassen teilen den Baum dabei sauber in zwei Äste, und jede neue Objektart wird sich später in genau einen davon einordnen. Die rechte Hälfte mit `Gegner`, `Wache` und `Verfolger` bauen wir in Vorlesung 05 und 07 aus; `Tuer`, `Truhe` und `Gegenstand` bekommen im [nächsten Modul über Interfaces](/modules/interfaces_grundlagen/interfaces_grundlagen.md) zusätzliche Fähigkeiten, die quer zu diesem Baum liegen.
+
 ## Abgeleitete Klassen müssen liefern
 
 Erst die konkreten Klassen am Ende der Kette lösen das Versprechen ein. Jede nicht-abstrakte Unterklasse **muss** alle geerbten abstrakten Mitglieder mit `override` implementieren – vergisst man eines, kompiliert die Klasse nicht.

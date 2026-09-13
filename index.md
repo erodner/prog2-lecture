@@ -19,6 +19,8 @@ In Programmierung 1 ging es um die „Grundrechenarten“ des Programmierens. In
 
 Durch die gesamte Veranstaltung zieht sich ein Beispiel: **Adventure**, ein rundenbasiertes 2D-Dungeon-Spiel mit Wänden, Türen, Truhen, einem Helden und Gegnern, die Wache laufen oder die Verfolgung aufnehmen. Es beginnt als kleine Klassenhierarchie, wird in der Konsole spielbar, bekommt eine Oberfläche im Browser, lädt seine Level aus Dateien und aus dem Netz und wird am Ende automatisch getestet. Der Code liegt im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure); Git-Tags markieren den Stand nach jeder Vorlesung.
 
+**[▶ Adventure im Browser spielen](https://www.erodner.de/prog2-adventure/)** – das fertige Spiel läuft ohne Installation direkt im Browser. Schau es dir an, bevor du die erste Zeile davon schreibst.
+
 Auch hier gilt *probieren geht über studieren*: Schreib die Beispiele selbst, verändere sie, bring sie zum Absturz und finde heraus, warum. KI-Assistenten sind ein Werkzeug für später – erst wenn du selbst beurteilen kannst, ob ein Vorschlag gut ist, helfen sie dir wirklich.
 
 ## ➤ Struktur der Veranstaltung

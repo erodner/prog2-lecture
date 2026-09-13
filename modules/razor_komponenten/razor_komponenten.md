@@ -139,10 +139,13 @@ Die Anzeige neben dem Spielfeld – Name, Lebenspunkte, Punkte, Inventar, Runde 
 Die Startseite bindet sie als Tag ein und füllt ihre Parameter wie HTML-Attribute:
 
 ```razor
-<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="feld.LetzteMeldung" />
+<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="@feld.LetzteMeldung" />
 ```
 
 Der Tag-Name ist der Dateiname, und die Attribute sind **Parameter** – öffentliche Properties, die im `@code`-Block mit `[Parameter]` markiert sind. Über sie fließen Daten von der einbettenden Seite in die Komponente hinein. Der Zusatz `EditorRequired` bei `Spieler` sorgt dafür, dass der Compiler warnt, wenn jemand die Statusleiste ohne Spieler einbindet; `null!` daneben beruhigt die Nullable-Analyse, weil der Wert garantiert von außen gesetzt wird. `Runde` und `Meldung` haben sinnvolle Standardwerte und sind deshalb optional.
+
+Ein Detail lohnt einen zweiten Blick: Bei `Meldung` steht ein `@` vor dem Wert, bei `Spieler` und `Runde` nicht. Der Grund ist der Parametertyp. `Spieler` und `Runde` sind kein `string`, also liest Razor den Attributwert ohnehin als C#-Ausdruck. `Meldung` ist ein `string` – dort nimmt Razor den Text wörtlich, wenn kein `@` davorsteht. Ohne das `@` stünde in der Statusleiste tatsächlich der Text „feld.LetzteMeldung“ statt der Meldung. Der Compiler meckert nicht, weil eine Zeichenkette an einen `string`-Parameter zu übergeben völlig in Ordnung ist – der Fehler fällt erst im Browser auf.
+{: .notice--warning}
 
 Beachte, was `Statusleiste` **nicht** tut: Sie berechnet keine Lebenspunkte, sie beendet kein Spiel, sie kennt das `Spielfeld` gar nicht. Sie bekommt einen `Spieler` und zeigt ihn an. Genau diese Bescheidenheit macht eine Komponente wiederverwendbar – dieselbe Leiste könnte in einer Übersicht über mehrere Helden mehrfach vorkommen.
 {: .notice--primary}

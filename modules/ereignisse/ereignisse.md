@@ -137,6 +137,63 @@ feld.Spieler.SchatzGefunden += (sender, e) =>
     erfolge.Add($"{((Spieler)sender!).Name}: {e.Schatz.Wert} Punkte, jetzt {e.Punkte}");
 ```
 
+<svg viewBox="0 0 720 325" role="img" aria-labelledby="titel-ereignis-verteiler" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif">
+  <title id="titel-ereignis-verteiler">Der Spieler löst das Ereignis SchatzGefunden aus; drei Empfänger, die sich mit += registriert haben, werden benachrichtigt.</title>
+  <defs>
+    <marker id="pfeil-ereignis" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+    <marker id="pfeil-ereignis-anmeldung" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#d33682"/>
+    </marker>
+  </defs>
+
+  <g stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.06">
+    <rect x="20" y="128" width="180" height="80" rx="6"/>
+    <rect x="480" y="46" width="220" height="58" rx="6"/>
+    <rect x="480" y="132" width="220" height="58" rx="6"/>
+    <rect x="480" y="218" width="220" height="58" rx="6"/>
+  </g>
+
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <path d="M200 151 H400"/>
+    <path d="M400 65 V237"/>
+    <path d="M400 65 H472" marker-end="url(#pfeil-ereignis)"/>
+    <path d="M400 151 H472" marker-end="url(#pfeil-ereignis)"/>
+    <path d="M400 237 H472" marker-end="url(#pfeil-ereignis)"/>
+  </g>
+
+  <g fill="none" stroke="#d33682" stroke-width="1.5" stroke-dasharray="5 4">
+    <path d="M472 85 H440"/>
+    <path d="M472 171 H440"/>
+    <path d="M472 257 H440"/>
+    <path d="M440 85 V290 H110 V214" marker-end="url(#pfeil-ereignis-anmeldung)"/>
+  </g>
+
+  <g fill="currentColor">
+    <text x="360" y="22" font-size="15" text-anchor="middle">Ein Sender, beliebig viele Empfänger</text>
+
+    <text x="110" y="156" font-size="13" text-anchor="middle">Spieler (Sender)</text>
+    <text x="110" y="180" font-size="12" font-family="ui-monospace,monospace" text-anchor="middle">event SchatzGefunden</text>
+
+    <text x="492" y="72" font-size="13">Adventure.Konsole</text>
+    <text x="492" y="92" font-size="12" font-family="ui-monospace,monospace">Console.Beep()</text>
+
+    <text x="492" y="158" font-size="13">Blazor: Statusleiste</text>
+    <text x="492" y="178" font-size="12" font-family="ui-monospace,monospace">StateHasChanged()</text>
+
+    <text x="492" y="244" font-size="13">Protokoll</text>
+    <text x="492" y="264" font-size="12" font-family="ui-monospace,monospace">erfolge.Add(...)</text>
+
+    <text x="300" y="143" font-size="12" font-family="ui-monospace,monospace" text-anchor="middle">Invoke(this, e)</text>
+    <text x="360" y="312" font-size="13" text-anchor="middle">Der Spieler kennt keinen seiner Empfänger – nur die Signatur, die sie erfüllen müssen.</text>
+  </g>
+
+  <text x="275" y="282" font-size="13" fill="#d33682" text-anchor="middle"><tspan font-family="ui-monospace,monospace" font-size="12">+=</tspan> – Empfänger melden sich beim Sender an</text>
+</svg>
+
+Die drei Empfänger im Bild wissen nichts voneinander, und der Spieler weiß von keinem einzelnen von ihnen: Er ruft nur `Invoke` auf dem Delegaten auf, in den sie sich mit `+=` eingetragen haben. Ein vierter Zuhörer kann jederzeit dazukommen, ohne dass in `Adventure.Kern` eine Zeile geändert werden muss.
+
 ## Ein zweites Ereignis: `RundeBeendet`
 
 Nicht nur der Spieler meldet sich, auch das Spielfeld. Eine Runde besteht aus dem Zug des Helden und den Zügen aller Gegner; wenn sie vorbei ist, hat sich fast alles auf der Karte verändert, und jede Anzeige muss neu gezeichnet werden:
