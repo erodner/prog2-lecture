@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Wer ein Haus baut, prüft vorher das Fundament. In Programmierung 2 bauen wir auf dem auf, was du in [Programmierung 1](https://www.erodner.de/prog-lecture/) gelernt hast – und zwar ohne es noch einmal zu erklären. Wenn wir in der nächsten Vorlesung über Vererbung sprechen, setzen wir voraus, dass du weißt, was ein Konstruktor ist, was `private` bedeutet und warum eine `List<int>` etwas anderes ist als ein `int[]`. Dieses Modul ist deshalb keine Vorlesung, sondern eine Checkliste: Geh sie ehrlich durch und lies die verlinkten Prog-1-Module dort nach, wo du zögerst. Es ist völlig normal, dass nach der Pause nicht mehr alles präsent ist – wichtig ist nur, dass du die Lücken in den ersten zwei Wochen schließt.
+Wer ein Haus baut, prüft vorher das Fundament. In Programmierung 2 bauen wir auf dem auf, was du in [Programmierung 1](https://www.erodner.de/prog-lecture/) gelernt hast – und zwar ohne es noch einmal zu erklären. Wenn wir in der nächsten Vorlesung über Vererbung sprechen, setzen wir voraus, dass du weißt, was ein Konstruktor ist, was `private` bedeutet und warum eine `List<int>` etwas anderes ist als ein `int[]`. 
 
 ## Was wir voraussetzen
 
@@ -30,7 +30,7 @@ Die folgende Tabelle listet die Themen aus Programmierung 1, auf die wir uns ab 
 | Collections | `List<T>` mit `Add`, `Remove`, `Count`, Indexzugriff; `Dictionary<TKey, TValue>` mit `ContainsKey` und `TryGetValue`; Unterschied zu Arrays | [List](https://www.erodner.de/prog-lecture/modules/list/list/), [Dictionary](https://www.erodner.de/prog-lecture/modules/dictionary/dictionary/), [Collections](https://www.erodner.de/prog-lecture/modules/collections/collections/) |
 | Ausnahmebehandlung | `try`/`catch`/`finally`; gängige Exception-Typen kennen; selbst `throw new ArgumentException(…)` einsetzen | [try/catch](https://www.erodner.de/prog-lecture/modules/try_catch/try_catch/), [Exceptions](https://www.erodner.de/prog-lecture/modules/exceptions/exceptions/), [Eigene Exceptions](https://www.erodner.de/prog-lecture/modules/custom_exceptions/custom_exceptions/) |
 
-Es geht nicht darum, jedes Detail auswendig zu wissen. Entscheidend ist, dass du Code mit diesen Konstrukten **flüssig lesen** kannst und beim Schreiben weißt, wo du nachschlagen musst. Wenn du in einer Zeile mehr als eine Sache nicht verstehst, ist das ein Signal, das Modul noch einmal durchzuarbeiten.
+Es geht nicht darum, jedes Detail auswendig zu wissen. Entscheidend ist, dass du Code mit diesen Konstrukten **flüssig lesen** kannst und beim Schreiben weißt, wo du nachschlagen musst. 
 {: .notice--primary}
 
 ## Selbsttest
@@ -68,7 +68,7 @@ public class Person
 }
 ```
 
-So sieht die Klasse in der Benutzung aus. Überlege bei jeder Zeile, ob sie kompiliert – und wenn nicht, warum:
+So sieht die Klasse in der Benutzung aus:
 
 ```csharp
 Person anna = new Person("Anna", new DateTime(2004, 5, 17));
@@ -84,7 +84,7 @@ anna.GelaufeneKm = 10;                 // kompiliert nicht
 
 Die beiden letzten Zeilen scheitern aus unterschiedlichen Gründen: `Schritte` hat einen Setter, aber er ist `private` – nur die Klasse selbst darf Schritte hinzufügen, und zwar ausschließlich über `Gehen`. `GelaufeneKm` hat gar keinen Setter; die Property wird bei jedem Zugriff aus `Schritte` **berechnet** und speichert selbst keinen Wert.
 
-Übung: Beantworte die folgenden Fragen schriftlich, bevor du im Workshop mit anderen vergleichst. (1) Welche Bestandteile hat die Klasse? Benenne jeden einzeln: Konstruktor, gewöhnliche Properties, berechnete Property, Methode. (2) Welche Sichtbarkeiten kommen vor? Warum sind `Name`, `Geburtstag` und `Schritte` mit `private set` deklariert, `Gewicht` aber nicht? (3) Was unterscheidet `GelaufeneKm` von `Schritte`? Was würde sich ändern, wenn `GelaufeneKm` ein Feld wäre, das im Konstruktor gesetzt wird? (4) Was macht `this` im Konstruktor – und ist es hier notwendig? (5) Was passiert bei `anna.Gehen(-500)`? Ist das eine gute Entscheidung, oder wäre eine Exception besser? Argumentiere. (6) Welche weitere berechnete Property wäre sinnvoll? Skizziere `Alter` in Jahren aus `Geburtstag` und `DateTime.Today`.
+Übung: Beantworte die folgenden Fragen schriftlich, bevor du im Workshop mit anderen vergleichst. (1) Welche Bestandteile hat die Klasse? Benenne jeden einzeln: Konstruktor, gewöhnliche Properties, berechnete Property, Methode. (2) Welche Sichtbarkeiten kommen vor? Warum sind `Name`, `Geburtstag` und `Schritte` mit `private set` deklariert, `Gewicht` aber nicht? (3) Was unterscheidet `GelaufeneKm` von `Schritte`? Was würde sich ändern, wenn `GelaufeneKm` ein Feld wäre, das im Konstruktor gesetzt wird? (4) Was macht `this` im Konstruktor – und ist es hier notwendig? (5) Was passiert bei `anna.Gehen(-500)`? Ist das eine gute Entscheidung, oder wäre eine Exception besser? Argumentiere. (6) Welche weitere berechnete Property wäre sinnvoll? 
 {: .notice--info}
 
 Wenn du bei Frage 2 oder 3 unsicher bist, lies die Module [Properties](https://www.erodner.de/prog-lecture/modules/properties/properties/) und [Sichtbarkeit](https://www.erodner.de/prog-lecture/modules/sichtbarkeit/sichtbarkeit/) noch einmal – genau diese Konzepte werden in der [nächsten Vorlesung](/lectures/01/01.md) mit `protected` und `virtual` erweitert.

@@ -25,8 +25,9 @@ TestResults/
 # macOS
 .DS_Store
 
-# Claude Code project settings (local only)
+# Claude Code project settings and memory (local only)
 .claude/
+memory/
 
 # Symlink to the local slide folder (not part of the repo)
 slides

@@ -15,13 +15,13 @@ Willkommen zur Veranstaltung **Programmierung 2** für den Studiengang Ingenieur
 
 ## ➤ Worum geht es?
 
-In Programmierung 1 ging es um die „Grundrechenarten“ des Programmierens. In Programmierung 2 geht es um **Entwurf**: Wie baut man aus Klassen ein System, das man erweitern kann, ohne alles umzuschreiben? Vererbung, Interfaces, Generizität, Delegaten und Entwurfsmuster sind die Antworten der Objektorientierung auf diese Frage. Als Anwendung bauen wir eine grafische Oberfläche im Browser mit **Blazor** und lernen dabei, Software in Schichten zu organisieren. Dazu kommt das Handwerkszeug, ohne das kein Softwareprojekt auskommt: Versionsverwaltung mit Git gleich zu Beginn, später Bibliotheken über NuGet, native Bibliotheken und automatisierte Unit-Tests.
+In Programmierung 1 ging es um die „Grundrechenarten“ des Programmierens. In Programmierung 2 geht es um **Entwurf**: Wie baut man aus Klassen ein System, das man erweitern kann, ohne alles umzuschreiben? Dazu kommt das Handwerkszeug, ohne das kein Softwareprojekt auskommt: Versionsverwaltung mit Git, später Bibliotheken über NuGet und automatisierte Unit-Tests.
 
-Durch die gesamte Veranstaltung zieht sich ein Beispiel: **Adventure**, ein rundenbasiertes 2D-Dungeon-Spiel mit Wänden, Türen, Truhen, einem Helden und Gegnern, die Wache laufen oder die Verfolgung aufnehmen. Es beginnt als kleine Klassenhierarchie, wird in der Konsole spielbar, bekommt eine Oberfläche im Browser, lädt seine Level aus Dateien und aus dem Netz und wird am Ende automatisch getestet. Der Code liegt im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure); Git-Tags markieren den Stand nach jeder Vorlesung.
-
+{% comment %}
+Durch die gesamte Veranstaltung zieht sich ein Beispiel: **Adventure**, ein rundenbasiertes 2D-Dungeon-Spiel mit Wänden, Türen, Truhen, einem Helden und Gegnern, die Wache laufen oder die Verfolgung aufnehmen.
+Der Code liegt im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure); Git-Tags markieren den Stand nach jeder Vorlesung.
 **[▶ Adventure im Browser spielen](https://www.erodner.de/prog2-adventure/)** – das fertige Spiel läuft ohne Installation direkt im Browser. Schau es dir an, bevor du die erste Zeile davon schreibst.
-
-Auch hier gilt *probieren geht über studieren*: Schreib die Beispiele selbst, verändere sie, bring sie zum Absturz und finde heraus, warum. KI-Assistenten sind ein Werkzeug für später – erst wenn du selbst beurteilen kannst, ob ein Vorschlag gut ist, helfen sie dir wirklich.
+{% endcomment %}
 
 ## ➤ Struktur der Veranstaltung
 
@@ -45,6 +45,7 @@ Die Vorlesung besteht aus:
 
 3. [Git – Versionsverwaltung](/lectures/03/03.md) – Konzepte, Kommandozeile, Remote-Repositorys, Branches, Merge-Konflikte, IDE-Integration
 
+{% comment %}
 ### Teil 3: Anwendungen bauen
 
 4. [GUI mit Blazor und Schichten-Architekturen](/lectures/04/04.md) – Razor-Komponenten, Layout, Ereignisse, Datenbindung, Dialoge, Drei-Schichten-Architektur
@@ -68,6 +69,7 @@ Die Vorlesung besteht aus:
 10. [Native Bibliotheken – P/Invoke](/lectures/10/10.md) – `DllImport`, `LibraryImport`, Marshalling
 11. [NuGet – Paketverwaltung](/lectures/11/11.md) – Pakete finden, einbinden, bewerten, Logging mit NLog
 12. [Unit-Testing](/lectures/12/12.md) – NUnit, Assertions, `dotnet test`
+{% endcomment %}
 
 ---
 
@@ -81,8 +83,7 @@ Am Ende dieser Veranstaltung kannst du:
 4. Gängige **Entwurfsmuster** erkennen und anwenden.
 5. Eine **grafische Oberfläche** mit Blazor bauen und die Anwendung in **Schichten** strukturieren.
 6. Daten mit **Dateien, Streams und JSON** dauerhaft speichern und über HTTP laden.
-7. **Native Bibliotheken** über P/Invoke aufrufen und einschätzen, wann sich das lohnt.
-8. Mit **Git** im Team arbeiten, **NuGet-Pakete** einbinden und deinen Code mit **Unit-Tests** absichern.
+7. Mit **Git** im Team arbeiten, **NuGet-Pakete** einbinden und deinen Code mit **Unit-Tests** absichern.
 
 ## ➤ Bewertung
 
