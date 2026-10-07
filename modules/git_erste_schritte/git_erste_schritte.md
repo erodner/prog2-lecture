@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-In [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) haben wir gesehen, dass ein Repository ein Graph von Momentaufnahmen ist. In diesem Modul legen wir ein solches Repository für unser Adventure an und halten die ersten Versionen fest – ausschließlich auf der Kommandozeile. Das ist kein Selbstzweck: Die IDE-Schaltflächen, die wir in [Git in der IDE](/modules/git_in_der_ide/git_in_der_ide.md) kennenlernen, rufen genau diese Befehle auf, und wenn etwas schiefgeht, zeigen sie meist nur deren Fehlermeldung an. Wer die Befehle kennt, kann sie lesen.
+In [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) haben wir gesehen, dass ein Repository ein Graph von Momentaufnahmen ist. In diesem Modul legen wir ein solches Repository für unser Adventure an und halten die ersten Versionen fest – ausschließlich auf der Kommandozeile. Das ist kein Selbstzweck: Auch die Git-Schaltflächen in Visual Studio rufen genau diese Befehle auf, und wenn etwas schiefgeht, zeigen sie meist nur deren Fehlermeldung an. Wer die Befehle kennt, kann sie lesen.
 
 ## Installation und Konfiguration
 

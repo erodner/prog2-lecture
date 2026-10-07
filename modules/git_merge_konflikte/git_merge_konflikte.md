@@ -135,7 +135,7 @@ Bist du mitten im Merge und merkst, dass du erst mit der anderen Person reden wi
 
 ## Merge-Tools in der IDE
 
-Konfliktmarker im Texteditor zu bearbeiten funktioniert, ist bei längeren Konflikten aber unübersichtlich. Visual Studio, Rider und VS Code bieten eine **Drei-Wege-Ansicht**: links „ours“, rechts „theirs“, in der Mitte das Ergebnis, und für jeden Block Schaltflächen, um die linke, die rechte oder beide Seiten zu übernehmen. Das Ergebnis speichert die IDE als aufgelöste Datei und führt das `git add` meist gleich mit aus; der abschließende Commit bleibt derselbe. Wie man dorthin gelangt, zeigt [Git in der IDE](/modules/git_in_der_ide/git_in_der_ide.md). Wer die Marker einmal von Hand aufgelöst hat, versteht, was die Schaltflächen tun – deshalb zuerst der Weg über die Kommandozeile.
+Konfliktmarker im Texteditor zu bearbeiten funktioniert, ist bei längeren Konflikten aber unübersichtlich. Visual Studio (und ebenso Rider und VS Code) bietet eine **Drei-Wege-Ansicht**: links „ours“, rechts „theirs“, in der Mitte das Ergebnis, und für jeden Block Schaltflächen, um die linke, die rechte oder beide Seiten zu übernehmen. Das Ergebnis speichert die IDE als aufgelöste Datei und führt das `git add` meist gleich mit aus; der abschließende Commit bleibt derselbe. In Visual Studio öffnet ein Doppelklick auf die Datei mit dem Konflikt im Fenster *Git-Änderungen* diese Ansicht. Wer die Marker einmal von Hand aufgelöst hat, versteht, was die Schaltflächen tun – deshalb zuerst der Weg über die Kommandozeile.
 
 ## Konflikte vermeiden
 
