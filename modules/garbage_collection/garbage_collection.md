@@ -9,6 +9,9 @@ toc: false
 classes: wide
 ---
 
+**➕ Erweitertes Wissen.** Aus der [.NET-Plattform](https://www.erodner.de/prog-lecture/modules/dotnet/dotnet/) in Programmierung 1 weißt du schon, dass die Laufzeitumgebung nicht mehr benötigten Speicher automatisch freigibt. Dieses Modul zeigt, wie das funktioniert. Die folgenden Module setzen es nicht voraus.
+{: .notice--success}
+
 Mit `new` erzeugen wir ständig neue Objekte – Wände, Spielobjekte, Listen, Zeichenketten. Jedes davon belegt Speicher. Aber wann wird dieser Speicher wieder frei? In Sprachen wie C oder C++ muss das Programm selbst daran denken und jedes Objekt explizit freigeben; vergisst man es, läuft der Speicher voll, gibt man zu früh frei, greift man auf Speicher zu, der jemand anderem gehört. In C# gibt es weder `delete` noch `free`. Stattdessen übernimmt die Laufzeitumgebung das Aufräumen: der **Garbage Collector** (GC). Man muss ihn nicht bedienen, aber man sollte verstehen, wie er arbeitet – sonst sucht man irgendwann an der falschen Stelle nach einem Speicherproblem.
 
 ## Objekte leben auf dem Heap
@@ -16,8 +19,8 @@ Mit `new` erzeugen wir ständig neue Objekte – Wände, Spielobjekte, Listen, Z
 Aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/werttypen_referenztypen/werttypen_referenztypen/) wissen wir: Ein Objekt einer Klasse liegt auf dem **Heap**, die Variable enthält nur eine **Referenz** darauf. Was passiert, wenn die letzte Referenz verschwindet?
 
 ```csharp
-Spielobjekt? o = new Wand(new Position(5, 2));   // Objekt 1 auf dem Heap, o zeigt darauf
-o = new Wand(new Position(5, 3));                // Objekt 2 – Objekt 1 hat keine Referenz mehr
+Spielobjekt? o = new Wand(new Koordinate(5, 2));   // Objekt 1 auf dem Heap, o zeigt darauf
+o = new Wand(new Koordinate(5, 3));                // Objekt 2 – Objekt 1 hat keine Referenz mehr
 o = null;                                        // auch Objekt 2 ist nun unerreichbar
 ```
 
@@ -31,7 +34,7 @@ Im Spiel lässt sich diese Kette gut verfolgen. Solange das Spielfeld erreichbar
 
 ```csharp
 Spielfeld feld = new Spielfeld(10, 6, held);
-feld.Hinzufuegen(new Wand(new Position(5, 2)));
+feld.Hinzufuegen(new Wand(new Koordinate(5, 2)));
 // erreichbar über: feld → objekte (List<Spielobjekt>) → [0]
 ```
 
@@ -43,7 +46,7 @@ public void Entfernen(Spielobjekt objekt)
     objekte.Remove(objekt);
 }
 
-feld.Entfernen(feld.ObjektAn(new Position(5, 2))!);
+feld.Entfernen(feld.ObjektAn(new Koordinate(5, 2))!);
 // keine Wurzel führt mehr zu dieser Wand – sie ist Müll
 ```
 
@@ -54,10 +57,10 @@ Auch **Referenzkreise** sind für den GC kein Problem. Stell dir vor, wir geben 
 ```csharp
 static void EinePartie()
 {
-    Spieler held = new Spieler("Held", new Position(1, 1));
+    Spieler held = new Spieler("Held", new Koordinate(1, 1));
     Spielfeld feld = new Spielfeld(10, 6, held);   // feld kennt den Helden ...
     held.Welt = feld;                              // ... und der Held das Feld
-    feld.Hinzufuegen(new Wand(new Position(5, 2)));
+    feld.Hinzufuegen(new Wand(new Koordinate(5, 2)));
     // ... spielen ...
 }   // beide Variablen fallen weg – Held, Spielfeld und Wand sind Müll
 ```
@@ -86,7 +89,7 @@ long vorher = GC.GetTotalMemory(forceFullCollection: true);
 
 for (int i = 0; i < 100_000; i++)
 {
-    Wand w = new Wand(new Position(i % 10, i % 6));   // nach jedem Durchlauf unerreichbar
+    Wand w = new Wand(new Koordinate(i % 10, i % 6));   // nach jedem Durchlauf unerreichbar
 }
 
 long mittendrin = GC.GetTotalMemory(forceFullCollection: false);

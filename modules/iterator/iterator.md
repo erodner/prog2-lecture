@@ -13,7 +13,7 @@ Seit Programmierung 1 schreiben wir `foreach (var x in liste)` und denken nicht 
 
 ## Problem
 
-Eine Datenstruktur soll durchlaufen werden können, ohne dass der Client ihren Aufbau kennt – und möglichst auf verschiedene Arten: alles der Reihe nach, nur die Gegner, nur die freien Nachbarfelder. Würde `Spielfeld` sein `Dictionary<Position, StatischesObjekt>` und seine `List<Gegner>` einfach öffentlich machen, wäre die Kapselung dahin: Jede Oberfläche müsste wissen, dass es zwei Behälter und einen Sonderfall (den Spieler) gibt, und jede Durchlaufstrategie müsste sie selbst programmieren. Außerdem soll es möglich sein, dieselbe Struktur mit zwei unabhängigen Durchläufen gleichzeitig zu bearbeiten, etwa in einer verschachtelten Schleife über alle Objektpaare.
+Eine Datenstruktur soll durchlaufen werden können, ohne dass der Client ihren Aufbau kennt – und möglichst auf verschiedene Arten: alles der Reihe nach, nur die Gegner, nur die freien Nachbarfelder. Würde `Spielfeld` sein `Dictionary<Koordinate, StatischesObjekt>` und seine `List<Gegner>` einfach öffentlich machen, wäre die Kapselung dahin: Jede Oberfläche müsste wissen, dass es zwei Behälter und einen Sonderfall (den Spieler) gibt, und jede Durchlaufstrategie müsste sie selbst programmieren. Außerdem soll es möglich sein, dieselbe Struktur mit zwei unabhängigen Durchläufen gleichzeitig zu bearbeiten, etwa in einer verschachtelten Schleife über alle Objektpaare.
 
 ## Lösung: `IEnumerable<T>` und `IEnumerator<T>`
 
@@ -53,30 +53,30 @@ Um das Muster ohne Abkürzung zu sehen, geben wir einer Wache eine feste Patroui
 ```csharp
 using System.Collections;   // für das nicht-generische IEnumerable
 
-public class Route : IEnumerable<Position>
+public class Route : IEnumerable<Koordinate>
 {
-    private readonly Position[] stationen;
+    private readonly Koordinate[] stationen;
 
-    public Route(params Position[] stationen) => this.stationen = stationen;
+    public Route(params Koordinate[] stationen) => this.stationen = stationen;
 
-    public IEnumerator<Position> GetEnumerator() => new RouteEnumerator(stationen);
+    public IEnumerator<Koordinate> GetEnumerator() => new RouteEnumerator(stationen);
 
     // nicht-generische Altlast, die IEnumerable<T> verlangt:
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 ```
 
-Die zweite `GetEnumerator`-Methode ist eine explizite Interface-Implementierung (siehe Modul [Interfaces – erweitert](/modules/interfaces_erweitert/interfaces_erweitert.md)), weil `IEnumerable<T>` vom alten, nicht-generischen `IEnumerable` erbt. Der Enumerator selbst merkt sich das Array und eine Position, die *vor* der ersten Station beginnt:
+Die zweite `GetEnumerator`-Methode ist eine *explizite Interface-Implementierung*: Vor dem Methodennamen steht der Name des Interfaces, und aufrufen lässt sie sich nur über eine Variable vom Typ `IEnumerable`. Nötig ist sie, weil `IEnumerable<T>` vom alten, nicht-generischen `IEnumerable` erbt und beide eine Methode `GetEnumerator` verlangen (Details im Modul [Interfaces – Erweiterte Konzepte](/modules/interfaces_erweitert/interfaces_erweitert.md), erweitertes Wissen). Der Enumerator selbst merkt sich das Array und eine Position, die *vor* der ersten Station beginnt:
 
 ```csharp
-public class RouteEnumerator : IEnumerator<Position>
+public class RouteEnumerator : IEnumerator<Koordinate>
 {
-    private readonly Position[] stationen;
+    private readonly Koordinate[] stationen;
     private int index = -1;
 
-    public RouteEnumerator(Position[] stationen) => this.stationen = stationen;
+    public RouteEnumerator(Koordinate[] stationen) => this.stationen = stationen;
 
-    public Position Current => stationen[index];
+    public Koordinate Current => stationen[index];
     object IEnumerator.Current => Current;
 
     public bool MoveNext()
@@ -89,8 +89,8 @@ public class RouteEnumerator : IEnumerator<Position>
     public void Dispose() { }
 }
 
-Route route = new(new Position(1, 1), new Position(4, 1), new Position(4, 3));
-foreach (Position p in route)
+Route route = new(new Koordinate(1, 1), new Koordinate(4, 1), new Koordinate(4, 3));
+foreach (Koordinate p in route)
     Console.WriteLine(p);
 // (1, 1)
 // (4, 1)
@@ -104,15 +104,15 @@ Der Start bei `-1` ist wichtig: `foreach` ruft zuerst `MoveNext()` und dann `Cur
 C# nimmt einem das Schreiben des Enumerators ab. Eine Methode, die `IEnumerator<T>` oder `IEnumerable<T>` zurückgibt und im Rumpf `yield return` verwendet, ist eine **Iterator-Methode**: Der Compiler erzeugt daraus die Enumerator-Klasse mit `MoveNext`, `Current` und dem gesamten Zustandsautomaten selbst. Die ganze `Route` schrumpft auf
 
 ```csharp
-public class Route : IEnumerable<Position>
+public class Route : IEnumerable<Koordinate>
 {
-    private readonly Position[] stationen;
+    private readonly Koordinate[] stationen;
 
-    public Route(params Position[] stationen) => this.stationen = stationen;
+    public Route(params Koordinate[] stationen) => this.stationen = stationen;
 
-    public IEnumerator<Position> GetEnumerator()
+    public IEnumerator<Koordinate> GetEnumerator()
     {
-        foreach (Position station in stationen)
+        foreach (Koordinate station in stationen)
             yield return station;
     }
 
@@ -149,25 +149,25 @@ Drei `yield return` in drei verschiedenen Konstrukten, kein Zwischenergebnis, ke
 Das Muster verspricht *verschiedene Durchlaufstrategien* für dieselbe Struktur. Mit `yield` sind das einfach weitere Methoden mit Rückgabetyp `IEnumerable<T>` und beliebigem Namen – `foreach` akzeptiert jedes `IEnumerable<T>`, nicht nur das Objekt selbst. Für die Gegner-Logik brauchen wir ständig die vier Nachbarfelder einer Position:
 
 ```csharp
-public IEnumerable<Position> NachbarFelder(Position p)
+public IEnumerable<Koordinate> NachbarFelder(Koordinate p)
 {
     foreach (Richtung r in Enum.GetValues<Richtung>())
     {
-        Position nachbar = p.Verschoben(r);
+        Koordinate nachbar = p.Verschoben(r);
         if (IstInnerhalb(nachbar))
             yield return nachbar;
     }
 }
 
-public IEnumerable<Position> FreieNachbarFelder(Position p)
+public IEnumerable<Koordinate> FreieNachbarFelder(Koordinate p)
 {
-    foreach (Position nachbar in NachbarFelder(p))
+    foreach (Koordinate nachbar in NachbarFelder(p))
         if (IstFrei(nachbar))
             yield return nachbar;
 }
 ```
 
-`FreieNachbarFelder` ist selbst ein Iterator, der über einen Iterator läuft – genau so sind LINQ-Ketten aufgebaut. Am Rand des Feldes liefert `NachbarFelder` nur zwei oder drei Positionen, ohne dass der Aufrufer eine Randprüfung schreiben muss. Der Held startet in jedem Level in der oberen linken Ecke bei (1, 1), also mit der Außenmauer über sich und links von sich; `foreach (Position p in feld.FreieNachbarFelder(feld.Spieler.Position)) Console.Write(p + " ");` schreibt deshalb genau `(1, 2) (2, 1)` – in der Reihenfolge der Aufzählung `Richtung`, die mit `Oben` beginnt und mit `Rechts` endet.
+`FreieNachbarFelder` ist selbst ein Iterator, der über einen Iterator läuft – genau so sind LINQ-Ketten aufgebaut. Am Rand des Feldes liefert `NachbarFelder` nur zwei oder drei Positionen, ohne dass der Aufrufer eine Randprüfung schreiben muss. Der Held startet in jedem Level in der oberen linken Ecke bei (1, 1), also mit der Außenmauer über sich und links von sich; `foreach (Koordinate p in feld.FreieNachbarFelder(feld.Spieler.Position)) Console.Write(p + " ");` schreibt deshalb genau `(1, 2) (2, 1)` – in der Reihenfolge der Aufzählung `Richtung`, die mit `Oben` beginnt und mit `Rechts` endet.
 
 Ein Iterator muss übrigens keine Property oder `GetEnumerator`-Methode sein und die Klasse auch nicht `IEnumerable<T>` implementieren: `Spielfeld` ist keine Collection, bietet aber drei Durchlaufstrategien an.
 
@@ -179,9 +179,9 @@ Der wichtigste Aspekt von `yield` ist, dass der Rumpf der Methode **nicht beim A
 // erste Zeile der Schleife in NachbarFelder, nur zur Demonstration:
 Console.WriteLine($"  pruefe {r}");
 
-IEnumerable<Position> nachbarn = feld.NachbarFelder(new Position(1, 1));
+IEnumerable<Koordinate> nachbarn = feld.NachbarFelder(new Koordinate(1, 1));
 Console.WriteLine("Iterator erzeugt");
-foreach (Position p in nachbarn)
+foreach (Koordinate p in nachbarn)
 {
     Console.WriteLine(p);
     break;
@@ -194,10 +194,10 @@ foreach (Position p in nachbarn)
 Zwischen dem Aufruf von `NachbarFelder(...)` und der Schleife passiert nichts, und nach dem `break` werden `Unten`, `Links` und `Rechts` nie geprüft. Dass (1, 0) hier auftaucht, obwohl dort die Außenmauer steht, ist übrigens richtig: `NachbarFelder` fragt nur `IstInnerhalb`, das Aussortieren der Wände übernimmt erst `FreieNachbarFelder`. Genau dieses Verhalten kennen wir schon als [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md) von LINQ – und das ist kein Zufall: `Where`, `Select` und die anderen Operatoren aus der [Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md) sind Iterator-Methoden mit `yield return`. Eine LINQ-Abfrage ist eine Kette von Iteratoren, in der jedes Glied beim nächsten `MoveNext()` ruft. Und weil nie alles auf einmal erzeugt wird, darf ein Iterator sogar unendlich sein – eine Wache, die ihre Route ewig abläuft, ist ein gültiger Rumpf, solange der Client rechtzeitig aufhört:
 
 ```csharp
-public static IEnumerable<Position> Patrouille(Route route)
+public static IEnumerable<Koordinate> Patrouille(Route route)
 {
     while (true)
-        foreach (Position station in route)
+        foreach (Koordinate station in route)
             yield return station;
 }
 

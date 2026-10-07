@@ -24,7 +24,7 @@ Die Ähnlichkeit zu einem C#-Objekt mit Properties ist kein Zufall. Genau diese 
 
 ## Warum wir das Spielfeld *nicht* serialisieren
 
-Der naheliegende Gedanke wäre, einfach das ganze `Spielfeld` in eine Datei zu schreiben. Das geht schief, und zwar aus mehreren Richtungen gleichzeitig: `Spielfeld` hält ein `Dictionary<Position, StatischesObjekt>` mit einem *abstrakten* Werttyp, `StatischesObjekt` hat keinen parameterlosen Konstruktor, eine `Truhe` verweist auf ihren `Schatz`, und das Ereignis `RundeBeendet` zeigt auf Handler, die es nach dem Laden gar nicht mehr gibt. Selbst wenn man all das mit Attributen erzwingen könnte, wäre die Datei ein Abbild unserer heutigen Klassenstruktur – jede Umbenennung einer Klasse würde alte Spielstände unbrauchbar machen.
+Der naheliegende Gedanke wäre, einfach das ganze `Spielfeld` in eine Datei zu schreiben. Das geht schief, und zwar aus mehreren Richtungen gleichzeitig: `Spielfeld` hält ein `Dictionary<Koordinate, StatischesObjekt>` mit einem *abstrakten* Werttyp, `StatischesObjekt` hat keinen parameterlosen Konstruktor, eine `Truhe` verweist auf ihren `Schatz`, und das Ereignis `RundeBeendet` zeigt auf Handler, die es nach dem Laden gar nicht mehr gibt. Selbst wenn man all das mit Attributen erzwingen könnte, wäre die Datei ein Abbild unserer heutigen Klassenstruktur – jede Umbenennung einer Klasse würde alte Spielstände unbrauchbar machen.
 
 Deshalb speichern wir nicht das Spiel, sondern **das, was man braucht, um es fortzusetzen**: das Level, in dem gespielt wird, plus alle Abweichungen vom Ausgangszustand. Die Klasse `Spielstand` in `Adventure.Kern` ist genau diese Liste:
 
@@ -37,14 +37,14 @@ public class Spielstand
 {
     public string LevelName { get; set; } = "";
     public int Runde { get; set; }
-    public Position SpielerPosition { get; set; }
+    public Koordinate SpielerPosition { get; set; }
     public int Lebenspunkte { get; set; }
     public int Punkte { get; set; }
     public List<string> Inventar { get; set; } = new();
-    public List<Position> EntfernteGegenstaende { get; set; } = new();
-    public List<Position> OffeneTueren { get; set; } = new();
-    public List<Position> GeoeffneteTruhen { get; set; } = new();
-    public List<Position> GegnerPositionen { get; set; } = new();
+    public List<Koordinate> EntfernteGegenstaende { get; set; } = new();
+    public List<Koordinate> OffeneTueren { get; set; } = new();
+    public List<Koordinate> GeoeffneteTruhen { get; set; } = new();
+    public List<Koordinate> GegnerPositionen { get; set; } = new();
 }
 ```
 
@@ -113,7 +113,7 @@ Die einzeilige Ausgabe ist für Maschinen gedacht. Für Dateien, die Menschen ö
 
 Man kann die Datei lesen wie einen Bericht: Runde 33, der Held steht auf (15, 5) mit zwei von drei Lebenspunkten und 100 Punkten, sein Inventar ist leer (der Schlüssel wurde für die Tür verbraucht und liegt deshalb auch nicht mehr auf (3, 3)), die Tür auf (7, 4) ist offen, die Truhe auf (15, 6) geplündert, und die beiden Gegner – Wache und Verfolger, in der Reihenfolge, in der sie in der Karte stehen – sind inzwischen bei (8, 2) und (15, 4) angekommen. Der Verfolger steht direkt über dem Helden: Er hat ihn im selben Zug erwischt, in dem die Truhe aufging.
 
-Interessant ist, was mit `Position` passiert. Der Typ ist ein `readonly record struct` mit den Properties `X` und `Y` – und genau die schreibt der Serialisierer als verschachteltes JSON-Objekt. Beim Laden findet er den Konstruktor `Position(int X, int Y)`, ordnet jeden Parameter anhand seines **Namens** einer Property zu (Groß-/Kleinschreibung spielt keine Rolle) und ruft ihn auf. Dass Positionen dadurch pro Eintrag vier Zeilen brauchen, ist der Preis der Lesbarkeit; ein eigener Konverter könnte daraus `"15,7"` machen.
+Interessant ist, was mit `Koordinate` passiert. Der Typ ist ein `readonly record struct` mit den Properties `X` und `Y` – und genau die schreibt der Serialisierer als verschachteltes JSON-Objekt. Beim Laden findet er den Konstruktor `Koordinate(int X, int Y)`, ordnet jeden Parameter anhand seines **Namens** einer Property zu (Groß-/Kleinschreibung spielt keine Rolle) und ruft ihn auf. Dass Positionen dadurch pro Eintrag vier Zeilen brauchen, ist der Preis der Lesbarkeit; ein eigener Konverter könnte daraus `"15,7"` machen.
 
 ## Attribute: Namen ändern, Properties auslassen
 

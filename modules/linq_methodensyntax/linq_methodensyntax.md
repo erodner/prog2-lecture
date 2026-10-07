@@ -89,7 +89,7 @@ Die Query-Syntax kennt nur eine Handvoll Schlüsselwörter. Die Methodensyntax b
 Die Methoden lassen sich beliebig verketten, weil die meisten wieder ein `IEnumerable<T>` zurückgeben. Das Adventure bietet dafür zwei Quellen an: `feld.Gegner` ist eine `IReadOnlyList<Gegner>`, und `feld.AlleObjekte` liefert *jedes* Objekt auf der Karte – erst die statischen, dann die Gegner, zuletzt den Spieler. Damit lassen sich Fragen über das Level formulieren, für die es sonst eine Schleife mit Zähler bräuchte:
 
 ```csharp
-Position held = feld.Spieler.Position;          // (1, 1) im Level „Kerker“
+Koordinate held = feld.Spieler.Position;          // (1, 1) im Level „Kerker“
 
 var bedrohung = feld.AlleObjekte
     .OfType<Gegner>()
@@ -130,7 +130,7 @@ Auch in Methodensyntax gilt die **verzögerte Ausführung** aus dem Modul [Defer
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
 
-Übung: Schreibe in Methodensyntax: (a) die Namen aller Truhen auf dem Feld, alphabetisch; (b) die durchschnittliche Entfernung aller Gegner zum Helden; (c) ein `Dictionary<Position, char>` von Position auf Symbol für alle nicht passierbaren Objekte; (d) die drei Objekte, die dem Helden am nächsten liegen, ihn selbst ausgenommen. Welche der vier Abfragen ließen sich auch in Query-Syntax schreiben?
+Übung: Schreibe in Methodensyntax: (a) die Namen aller Truhen auf dem Feld, alphabetisch; (b) die durchschnittliche Entfernung aller Gegner zum Helden; (c) ein `Dictionary<Koordinate, char>` von Position auf Symbol für alle nicht passierbaren Objekte; (d) die drei Objekte, die dem Helden am nächsten liegen, ihn selbst ausgenommen. Welche der vier Abfragen ließen sich auch in Query-Syntax schreiben?
 {: .notice--info}
 
 ## Weitere Quellen

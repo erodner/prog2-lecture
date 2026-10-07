@@ -62,7 +62,7 @@ Innerhalb der Klasse darf `d.Name` jetzt stehen, weil der Compiler weiß: Was au
 
 ```csharp
 Inventar<Gegenstand> rucksack = new Inventar<Gegenstand>();   // Gegenstand : ISammelbar – in Ordnung
-rucksack.Hinzufuegen(new Schluessel(new Position(3, 3)));
+rucksack.Hinzufuegen(new Schluessel(new Koordinate(3, 3)));
 
 Inventar<Wand> unsinn = new Inventar<Wand>();
 // Compilerfehler CS0311: Der Typ "Wand" kann nicht als Typparameter "T" verwendet werden.
@@ -118,7 +118,7 @@ Die Typinferenz hilft hier übrigens nicht: `TArt` kommt in keinem Parameter vor
 
 | Constraint | Bedeutung | Erlaubt innerhalb der Klasse |
 | :--- | :--- | :--- |
-| `where T : struct` | `T` muss ein Werttyp sein (`int`, `double`, eigene `struct`s wie `Position`); Nullable-Typen sind ausgeschlossen | `T` ist nie `null`, `default(T)` ist der Nullwert des Typs |
+| `where T : struct` | `T` muss ein Werttyp sein (`int`, `double`, eigene `struct`s wie `Koordinate`); Nullable-Typen sind ausgeschlossen | `T` ist nie `null`, `default(T)` ist der Nullwert des Typs |
 | `where T : class` | `T` muss ein Referenztyp sein (Klasse, Interface, Delegat, Array) | Vergleich mit `null`, Referenzgleichheit |
 | `where T : new()` | `T` muss einen öffentlichen parameterlosen Konstruktor haben; bei mehreren Constraints immer als letztes | `new T()` |
 | `where T : Spielobjekt` | `T` muss `Spielobjekt` sein oder davon erben | Zugriff auf alle Mitglieder von `Spielobjekt`, z. B. `Position` und `Symbol` |
@@ -178,7 +178,7 @@ Console.WriteLine(Groesstes(new[] { "Held", "Wache", "Ada" }));  // Wache
 
 ## `default(T)` – der Nullwert eines unbekannten Typs
 
-`Groesstes` wirft bei einer leeren Liste eine Exception – eine bewusste Entscheidung, denn „das größte von nichts“ gibt es nicht. Manchmal möchte man an dieser Stelle aber lieber einen „leeren“ Wert von `T` zurückgeben, ohne zu wissen, ob `T` ein Wert- oder ein Referenztyp ist. `null` funktioniert nicht, denn ein `int` kann nicht `null` sein. Dafür gibt es `default(T)`: Es liefert `0` für Zahlen, `false` für `bool`, `null` für Referenztypen und eine Struktur mit lauter Nullwerten für eigene `struct`s – für `Position` also `(0, 0)`:
+`Groesstes` wirft bei einer leeren Liste eine Exception – eine bewusste Entscheidung, denn „das größte von nichts“ gibt es nicht. Manchmal möchte man an dieser Stelle aber lieber einen „leeren“ Wert von `T` zurückgeben, ohne zu wissen, ob `T` ein Wert- oder ein Referenztyp ist. `null` funktioniert nicht, denn ein `int` kann nicht `null` sein. Dafür gibt es `default(T)`: Es liefert `0` für Zahlen, `false` für `bool`, `null` für Referenztypen und eine Struktur mit lauter Nullwerten für eigene `struct`s – für `Koordinate` also `(0, 0)`:
 
 ```csharp
 static T ErstesOderStandard<T>(T[] feld)
@@ -191,13 +191,13 @@ static T ErstesOderStandard<T>(T[] feld)
 }
 
 Console.WriteLine(ErstesOderStandard(new int[0]));               // 0
-Console.WriteLine(ErstesOderStandard(new Position[0]));          // (0, 0)
+Console.WriteLine(ErstesOderStandard(new Koordinate[0]));          // (0, 0)
 Gegner? ersterGegner = ErstesOderStandard(new Gegner[0]);        // null
 ```
 
 Mit eingeschaltetem Nullable-Kontext warnt der Compiler, dass `default(T)` bei Referenztypen `null` ist – deshalb steht `Gegner?` als Variablentyp. Meist genügt die Kurzform `default` ohne Klammern, weil der Compiler den Typ aus dem Kontext kennt.
 
-Übung: Schreibe eine generische Methode `Kleinstes<T>(IEnumerable<T> elemente) where T : IComparable<T>`. Was soll bei einer leeren Folge passieren – `default(T)` zurückgeben oder eine Exception werfen? Begründe deine Entscheidung und überlege, was `default` für `Position` bedeutet, wenn `(0, 0)` ein völlig normales Feld auf der Karte ist.
+Übung: Schreibe eine generische Methode `Kleinstes<T>(IEnumerable<T> elemente) where T : IComparable<T>`. Was soll bei einer leeren Folge passieren – `default(T)` zurückgeben oder eine Exception werfen? Begründe deine Entscheidung und überlege, was `default` für `Koordinate` bedeutet, wenn `(0, 0)` ein völlig normales Feld auf der Karte ist.
 {: .notice--info}
 
 ## Generische Interfaces als Brücke
@@ -210,7 +210,7 @@ Mit eingeschaltetem Nullable-Kontext warnt der Compiler, dass `default(T)` bei R
 | `IEquatable<T>` | Elemente lassen sich typsicher auf Gleichheit prüfen (`Equals(T)`) | `List<T>.Contains`, `Dictionary<TKey, TValue>` |
 | `IEnumerable<T>` | Elemente lassen sich der Reihe nach durchlaufen | `foreach`, LINQ – und unser `Inventar<T>` |
 
-Damit schließt sich der Kreis: Die `List<Gegner>` im `Spielfeld` ist eine generische Klasse, `foreach` über das Inventar funktioniert, weil `Inventar<Gegenstand>` das Interface `IEnumerable<Gegenstand>` implementiert, und `Position` taugt als Dictionary-Schlüssel, weil es als `record struct` `Equals` und `GetHashCode` mitbringt. Wie Vergleichen, Gleichheit und Sortieren im Detail zusammenspielen, ist Thema der nächsten Vorlesung.
+Damit schließt sich der Kreis: Die `List<Gegner>` im `Spielfeld` ist eine generische Klasse, `foreach` über das Inventar funktioniert, weil `Inventar<Gegenstand>` das Interface `IEnumerable<Gegenstand>` implementiert, und `Koordinate` taugt als Dictionary-Schlüssel, weil es als `record struct` `Equals` und `GetHashCode` mitbringt. Wie Vergleichen, Gleichheit und Sortieren im Detail zusammenspielen, ist Thema der nächsten Vorlesung.
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
 

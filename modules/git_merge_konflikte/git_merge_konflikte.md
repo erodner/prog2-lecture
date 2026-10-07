@@ -54,7 +54,7 @@ public void SpielerZieht(Richtung richtung)
     if (Status != Spielstatus.Laeuft) return;
 
 <<<<<<< HEAD
-    Position ziel = Spieler.Position.Verschoben(richtung);
+    Koordinate ziel = Spieler.Position.Verschoben(richtung);
     StatischesObjekt? davor = StatischesObjektAn(ziel);
     if (davor is Wand)
     {
@@ -72,7 +72,7 @@ public void SpielerZieht(Richtung richtung)
         meldung.Append(falle.Ausloesen(Spieler));
     }
 
-    Position ziel = Spieler.Position.Verschoben(richtung);
+    Koordinate ziel = Spieler.Position.Verschoben(richtung);
     StatischesObjekt? davor = StatischesObjektAn(ziel);
 >>>>>>> feature/falle
 
@@ -95,7 +95,7 @@ public void SpielerZieht(Richtung richtung)
 {
     if (Status != Spielstatus.Laeuft) return;
 
-    Position ziel = Spieler.Position.Verschoben(richtung);
+    Koordinate ziel = Spieler.Position.Verschoben(richtung);
     StatischesObjekt? davor = StatischesObjektAn(ziel);
     if (davor is Wand)
     {

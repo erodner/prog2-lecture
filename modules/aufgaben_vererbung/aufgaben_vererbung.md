@@ -97,7 +97,7 @@ class Gegenstand : Spielobjekt
 {
     public int Punktwert { get; }
 
-    protected Gegenstand(string name, Position position, int punktwert)
+    protected Gegenstand(string name, Koordinate position, int punktwert)
         : base(name, position)
     {
         Punktwert = punktwert;
@@ -115,21 +115,21 @@ class Gegenstand : Spielobjekt
 
 sealed class Schluessel : Gegenstand
 {
-    public Schluessel(Position position) : base("Schlüssel", position, 0) { }
+    public Schluessel(Koordinate position) : base("Schlüssel", position, 0) { }
 
     public override char Symbol => 'k';
 }
 
 sealed class Schatz : Gegenstand
 {
-    public Schatz(Position position, int punktwert) : base("Schatz", position, punktwert) { }
+    public Schatz(Koordinate position, int punktwert) : base("Schatz", position, punktwert) { }
 
     public override char Symbol => '$';
 }
 
 sealed class Trank : Gegenstand
 {
-    public Trank(Position position) : base("Trank", position, 0) { }
+    public Trank(Koordinate position) : base("Trank", position, 0) { }
 
     public override char Symbol => '!';
 
@@ -168,7 +168,7 @@ public void SpielerZieht(Richtung richtung)
 
 ## Aufgabe 3 — Zerlegung
 
-Das Spiel soll sich merken, welche Felder der Held schon gesehen hat, damit die Karte nach und nach aufgedeckt wird. Ein Kollege schreibt dafür `class Feld { public int X { get; set; } public int Y { get; set; } }` und legt die besuchten Felder in ein `HashSet<Feld>`. Beim Testen stellt er fest: `besucht.Contains(new Feld { X = 1, Y = 2 })` liefert `false`, obwohl der Held genau dort war. Mit dem `readonly record struct Position` aus dem Spiel funktioniert dasselbe Programm sofort.
+Das Spiel soll sich merken, welche Felder der Held schon gesehen hat, damit die Karte nach und nach aufgedeckt wird. Ein Kollege schreibt dafür `class Feld { public int X { get; set; } public int Y { get; set; } }` und legt die besuchten Felder in ein `HashSet<Feld>`. Beim Testen stellt er fest: `besucht.Contains(new Feld { X = 1, Y = 2 })` liefert `false`, obwohl der Held genau dort war. Mit dem `readonly record struct Koordinate` aus dem Spiel funktioniert dasselbe Programm sofort.
 
 - Zerlege, was `HashSet<Feld>.Contains` intern in welcher Reihenfolge tut. An welchem Schritt scheitert es?
 - Implementiere `Equals` und `GetHashCode` korrekt. Reicht es, nur eine der beiden zu überschreiben?
@@ -212,7 +212,7 @@ Console.WriteLine(besucht.Contains(new Feld(1, 2)));   // True
 
 **Zentrale Designentscheidungen:**
 
-- **`readonly record struct` statt Handarbeit:** Genau diese vier Methoden (`Equals`, `GetHashCode`, `==`, `!=`) erzeugt der Compiler für `Position` automatisch. Deshalb funktioniert `o.Position == position` im Spielfeld, und deshalb kann `Position` später ohne weiteres Schlüssel eines `Dictionary` werden.
+- **`readonly record struct` statt Handarbeit:** Genau diese vier Methoden (`Equals`, `GetHashCode`, `==`, `!=`) erzeugt der Compiler für `Koordinate` automatisch. Deshalb funktioniert `o.Position == position` im Spielfeld, und deshalb kann `Koordinate` später ohne weiteres Schlüssel eines `Dictionary` werden.
 - **`f.GetType() == GetType()`:** Ohne diese Prüfung wäre ein `Feld3D : Feld` mit gleichem X und Y „gleich“ einem `Feld` – aber `feld3D.Equals(feld)` könnte anders entscheiden als `feld.Equals(feld3D)`. Gleichheit muss symmetrisch sein.
 - **Unveränderlichkeit:** Objekte, die als Schlüssel dienen, sollten sich nach der Erzeugung nicht mehr ändern. Ein Feld mit anderen Koordinaten ist ein *neues* Feld – genau das drückt `Position.Verschoben` aus, das eine neue Position zurückgibt, statt die alte zu verändern.
 - **`HashCode.Combine` statt `X ^ Y`:** Bei `X ^ Y` hätten (1, 2) und (2, 1) denselben Hashcode – erlaubt, aber auf einem quadratischen Spielfeld unnötig viele Kollisionen.
@@ -260,21 +260,21 @@ Das Spielfeld hält zwei Listen, `List<Wand>` und `List<Tuer>`, und zeichnet die
 
 **Schritt 1 — Muster erkennen:** Exakt gleich: `Name`, `X`, `Y`, `Entfernung` und das Grundgerüst von `Beschreibung`. Nach Muster variierend: `Symbol` (`#` gegen `D`), `IstPassierbar` (fest `false` gegen „nur wenn offen“) und `Beschreibung` (die Tür hängt einen Zusatz an). Einzigartig: `IstOffen` und das Öffnen der Tür.
 
-**Schritt 2 — Zwei Abstraktionen, nicht eine:** `X` und `Y` treten immer paarweise auf, und `Entfernung` rechnet nur mit ihnen – das ist gar kein Spielobjekt-Thema, sondern ein eigener **Wert**. Er wird zur `Position`, und `Entfernung` wandert dorthin. Der Rest wird zur Basisklasse `Spielobjekt`. Aus Feldern werden dabei Properties: `Name` ist nach der Erzeugung fest, `Position` darf nur das Objekt selbst ändern.
+**Schritt 2 — Zwei Abstraktionen, nicht eine:** `X` und `Y` treten immer paarweise auf, und `Entfernung` rechnet nur mit ihnen – das ist gar kein Spielobjekt-Thema, sondern ein eigener **Wert**. Er wird zur `Koordinate`, und `Entfernung` wandert dorthin. Der Rest wird zur Basisklasse `Spielobjekt`. Aus Feldern werden dabei Properties: `Name` ist nach der Erzeugung fest, `Position` darf nur das Objekt selbst ändern.
 
 ```csharp
-public readonly record struct Position(int X, int Y)
+public readonly record struct Koordinate(int X, int Y)
 {
-    public int Entfernung(Position andere) => Math.Abs(X - andere.X) + Math.Abs(Y - andere.Y);
+    public int Entfernung(Koordinate andere) => Math.Abs(X - andere.X) + Math.Abs(Y - andere.Y);
     public override string ToString() => $"({X}, {Y})";
 }
 
 public class Spielobjekt
 {
     public string Name { get; }
-    public Position Position { get; protected set; }
+    public Koordinate Position { get; protected set; }
 
-    public Spielobjekt(string name, Position position)
+    public Spielobjekt(string name, Koordinate position)
     {
         Name = name;
         Position = position;
@@ -287,7 +287,7 @@ public class Spielobjekt
 
 public sealed class Wand : Spielobjekt
 {
-    public Wand(Position position) : base("Wand", position) { }
+    public Wand(Koordinate position) : base("Wand", position) { }
 
     public override char Symbol => '#';
 }
@@ -296,7 +296,7 @@ public class Tuer : Spielobjekt
 {
     public bool IstOffen { get; private set; }
 
-    public Tuer(Position position) : base("Tür", position) { }
+    public Tuer(Koordinate position) : base("Tür", position) { }
 
     public override char Symbol => 'D';
     public override bool IstPassierbar => IstOffen;
@@ -315,7 +315,7 @@ private readonly List<Spielobjekt> objekte = new();
 
 public void Hinzufuegen(Spielobjekt objekt) => objekte.Add(objekt);
 
-public bool IstFrei(Position p)
+public bool IstFrei(Koordinate p)
 {
     Spielobjekt? o = ObjektAn(p);
     return o is null || o.IstPassierbar;
@@ -326,7 +326,7 @@ public bool IstFrei(Position p)
 
 - **`IstOffen` bleibt in `Tuer`:** Eine Wand hat keinen Öffnungszustand. In die Basisklasse gehört nur, was *jedes* Spielobjekt hat – sonst bekommt man eine aufgeblähte Basisklasse voller Felder, die die meisten Erben ignorieren.
 - **Aus einem Feld wird eine `virtual`-Property:** `bool IstPassierbar = false` lässt sich nicht überschreiben, `public virtual bool IstPassierbar => false` schon. Erst dadurch kann die Tür ihre Durchlässigkeit *berechnen*, statt sie zu speichern – und `IstFrei` muss nie wissen, worum es sich handelt.
-- **`Position` als eigener Typ:** Zwei zusammengehörige `int`-Felder, die überall zusammen weitergereicht werden, sind fast immer ein verstecktes Konzept. Der `record struct` liefert obendrein `==` und `GetHashCode` gratis (siehe [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md)).
+- **`Koordinate` als eigener Typ:** Zwei zusammengehörige `int`-Felder, die überall zusammen weitergereicht werden, sind fast immer ein verstecktes Konzept. Der `record struct` liefert obendrein `==` und `GetHashCode` gratis (siehe [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md)).
 - **Prüfstein:** Die Truhe kostet jetzt eine kleine Klasse und keine Zeile im Spielfeld. Genau das war das Ziel des Refactorings – und genau dieser Stand ist der Ausgangspunkt der nächsten Vorlesung.
 
 </details>

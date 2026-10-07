@@ -38,19 +38,19 @@ Ein Lambda hat die Form `Parameter => Ausdruck` oder `Parameter => { Anweisungen
 ```csharp
 Func<string> gruss = () => "Willkommen im Dungeon!";              // 0 Parameter
 Func<Gegner, bool> jagt = g => g is Verfolger;                    // 1 Parameter
-Func<Position, Position, int> abstand = (a, b) => a.Entfernung(b); // 2 Parameter
+Func<Koordinate, Koordinate, int> abstand = (a, b) => a.Entfernung(b); // 2 Parameter
 Action<string> melde = text => Console.WriteLine($"> {text}");
 
-Console.WriteLine(jagt(new Wache(new Position(2, 2))));           // False
-Console.WriteLine(abstand(new Position(0, 0), new Position(3, 4))); // 7
+Console.WriteLine(jagt(new Wache(new Koordinate(2, 2))));           // False
+Console.WriteLine(abstand(new Koordinate(0, 0), new Koordinate(3, 4))); // 7
 ```
 
-Auffällig ist, dass nirgends ein Typ für `g`, `a` oder `text` steht. Der Compiler **inferiert** die Parametertypen aus dem Delegattyp, dem das Lambda zugewiesen wird: Bei `Func<Position, Position, int>` müssen `a` und `b` vom Typ `Position` sein, und der Ausdruck `a.Entfernung(b)` muss `int` ergeben – passt. Man kann die Typen auch hinschreiben (`(Position a, Position b) => a.Entfernung(b)`), nötig ist das nur, wenn der Compiler den Zieltyp nicht kennt, etwa bei `var f = (int x) => x * x;`.
+Auffällig ist, dass nirgends ein Typ für `g`, `a` oder `text` steht. Der Compiler **inferiert** die Parametertypen aus dem Delegattyp, dem das Lambda zugewiesen wird: Bei `Func<Koordinate, Koordinate, int>` müssen `a` und `b` vom Typ `Koordinate` sein, und der Ausdruck `a.Entfernung(b)` muss `int` ergeben – passt. Man kann die Typen auch hinschreiben (`(Koordinate a, Koordinate b) => a.Entfernung(b)`), nötig ist das nur, wenn der Compiler den Zieltyp nicht kennt, etwa bei `var f = (int x) => x * x;`.
 
 Ein Lambda, das kein `Func` und kein `Action` sein soll, sondern ein Gegnerverhalten, funktioniert genauso. So wird aus dem `Zufallsgegner` aus dem Delegaten-Modul ein Einzeiler, der seine Beute stur nach rechts jagt:
 
 ```csharp
-Gegner stur = new Zufallsgegner(new Position(4, 2), (feld, gegner) =>
+Gegner stur = new Zufallsgegner(new Koordinate(4, 2), (feld, gegner) =>
     feld.IstFrei(gegner.Position.Verschoben(Richtung.Rechts)) ? Richtung.Rechts : null);
 ```
 
@@ -88,7 +88,7 @@ static List<Gegner> Filtern(IEnumerable<Gegner> gegner, Func<Gegner, bool> bedin
 }
 
 // feld ist das eingebaute Level „Kerker“: eine Wache bei (13, 2), ein Verfolger bei (11, 5)
-Position held = feld.Spieler.Position;          // (1, 1)
+Koordinate held = feld.Spieler.Position;          // (1, 1)
 
 List<Gegner> jaeger = Filtern(feld.Gegner, g => g is Verfolger);
 List<Gegner> nah = Filtern(feld.Gegner, g => g.Position.Entfernung(held) <= 15);

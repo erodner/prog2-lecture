@@ -9,6 +9,9 @@ toc: false
 classes: wide
 ---
 
+**➕ Erweitertes Wissen.** Wie man ein Interface schreibt und implementiert, kennst du aus [Interfaces – Grundlagen](/modules/interfaces_grundlagen/interfaces_grundlagen.md). Dieses Modul zeigt Feinheiten, die dir vor allem in Bibliothekscode begegnen. Die folgenden Module setzen es nicht voraus.
+{: .notice--success}
+
 Verträge im echten Leben bauen aufeinander auf: Ein Mietvertrag für eine Wohnung mit Garage enthält alles aus dem normalen Mietvertrag plus ein paar Klauseln mehr. Und manchmal steht in einem Vertrag eine Standardregelung, die gilt, solange nichts anderes vereinbart ist. Interfaces in C# kennen beides – und noch ein paar Feinheiten, die beim Lesen von Bibliothekscode und beim Entwurf größerer Programme wichtig werden. Am Ende dieses Moduls sehen wir mit `ILevelQuelle` ein Interface, das nicht mehr eine Fähigkeit beschreibt, sondern eine Grenze zwischen zwei Teilen des Programms zieht.
 
 ## Interfaces erben von Interfaces
@@ -82,7 +85,7 @@ ISammelbar auftrag = new Auftrag("Finde den Schlüssel");
 Console.WriteLine(auftrag.Beschreibung());
 // Finde den Schlüssel – liegt hier und kann aufgehoben werden.
 
-ISammelbar schluessel = new Schluessel(new Position(3, 4));
+ISammelbar schluessel = new Schluessel(new Koordinate(3, 4));
 Console.WriteLine(schluessel.Beschreibung());
 // Schlüssel bei (3, 4)
 ```

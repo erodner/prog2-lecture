@@ -202,8 +202,8 @@ Mit diesem Wissen lesen sich die Collections aus dem Modul [Collections](https:/
 | `List<T>` | Elementtyp der Liste | `List<Gegner>` im `Spielfeld` |
 | `Stack<T>` | Elementtyp des Stapels (LIFO) | `Stack<Richtung>` für eine Rückgängig-Funktion |
 | `Queue<T>` | Elementtyp der Warteschlange (FIFO) | `Queue<Richtung>` für geplante Züge |
-| `Dictionary<TKey, TValue>` | Schlüssel- und Werttyp | `Dictionary<Position, StatischesObjekt>` im `Spielfeld` |
-| `HashSet<T>` | Elementtyp der Menge ohne Duplikate | `HashSet<Position>` für bereits besuchte Felder |
+| `Dictionary<TKey, TValue>` | Schlüssel- und Werttyp | `Dictionary<Koordinate, StatischesObjekt>` im `Spielfeld` |
+| `HashSet<T>` | Elementtyp der Menge ohne Duplikate | `HashSet<Koordinate>` für bereits besuchte Felder |
 | `Nullable<T>` | Werttyp, der zusätzlich `null` sein darf | `Richtung?` als Rückgabe von `NaechsterZug` |
 
 Die letzte Zeile ist ein schönes Beispiel dafür, wie tief Generics in der Sprache stecken: Das `Richtung?` aus `public abstract Richtung? NaechsterZug(Spielfeld feld)` ist nur eine Kurzschreibweise für die generische Struktur `Nullable<Richtung>` – ein Gegner, der in dieser Runde stehen bleibt, liefert `null`. Auch `IReadOnlyList<Gegner>`, das `Spielfeld.Gegner` nach außen gibt, ist ein generisches Interface.

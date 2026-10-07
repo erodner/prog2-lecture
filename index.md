@@ -41,11 +41,12 @@ Die Vorlesung besteht aus:
 1. [Vererbung](/lectures/01/01.md) – `virtual`/`override`, `sealed`, Laufzeittyp, `object`, Garbage Collection
 2. [Abstrakte Klassen und Interfaces](/lectures/02/02.md) – `abstract`, `interface`, Schnittstellen- vs. Implementierungsvererbung
 
+{% comment %}
 ### Teil 2: Zusammenarbeit
 
 3. [Git – Versionsverwaltung](/lectures/03/03.md) – Konzepte, Kommandozeile, Remote-Repositorys, Branches, Merge-Konflikte, IDE-Integration
 
-{% comment %}
+
 ### Teil 3: Anwendungen bauen
 
 4. [GUI mit Blazor und Schichten-Architekturen](/lectures/04/04.md) – Razor-Komponenten, Layout, Ereignisse, Datenbindung, Dialoge, Drei-Schichten-Architektur

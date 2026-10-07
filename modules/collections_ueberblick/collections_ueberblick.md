@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Ein Werkzeugkasten mit nur einem Hammer ist schnell erklärt, aber für Schrauben ungeeignet. Ähnlich geht es vielen Programmen, die für alles `List<T>` verwenden: Es funktioniert, aber sobald eine Liste als Warteschlange missbraucht wird, jede Suche linear durchläuft oder Duplikate mühsam von Hand vermieden werden, wird der Code langsam und umständlich. Genau diesen Weg ist unser Spielfeld gegangen – von einer einzigen `List<Spielobjekt>` zu einem `Dictionary<Position, StatischesObjekt>` neben einer `List<Gegner>`. .NET bringt im Namespace `System.Collections.Generic` eine ganze Familie generischer Collections mit, die jeweils für ein bestimmtes Zugriffsmuster gebaut sind. Aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/collections/collections/) kennen wir `List<T>` und `Dictionary<K, V>` – dieses Modul ordnet sie in die Familie ein und gibt eine Entscheidungshilfe, welche Collection wann die richtige ist.
+Ein Werkzeugkasten mit nur einem Hammer ist schnell erklärt, aber für Schrauben ungeeignet. Ähnlich geht es vielen Programmen, die für alles `List<T>` verwenden: Es funktioniert, aber sobald eine Liste als Warteschlange missbraucht wird, jede Suche linear durchläuft oder Duplikate mühsam von Hand vermieden werden, wird der Code langsam und umständlich. Genau diesen Weg ist unser Spielfeld gegangen – von einer einzigen `List<Spielobjekt>` zu einem `Dictionary<Koordinate, StatischesObjekt>` neben einer `List<Gegner>`. .NET bringt im Namespace `System.Collections.Generic` eine ganze Familie generischer Collections mit, die jeweils für ein bestimmtes Zugriffsmuster gebaut sind. Aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/collections/collections/) kennen wir `List<T>` und `Dictionary<K, V>` – dieses Modul ordnet sie in die Familie ein und gibt eine Entscheidungshilfe, welche Collection wann die richtige ist.
 
 ## `List<T>` – das wachsende Array
 
@@ -19,8 +19,8 @@ Eine `List<T>` ([Prog 1](https://www.erodner.de/prog-lecture/modules/list/list/)
 List<Gegner> gegner = new List<Gegner>();
 Console.WriteLine($"{gegner.Count} / {gegner.Capacity}"); // 0 / 0
 
-gegner.Add(new Wache(new Position(13, 2)));
-gegner.Add(new Verfolger(new Position(11, 5)));
+gegner.Add(new Wache(new Koordinate(13, 2)));
+gegner.Add(new Verfolger(new Koordinate(11, 5)));
 Console.WriteLine($"{gegner.Count} / {gegner.Capacity}"); // 2 / 4
 ```
 
@@ -31,11 +31,11 @@ Das Verdoppeln passiert selten, deshalb ist `Add` am Ende im Mittel konstant sch
 `Dictionary<K, V>` ([Prog 1](https://www.erodner.de/prog-lecture/modules/dictionary/dictionary/)) speichert Wertepaare und findet einen Wert über seinen Schlüssel in O(1) – über den Hashcode, wie im Modul [Hashcodes und Equals](/modules/hashcodes_equals/hashcodes_equals.md) beschrieben. Genau deshalb liegen die Wände, Türen, Truhen und Gegenstände im Spielfeld unter ihrer `Position`. Ein `HashSet<T>` ist ein Dictionary ohne Werte: eine **Menge**, in der jedes Element höchstens einmal vorkommt. Das passt perfekt zu der Frage „War der Held hier schon einmal?“:
 
 ```csharp
-HashSet<Position> besucht = new HashSet<Position>();
-Console.WriteLine(besucht.Add(new Position(1, 1)));   // True
-Console.WriteLine(besucht.Add(new Position(1, 2)));   // True
-Console.WriteLine(besucht.Add(new Position(1, 1)));   // False – schon dagewesen
-Console.WriteLine(besucht.Contains(new Position(1, 2))); // True
+HashSet<Koordinate> besucht = new HashSet<Koordinate>();
+Console.WriteLine(besucht.Add(new Koordinate(1, 1)));   // True
+Console.WriteLine(besucht.Add(new Koordinate(1, 2)));   // True
+Console.WriteLine(besucht.Add(new Koordinate(1, 1)));   // False – schon dagewesen
+Console.WriteLine(besucht.Contains(new Koordinate(1, 2))); // True
 Console.WriteLine(besucht.Count);                     // 2
 ```
 
@@ -92,8 +92,8 @@ Console.WriteLine(gegangen.Peek()); // Unten
 | Collection | Zugriff auf Element | Einfügen | Ordnung | Einsatz im Adventure |
 | :--- | :--- | :--- | :--- | :--- |
 | `List<T>` | O(1) über Index | O(1) am Ende, O(n) in der Mitte | Einfügereihenfolge | `List<Gegner>`: wenige Elemente, jede Runde komplett durchlaufen |
-| `Dictionary<K, V>` | O(1) über Schlüssel | O(1) | keine | `Dictionary<Position, StatischesObjekt>`: „Was liegt auf diesem Feld?“ |
-| `HashSet<T>` | O(1) `Contains` | O(1) | keine | `HashSet<Position>`: bereits besuchte Felder, Nebel des Krieges |
+| `Dictionary<K, V>` | O(1) über Schlüssel | O(1) | keine | `Dictionary<Koordinate, StatischesObjekt>`: „Was liegt auf diesem Feld?“ |
+| `HashSet<T>` | O(1) `Contains` | O(1) | keine | `HashSet<Koordinate>`: bereits besuchte Felder, Nebel des Krieges |
 | `SortedDictionary<K, V>` | O(log n) | O(log n) | nach Schlüssel | Bestzeiten je Level, sortiert ausgegeben |
 | `SortedList<K, V>` | O(log n), auch per Index | O(n) | nach Schlüssel | Levelverzeichnis: einmal füllen, oft sortiert lesen |
 | `SortedSet<T>` | O(log n) | O(log n) | sortiert | Bestenliste mit `Min`/`Max` |
@@ -145,12 +145,12 @@ static int Gesamtwert(IEnumerable<Gegenstand> sachen)
 }
 
 Console.WriteLine(Gesamtwert(held.Inventar));                          // Inventar<Gegenstand> ist IEnumerable<Gegenstand>
-Console.WriteLine(Gesamtwert(new[] { new Schatz(new Position(0, 0), 100) }));
+Console.WriteLine(Gesamtwert(new[] { new Schatz(new Koordinate(0, 0), 100) }));
 ```
 
 Hätten wir `List<Gegenstand>` als Parametertyp gewählt, müsste das Inventar erst umkopiert werden. Und der Rückgabetyp? Hier darf es konkreter sein, damit der Aufrufer weiß, was er bekommt – aber wer eine interne Liste nach außen gibt, sollte `IReadOnlyList<T>` wählen, genau wie das Spielfeld es tut.
 
-Übung: Erweitere das Spielfeld gedanklich um ein `HashSet<Position> besucht`, in das bei jedem erfolgreichen Zug die neue Spielerposition eingetragen wird. Schreibe eine Methode `AlsTextMitNebel()`, die nur besuchte Felder zeichnet und alles andere als Leerzeichen ausgibt. Warum ist ein `HashSet<Position>` hier besser als eine `List<Position>` – und wie viele Vergleiche spart es pro gezeichnetem Feld? Was müsste sich ändern, wenn `Position` eine Klasse ohne `Equals`/`GetHashCode` wäre?
+Übung: Erweitere das Spielfeld gedanklich um ein `HashSet<Koordinate> besucht`, in das bei jedem erfolgreichen Zug die neue Spielerposition eingetragen wird. Schreibe eine Methode `AlsTextMitNebel()`, die nur besuchte Felder zeichnet und alles andere als Leerzeichen ausgibt. Warum ist ein `HashSet<Koordinate>` hier besser als eine `List<Koordinate>` – und wie viele Vergleiche spart es pro gezeichnetem Feld? Was müsste sich ändern, wenn `Position` eine Klasse ohne `Equals`/`GetHashCode` wäre?
 {: .notice--info}
 
 ## Weitere Quellen

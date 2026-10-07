@@ -25,6 +25,15 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
+      - name: Setup Java (PlantUML)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Download PlantUML
+        run: |
+          mkdir -p vendor
+          curl -sSL -o vendor/plantuml.jar https://github.com/plantuml/plantuml/releases/download/v1.2025.4/plantuml-1.2025.4.jar
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5

@@ -215,7 +215,7 @@ Ja, auch das Laden eines Spielstands soll melden – sonst zeigt die Statusleist
 
 ## Aufgabe 3 — Mustererkennung
 
-Gegeben ist ein Spielfeld `feld` mit `feld.AlleObjekte` (`IEnumerable<Spielobjekt>`), `feld.Gegner` (`IReadOnlyList<Gegner>`) und `Position held = feld.Spieler.Position;`. Übersetze die Abfragen (a) bis (c) von Query- in Methodensyntax, (d) und (e) von Methoden- in Query-Syntax. Schreibe dann (f) und begründe, warum diese Abfrage nur in Methodensyntax vollständig ausdrückbar ist.
+Gegeben ist ein Spielfeld `feld` mit `feld.AlleObjekte` (`IEnumerable<Spielobjekt>`), `feld.Gegner` (`IReadOnlyList<Gegner>`) und `Koordinate held = feld.Spieler.Position;`. Übersetze die Abfragen (a) bis (c) von Query- in Methodensyntax, (d) und (e) von Methoden- in Query-Syntax. Schreibe dann (f) und begründe, warum diese Abfrage nur in Methodensyntax vollständig ausdrückbar ist.
 
 ```csharp
 // (a)

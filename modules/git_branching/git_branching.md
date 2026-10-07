@@ -33,7 +33,7 @@ public sealed class Falle : StatischesObjekt
     public int Schaden { get; }
     public bool IstAusgeloest { get; private set; }
 
-    public Falle(Position position, int schaden = 1) : base("Falle", position) => Schaden = schaden;
+    public Falle(Koordinate position, int schaden = 1) : base("Falle", position) => Schaden = schaden;
 
     public override char Symbol => IstAusgeloest ? '^' : '.';
     public override bool IstPassierbar => true;

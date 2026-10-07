@@ -112,7 +112,7 @@ private void TasteGedrueckt(KeyboardEventArgs e)
     };
     if (richtung is not Richtung r) return;
 
-    Position ziel = feld.Spieler.Position.Verschoben(r);
+    Koordinate ziel = feld.Spieler.Position.Verschoben(r);
     Spielobjekt? davor = feld.ObjektAn(ziel);
 
     if (davor is Wand)
@@ -166,7 +166,7 @@ public void SpielerZieht(Richtung richtung)
 
     Runde++;
     StringBuilder meldung = new();
-    Position ziel = Spieler.Position.Verschoben(richtung);
+    Koordinate ziel = Spieler.Position.Verschoben(richtung);
     StatischesObjekt? davor = StatischesObjektAn(ziel);
 
     if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
@@ -224,7 +224,7 @@ Das Feld `meldung` in der Komponente entfällt ebenfalls: Die Meldung steht nach
 public void SpielerZieht_VerschlosseneTuerOhneSchluessel_SpielerBleibtStehen()
 {
     Spielfeld feld = LevelParser.Parsen(new Level("Test", ["###", "#@D", "###"]));
-    Position vorher = feld.Spieler.Position;
+    Koordinate vorher = feld.Spieler.Position;
 
     feld.SpielerZieht(Richtung.Rechts);
 

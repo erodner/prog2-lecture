@@ -54,7 +54,7 @@ Die naheliegende Idee: Da im Modul [`object` als Basisklasse](/modules/object_ba
 
 ```csharp
 List<object> inventar = new List<object>();
-inventar.Add(new Schluessel(new Position(3, 3)));
+inventar.Add(new Schluessel(new Koordinate(3, 3)));
 inventar.Add("Notiz vom Wächter");            // kompiliert – ein string ist auch ein object
 inventar.Add(42);                             // kompiliert ebenfalls
 
@@ -90,8 +90,8 @@ Tausche<int>(ref x, ref y);
 string s1 = "Kerker", s2 = "Katakomben";
 Tausche<string>(ref s1, ref s2);
 
-Gegner g1 = new Wache(new Position(4, 2));
-Gegner g2 = new Verfolger(new Position(9, 5));
+Gegner g1 = new Wache(new Koordinate(4, 2));
+Gegner g2 = new Verfolger(new Koordinate(9, 5));
 Tausche<Gegner>(ref g1, ref g2);
 Console.WriteLine(g1.Name); // Verfolger
 ```

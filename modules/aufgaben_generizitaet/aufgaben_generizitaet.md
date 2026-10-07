@@ -46,12 +46,12 @@ class StringPaar
     public override string ToString() => $"({Erstes}, {Zweites})";
 }
 
-class PositionObjektPaar
+class KoordinateObjektPaar
 {
-    public Position Erstes { get; }
+    public Koordinate Erstes { get; }
     public Spielobjekt Zweites { get; }
 
-    public PositionObjektPaar(Position erstes, Spielobjekt zweites)
+    public KoordinateObjektPaar(Koordinate erstes, Spielobjekt zweites)
     {
         Erstes = erstes;
         Zweites = zweites;
@@ -71,11 +71,11 @@ class PositionObjektPaar
 
 **Schritt 1 — Das Muster erkennen:**
 
-Alle drei Klassen haben zwei schreibgeschützte Properties, einen Konstruktor, der beide setzt, und dieselbe `ToString`-Methode. Der einzige Unterschied ist der Typ der beiden Properties: `int`/`int`, `string`/`string` und `Position`/`Spielobjekt`. Genau die Stellen, an denen sich die Klassen unterscheiden, werden zu Typparametern.
+Alle drei Klassen haben zwei schreibgeschützte Properties, einen Konstruktor, der beide setzt, und dieselbe `ToString`-Methode. Der einzige Unterschied ist der Typ der beiden Properties: `int`/`int`, `string`/`string` und `Koordinate`/`Spielobjekt`. Genau die Stellen, an denen sich die Klassen unterscheiden, werden zu Typparametern.
 
 **Schritt 2 — Warum zwei Typparameter:**
 
-Bei `PositionObjektPaar` haben die beiden Werte unterschiedliche Typen. Mit einem einzigen `T` könnte man nur Paare gleicher Typen bilden. Also braucht die Klasse zwei Typparameter, `T1` und `T2`, die unabhängig voneinander belegt werden – wie `TKey` und `TValue` bei `Dictionary`.
+Bei `KoordinateObjektPaar` haben die beiden Werte unterschiedliche Typen. Mit einem einzigen `T` könnte man nur Paare gleicher Typen bilden. Also braucht die Klasse zwei Typparameter, `T1` und `T2`, die unabhängig voneinander belegt werden – wie `TKey` und `TValue` bei `Dictionary`.
 
 **Schritt 3 — Die generische Klasse:**
 
@@ -102,18 +102,18 @@ Die drei ursprünglichen Verwendungen werden zu:
 ```csharp
 var masse = new Paar<int, int>(20, 9);                       // Breite und Höhe des Kerkers
 var levelpaar = new Paar<string, string>("Kerker", "Katakomben");
-var belegung = new Paar<Position, Spielobjekt>(new Position(5, 2), new Wache(new Position(5, 2)));
+var belegung = new Paar<Koordinate, Spielobjekt>(new Koordinate(5, 2), new Wache(new Koordinate(5, 2)));
 
 Console.WriteLine(masse.Vertauscht());     // (9, 20)
 Console.WriteLine(belegung);               // ((5, 2), Wache bei (5, 2))
-Paar<Spielobjekt, Position> gedreht = belegung.Vertauscht();
+Paar<Spielobjekt, Koordinate> gedreht = belegung.Vertauscht();
 ```
 
 **Zentrale Designentscheidungen:**
 
-- **`Vertauscht()` gibt `Paar<T2, T1>` zurück, nicht `Paar<T1, T2>`:** Beim Vertauschen tauschen auch die Typen die Plätze. Bei `IntPaar` fiel das nicht auf, weil beide Typen gleich waren – erst die generische Version zwingt uns, diese Frage sauber zu beantworten. `PositionObjektPaar` hatte die Methode vermutlich deshalb nie bekommen.
+- **`Vertauscht()` gibt `Paar<T2, T1>` zurück, nicht `Paar<T1, T2>`:** Beim Vertauschen tauschen auch die Typen die Plätze. Bei `IntPaar` fiel das nicht auf, weil beide Typen gleich waren – erst die generische Version zwingt uns, diese Frage sauber zu beantworten. `KoordinateObjektPaar` hatte die Methode vermutlich deshalb nie bekommen.
 - **`ToString` funktioniert ohne Constraint:** Die String-Interpolation ruft `ToString()` auf, und das hat jeder Typ, weil es von `object` geerbt wird. Für die Ausgabe des `Spielobjekt` greift dank `override` die polymorphe Variante, die `Beschreibung()` aufruft – deshalb steht dort „Wache bei (5, 2)“ und nicht der Klassenname.
-- **Schreibgeschützte Properties:** Ein Paar ist ein Wert, der nach dem Erzeugen nicht mehr verändert wird. Wer ein anderes Paar will, erzeugt ein neues – wie `Vertauscht()` es tut. In .NET gibt es dieses Konzept fertig als Wertetupel `(T1, T2)`; genau das nutzt der `LevelParser` mit seiner `List<(char zeichen, Position pos)>`.
+- **Schreibgeschützte Properties:** Ein Paar ist ein Wert, der nach dem Erzeugen nicht mehr verändert wird. Wer ein anderes Paar will, erzeugt ein neues – wie `Vertauscht()` es tut. In .NET gibt es dieses Konzept fertig als Wertetupel `(T1, T2)`; genau das nutzt der `LevelParser` mit seiner `List<(char zeichen, Koordinate pos)>`.
 
 </details>
 
@@ -168,10 +168,10 @@ Jede Bedingung ist eine eigene Klasse, die `IPruefer<Spielobjekt>` implementiert
 ```csharp
 class InReichweite : IPruefer<Spielobjekt>
 {
-    private readonly Position bezug;
+    private readonly Koordinate bezug;
     private readonly int reichweite;
 
-    public InReichweite(Position bezug, int reichweite)
+    public InReichweite(Koordinate bezug, int reichweite)
     {
         this.bezug = bezug;
         this.reichweite = reichweite;
@@ -251,7 +251,7 @@ class Schatzkammer<T>
 
 **Schritt 1 — Die drei Fehler:**
 
-1. `stueck == null`: Ein `==`-Vergleich mit `null` ist für einen uneingeschränkten Typparameter nicht erlaubt, weil `T` ein Werttyp wie `int` oder `Position` sein könnte, der nie `null` ist. (Genau genommen erlaubt der Compiler `== null` für uneingeschränkte `T` in neueren Versionen, wertet es für Werttypen aber immer als `false` aus – das ist dann kein Fehler, aber irreführend. Sauber wird es erst mit einem Constraint.)
+1. `stueck == null`: Ein `==`-Vergleich mit `null` ist für einen uneingeschränkten Typparameter nicht erlaubt, weil `T` ein Werttyp wie `int` oder `Koordinate` sein könnte, der nie `null` ist. (Genau genommen erlaubt der Compiler `== null` für uneingeschränkte `T` in neueren Versionen, wertet es für Werttypen aber immer als `false` aus – das ist dann kein Fehler, aber irreführend. Sauber wird es erst mit einem Constraint.)
 2. `stueck.CompareTo(bestes)`: `T` hat keine Methode `CompareTo` – der Compiler kennt nur die Mitglieder von `object`.
 3. `new T()`: Ohne Constraint weiß der Compiler nicht, ob `T` einen parameterlosen Konstruktor hat.
 
@@ -270,7 +270,7 @@ class Schatzkammer<T> where T : class, IComparable<T>, new()
 
 **Schritt 3 — Was noch hineinpasst:**
 
-Nach der Korrektur akzeptiert `Schatzkammer<T>` nur noch Referenztypen, die `IComparable<T>` implementieren und einen parameterlosen Konstruktor haben. `string` fällt heraus (kein parameterloser Konstruktor), `int` und `Position` fallen heraus (Werttypen), und ausgerechnet `Schatz` fällt heraus: Die Klasse ist weder vergleichbar noch lässt sie sich ohne `Position` und `Wert` erzeugen. Übrig bleibt fast nichts – ein deutliches Zeichen, dass die Klasse zu viel verlangt.
+Nach der Korrektur akzeptiert `Schatzkammer<T>` nur noch Referenztypen, die `IComparable<T>` implementieren und einen parameterlosen Konstruktor haben. `string` fällt heraus (kein parameterloser Konstruktor), `int` und `Koordinate` fallen heraus (Werttypen), und ausgerechnet `Schatz` fällt heraus: Die Klasse ist weder vergleichbar noch lässt sie sich ohne `Position` und `Wert` erzeugen. Übrig bleibt fast nichts – ein deutliches Zeichen, dass die Klasse zu viel verlangt.
 
 **Zentrale Designentscheidungen:**
 
@@ -333,7 +333,7 @@ class Ringpuffer<T>
         else
         {
             // Puffer voll: das älteste Element wurde überschrieben,
-            // der Start rückt eine Position weiter
+            // der Start rückt eine Koordinate weiter
             start = (start + 1) % daten.Length;
         }
     }
@@ -401,7 +401,7 @@ Insgesamt entstehen vier Meldungen: Die erste („Da geht es nicht weiter.“ vo
 **Zentrale Designentscheidungen:**
 
 - **`start` und `anzahl` statt `start` und `ende`:** Mit zwei Indizes kann man „leer“ und „voll“ nicht unterscheiden – in beiden Fällen wäre `start == ende`. Der Zähler `anzahl` macht beide Zustände eindeutig.
-- **Kein Constraint nötig:** Der Ringpuffer speichert, überschreibt und liefert Elemente, vergleicht sie aber nie und erzeugt keine. Er funktioniert daher mit jedem Typ – `string` für Meldungen, `Richtung` für die letzten Züge des Spielers, `Position` für eine Spur, die der Verfolger hinterlässt. Das ist ein gutes Zeichen: Je weniger Constraints eine Datenstruktur braucht, desto allgemeiner ist sie.
+- **Kein Constraint nötig:** Der Ringpuffer speichert, überschreibt und liefert Elemente, vergleicht sie aber nie und erzeugt keine. Er funktioniert daher mit jedem Typ – `string` für Meldungen, `Richtung` für die letzten Züge des Spielers, `Koordinate` für eine Spur, die der Verfolger hinterlässt. Das ist ein gutes Zeichen: Je weniger Constraints eine Datenstruktur braucht, desto allgemeiner ist sie.
 - **Kapazität 0 wird im Konstruktor abgelehnt:** Sonst würde `% daten.Length` zu einer `DivideByZeroException` führen – ein Fehler, den man lieber sofort und mit klarer Meldung sieht.
 - **`AlsArray()` kopiert in logischer Reihenfolge:** Der Aufrufer sieht nie den internen Ring, sondern immer „ältestes zuerst“. Eleganter wäre es, `IEnumerable<T>` zu implementieren, so wie `Inventar<T>` es tut, damit `foreach` direkt funktioniert – wie man das ohne die Weiterreichung an eine Liste schreibt, sehen wir beim Iterator-Muster in Vorlesung 08.
 

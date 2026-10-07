@@ -55,9 +55,9 @@ Die dritte Spalte ist der Teil, den man leicht vergisst: „Wirft die richtige M
 ```csharp
 private static (Tuer tuer, Spieler held) Aufbau(int schluessel = 0)
 {
-    Spieler held = new Spieler("Held", new Position(0, 0));
-    for (int i = 0; i < schluessel; i++) held.Inventar.Hinzufuegen(new Schluessel(new Position(0, 0)));
-    return (new Tuer(new Position(1, 0)), held);
+    Spieler held = new Spieler("Held", new Koordinate(0, 0));
+    for (int i = 0; i < schluessel; i++) held.Inventar.Hinzufuegen(new Schluessel(new Koordinate(0, 0)));
+    return (new Tuer(new Koordinate(1, 0)), held);
 }
 
 [Test] public void Interagieren_OhneSchluessel_BleibtZuUndVerbrauchtNichts()
@@ -111,7 +111,7 @@ Die Zweige sind damit geprüft; offen bleibt das Zusammenspiel mit `Spielfeld.Sp
     f.SpielerZieht(Richtung.Rechts);
 
     Assert.That(f.LetzteMeldung, Does.Contain("Schlüssel"));
-    Assert.That(((Tuer)f.StatischesObjektAn(new Position(4, 0))!).IstOffen, Is.False);
+    Assert.That(((Tuer)f.StatischesObjektAn(new Koordinate(4, 0))!).IstOffen, Is.False);
 }
 ```
 
@@ -208,7 +208,7 @@ public class SpielTests
 
         f.SpielerZieht(Richtung.Rechts);
 
-        Assert.That(((Tuer)f.StatischesObjektAn(new Position(2, 0))!).IstOffen, Is.True);
+        Assert.That(((Tuer)f.StatischesObjektAn(new Koordinate(2, 0))!).IstOffen, Is.True);
     }
 
     [Test] public void Tuer_Ohne_Schluessel_Bleibt_Zu()
@@ -218,7 +218,7 @@ public class SpielTests
         f.SpielerZieht(Richtung.Rechts);
 
         Assert.That(f.LetzteMeldung, Does.Contain("Schlüssel"));
-        Assert.That(f.Spieler.Position, Is.EqualTo(new Position(0, 0)));
+        Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(0, 0)));
     }
 
     [Test] public void Verfolger_Rueckt_Nach()
@@ -227,7 +227,7 @@ public class SpielTests
 
         f.SpielerZieht(Richtung.Oben);
 
-        Assert.That(f.Gegner[0].Position, Is.EqualTo(new Position(2, 0)));
+        Assert.That(f.Gegner[0].Position, Is.EqualTo(new Koordinate(2, 0)));
     }
 }
 ```
@@ -394,7 +394,7 @@ class KaputteLevelQuelle : ILevelQuelle
 
     Spielfeld f = auswahl.Starten("test");
 
-    Assert.That(f.Spieler.Position, Is.EqualTo(new Position(0, 0)));
+    Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(0, 0)));
     Assert.That(quelle.Aufrufe, Is.EqualTo(1));   // genau einmal geladen, nicht zweimal
 }
 

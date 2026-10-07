@@ -373,18 +373,18 @@ Anna ist in beiden Kursen dasselbe Objekt – die Dictionaries speichern nur Ref
 Für diese Aufgabe bauen wir ein kleines Spielfeld von Hand auf, damit sich jedes Ergebnis auf dem Papier nachrechnen lässt. Der Held steht auf `(6, 3)`, um ihn herum liegen sechs statische Objekte und drei Gegner:
 
 ```csharp
-Spielfeld feld = new Spielfeld(14, 7, new Spieler("Held", new Position(6, 3)));
-feld.Hinzufuegen(new Wand(new Position(0, 3)));
-feld.Hinzufuegen(new Wand(new Position(13, 3)));
-feld.Hinzufuegen(new Schluessel(new Position(5, 1)));
-feld.Hinzufuegen(new Trank(new Position(9, 5)));
-feld.Hinzufuegen(new Schatz(new Position(2, 2), wert: 25));
-feld.Hinzufuegen(new Truhe(new Position(11, 1), wert: 100));
-feld.Hinzufuegen(new Wache(new Position(8, 3)));
-feld.Hinzufuegen(new Verfolger(new Position(6, 5)));
-feld.Hinzufuegen(new Wache(new Position(1, 5)));
+Spielfeld feld = new Spielfeld(14, 7, new Spieler("Held", new Koordinate(6, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(0, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(13, 3)));
+feld.Hinzufuegen(new Schluessel(new Koordinate(5, 1)));
+feld.Hinzufuegen(new Trank(new Koordinate(9, 5)));
+feld.Hinzufuegen(new Schatz(new Koordinate(2, 2), wert: 25));
+feld.Hinzufuegen(new Truhe(new Koordinate(11, 1), wert: 100));
+feld.Hinzufuegen(new Wache(new Koordinate(8, 3)));
+feld.Hinzufuegen(new Verfolger(new Koordinate(6, 5)));
+feld.Hinzufuegen(new Wache(new Koordinate(1, 5)));
 
-Position held = feld.Spieler.Position;   // eine Kopie des Startfeldes: (6, 3)
+Koordinate held = feld.Spieler.Position;   // eine Kopie des Startfeldes: (6, 3)
 ```
 
 Alle Entfernungen sind Manhattan-Entfernungen aus `Position.Entfernung`, also Schritte ohne Diagonalen. Rechne sie einmal für alle Objekte aus, bevor du weiterliest – ohne diese Zahlen lässt sich keine der Abfragen vorhersagen.

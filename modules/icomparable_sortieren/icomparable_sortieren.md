@@ -111,9 +111,9 @@ Ein Gegner hat keine *natürliche* Ordnung. „Näher am Helden“ ist keine Eig
 ```csharp
 public class NachEntfernungComparer : IComparer<Gegner>
 {
-    private readonly Position bezug;
+    private readonly Koordinate bezug;
 
-    public NachEntfernungComparer(Position bezug)
+    public NachEntfernungComparer(Koordinate bezug)
     {
         this.bezug = bezug;
     }

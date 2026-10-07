@@ -56,7 +56,7 @@ public sealed class Verfolger : Gegner
 {
     public override Richtung? NaechsterZug(Spielfeld feld)
     {
-        Position ziel = feld.Spieler.Position;
+        Koordinate ziel = feld.Spieler.Position;
         if (Position.Entfernung(ziel) > Spielkonfiguration.Instanz.Sichtweite) return null;
         // ...
     }
@@ -176,7 +176,7 @@ Das Muster hat klare Vorteile gegenüber einer globalen Variable: Die Instanz en
 - **Schwer testbar.** Ein Unit-Test kann das Singleton nicht durch eine Testversion ersetzen – der Aufruf steht fest im Code. Und weil die Instanz zwischen zwei Tests weiterlebt, hängt das Ergebnis des zweiten Tests davon ab, was der erste an der Konfiguration gedreht hat. Wie man das vermeidet, sehen wir in [Aufgabe 4](/modules/aufgaben_entwurfsmuster/aufgaben_entwurfsmuster.md).
 - **Unklarer Lebenszyklus.** Wann wird die Instanz freigegeben? Praktisch nie – sie lebt bis zum Programmende, weil das statische Feld sie festhält (siehe Modul [Garbage Collection](/modules/garbage_collection/garbage_collection.md)).
 
-Im Zweifel: Wert übergeben statt Singleton. Genau das macht das Adventure: Ein `Verfolger` bekommt seine Sichtweite im Konstruktor (`public Verfolger(Position position, int sichtweite = 5)`), und `Spieler.MaxLebenspunkte` ist eine `const`, die sich zur Laufzeit niemand umbiegen kann. Beides ist sichtbar, testbar und pro Objekt einstellbar – ein Level mit einem besonders wachsamen Verfolger ist damit eine Zeile, mit dem Singleton ein Umbau. Ein Singleton ist nur dann angebracht, wenn eine zweite Instanz *technisch* falsch wäre, nicht bloß unnötig.
+Im Zweifel: Wert übergeben statt Singleton. Genau das macht das Adventure: Ein `Verfolger` bekommt seine Sichtweite im Konstruktor (`public Verfolger(Koordinate position, int sichtweite = 5)`), und `Spieler.MaxLebenspunkte` ist eine `const`, die sich zur Laufzeit niemand umbiegen kann. Beides ist sichtbar, testbar und pro Objekt einstellbar – ein Level mit einem besonders wachsamen Verfolger ist damit eine Zeile, mit dem Singleton ein Umbau. Ein Singleton ist nur dann angebracht, wenn eine zweite Instanz *technisch* falsch wäre, nicht bloß unnötig.
 {: .notice--warning}
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).

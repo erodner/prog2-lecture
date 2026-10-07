@@ -40,7 +40,7 @@ public sealed class Falle : StatischesObjekt, IBetretbar
     public int Schaden { get; }
     public bool Ausgeloest { get; private set; }
 
-    public Falle(Position position, int schaden = 1) : base("Falle", position)
+    public Falle(Koordinate position, int schaden = 1) : base("Falle", position)
     {
         Schaden = schaden;
     }
@@ -134,7 +134,7 @@ True
 
 **Schritt 2 — Begründung:**
 
-`b.Beschreibung()` ist ein Aufruf über den Kompilierzeittyp `Zauberbuch`. Dort gibt es eine öffentliche `Beschreibung`, und `Zauberfolio` **versteckt** sie mit `new`, statt sie zu überschreiben – wie in [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) besprochen, zählt bei `new` der deklarierte Typ. Die beiden Casts wählen jeweils die explizite Implementierung des Interfaces aus; die öffentliche Methode spielt dabei keine Rolle, und genau deshalb können zwei gleichnamige Verträge nebeneinander bestehen. Über `f` vom Typ `Zauberfolio` ist die versteckende Methode sichtbar. `s.Beschreibung()` geht wieder über das Interface: `Zauberfolio` implementiert `ISammelbar` nicht neu, also gilt weiterhin die explizite Implementierung aus `Zauberbuch`. `b is IInteragierbar` ist wahr, weil jedes `Zauberfolio` ein `Zauberbuch` ist und `Zauberbuch` das Interface implementiert.
+`b.Beschreibung()` ist ein Aufruf über den Kompilierzeittyp `Zauberbuch`. Dort gibt es eine öffentliche `Beschreibung`, und `Zauberfolio` **versteckt** sie mit `new`, statt sie zu überschreiben – wie in [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) besprochen, zählt bei `new` der deklarierte Typ. Die beiden Casts wählen jeweils die explizite Implementierung des Interfaces aus; die öffentliche Methode spielt dabei keine Rolle, und genau deshalb können zwei gleichnamige Verträge nebeneinander bestehen. Über `f` vom Typ `Zauberfolio` ist die versteckende Methode sichtbar. `s.Beschreibung()` geht wieder über das Interface: `Zauberfolio` implementiert `ISammelbar` nicht neu, also gilt weiterhin die explizite Implementierung aus `Zauberbuch`. `b is IInteragierbar` ist wahr, weil jedes `Zauberfolio` ein `Zauberbuch` ist und `Zauberbuch` das Interface implementiert.
 
 **Zentrale Designentscheidungen:**
 
@@ -151,9 +151,9 @@ Der Dungeon soll einen **Teleporter** bekommen, der den Spieler an eine feste Zi
 ```csharp
 public sealed class Teleporter : StatischesObjekt, IInteragierbar
 {
-    public Position Ziel { get; }
+    public Koordinate Ziel { get; }
 
-    public Teleporter(Position position, Position ziel) : base("Teleporter", position)
+    public Teleporter(Koordinate position, Koordinate ziel) : base("Teleporter", position)
     {
         Ziel = ziel;
     }
@@ -213,7 +213,7 @@ public interface IOrtsgebunden : IBetretbar
 }
 ```
 
-Der Teleporter implementiert das größere Interface, alle anderen bleiben unberührt – das ist derselbe Trick wie bei `ITragbar : ISammelbar` im Modul [Interfaces – Erweiterte Konzepte](/modules/interfaces_erweitert/interfaces_erweitert.md).
+Ein Interface kann wie eine Klasse von einem anderen erben: `IOrtsgebunden : IBetretbar` fordert alles aus `IBetretbar` und zusätzlich `Betreten`. Der Teleporter implementiert das größere Interface, alle anderen bleiben unberührt. Mehr zur Interface-Vererbung steht im Modul [Interfaces – Erweiterte Konzepte](/modules/interfaces_erweitert/interfaces_erweitert.md) (erweitertes Wissen).
 
 **Zentrale Designentscheidungen:**
 

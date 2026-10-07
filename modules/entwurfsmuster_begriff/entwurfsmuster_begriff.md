@@ -75,7 +75,7 @@ Das durchgehende Beispiel dieses Kurses ist dafür eine Fundgrube. Fast jedes Mu
 | **Singleton** | Bewusst nicht verwendet: Sichtweite und Startleben stehen im Konstruktor von `Verfolger` bzw. als `const` in `Spieler`. Wir bauen im Singleton-Modul eine `Spielkonfiguration` – und diskutieren, warum sie mehr schadet als nützt. |
 | **Strategy** | `Gegner.NaechsterZug` ist ein austauschbarer Algorithmus hinter einer abstrakten Methode – und in der Delegat-Variante aus [Vorlesung 07](/lectures/07/07.md) ist jeder `Func<Spielfeld, Gegner, Richtung?>` eine Strategie. |
 | **Template Method** | `Spielfeld.SpielerZieht` legt den Ablauf einer Runde fest – erst der Held, dann alle Gegner, dann die Meldung – und überlässt den variablen Schritt den Gegnerklassen. |
-| **Factory Method** | `LevelParser.ObjektFuer(char, Position)` entscheidet, welche Klasse hinter einem Zeichen der Textkarte steckt. Der Rest des Parsers kennt nur `Spielobjekt`. |
+| **Factory Method** | `LevelParser.ObjektFuer(char, Koordinate)` entscheidet, welche Klasse hinter einem Zeichen der Textkarte steckt. Der Rest des Parsers kennt nur `Spielobjekt`. |
 
 Dass wir diese Lösungen gefunden haben, ohne die Muster zu kennen, ist typisch: Gute Entwürfe konvergieren. Der Nutzen des Katalogs ist, dass man sie beim nächsten Mal *schneller* findet und mit einem Wort benennen kann.
 {: .notice--primary}

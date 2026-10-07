@@ -232,7 +232,7 @@ Nur darf das Spiel dadurch nicht kaputtgehen, wenn die Bibliothek fehlt – auf 
 
 **Schritt 1 — Das Interface als Vertrag:**
 
-Der entscheidende Schritt ist die Wahl der Parameter. Eine native Funktion kann nichts mit `Spielfeld`, `Position` oder `Dictionary` anfangen – sie versteht nur Zahlen und Speicherblöcke. Also übergeben wir die Hindernisse als flaches Byte-Array: `blockiert[y * breite + x]` ist ungleich null, wenn dort etwas Undurchsichtiges steht. Dieselbe Signatur passt für beide Implementierungen:
+Der entscheidende Schritt ist die Wahl der Parameter. Eine native Funktion kann nichts mit `Spielfeld`, `Koordinate` oder `Dictionary` anfangen – sie versteht nur Zahlen und Speicherblöcke. Also übergeben wir die Hindernisse als flaches Byte-Array: `blockiert[y * breite + x]` ist ungleich null, wenn dort etwas Undurchsichtiges steht. Dieselbe Signatur passt für beide Implementierungen:
 
 ```csharp
 public interface ISichtpruefung
@@ -309,10 +309,10 @@ public static class SichtpruefungFabrik
 }
 ```
 
-Das `Spielfeld` bekommt die Prüfung im Konstruktor gereicht und behält seine bisherige, bequeme Signatur mit `Position` – die Umrechnung auf das flache Array bleibt sein Geheimnis:
+Das `Spielfeld` bekommt die Prüfung im Konstruktor gereicht und behält seine bisherige, bequeme Signatur mit `Koordinate` – die Umrechnung auf das flache Array bleibt sein Geheimnis:
 
 ```csharp
-public bool HatSichtlinie(Position von, Position nach) =>
+public bool HatSichtlinie(Koordinate von, Koordinate nach) =>
     sicht.HatSichtlinie(Hinderniskarte(), Breite, Hoehe, von.X, von.Y, nach.X, nach.Y);
 ```
 
@@ -321,7 +321,7 @@ public bool HatSichtlinie(Position von, Position nach) =>
 **Zentrale Designentscheidungen:**
 
 - **Entscheidung beim Start, nicht bei jedem Aufruf:** Der Probeaufruf löst das Laden aus und fängt die `DllNotFoundException` genau einmal. Danach steht im Spiel kein einziges `try`/`catch` mehr um eine Sichtprüfung.
-- **Die Schnittstelle wird von der nativen Seite her entworfen:** Nur Zahlen und ein Byte-Array gehen über die Grenze. Wer das Interface mit `Position` und `Dictionary` formuliert, kann die native Variante gar nicht mehr anschließen.
+- **Die Schnittstelle wird von der nativen Seite her entworfen:** Nur Zahlen und ein Byte-Array gehen über die Grenze. Wer das Interface mit `Koordinate` und `Dictionary` formuliert, kann die native Variante gar nicht mehr anschließen.
 - **Tests bekommen die verwaltete Variante:** `SpielfeldTests` erzeugt das Spielfeld mit `new VerwalteteSichtpruefung()` – kein Compiler, keine Plattformabhängigkeit, überall dasselbe Ergebnis.
 - **Das Interface gehört nach `Adventure.Kern`, der Adapter in eine äußere Schicht:** Wie bei `ILevelQuelle` und `JsonSpielstandSpeicher` zeigt die Abhängigkeit nach innen. Die native Bibliothek ist ein Implementierungsdetail, das der Kern nicht kennen muss.
 - **Erst messen, dann optimieren:** Für jede Prüfung eine `Hinderniskarte` zu bauen und über die Grenze zu reichen, kann mehr kosten als der Algorithmus selbst. Die native Variante lohnt sich nur, wenn die Karte einmal pro Runde entsteht – und wenn eine Messung den Gewinn wirklich zeigt.

@@ -188,7 +188,7 @@ class LevelDatei
 
 class ObjektDaten
 {
-    public Position Position { get; set; }
+    public Koordinate Position { get; set; }
     public string Art { get; set; } = "";
     public int? Wert { get; set; }
     public int? Heilung { get; set; }
@@ -261,10 +261,10 @@ public class CsvSpielstandSpeicher : ISpielstandSpeicher
         yield return $"leben;{s.Lebenspunkte}";
         yield return $"punkte;{s.Punkte}";
         foreach (string name in s.Inventar) yield return $"inventar;{name}";
-        foreach (Position p in s.EntfernteGegenstaende) yield return $"entfernt;{p.X};{p.Y}";
-        foreach (Position p in s.OffeneTueren) yield return $"tuer;{p.X};{p.Y}";
-        foreach (Position p in s.GeoeffneteTruhen) yield return $"truhe;{p.X};{p.Y}";
-        foreach (Position p in s.GegnerPositionen) yield return $"gegner;{p.X};{p.Y}";
+        foreach (Koordinate p in s.EntfernteGegenstaende) yield return $"entfernt;{p.X};{p.Y}";
+        foreach (Koordinate p in s.OffeneTueren) yield return $"tuer;{p.X};{p.Y}";
+        foreach (Koordinate p in s.GeoeffneteTruhen) yield return $"truhe;{p.X};{p.Y}";
+        foreach (Koordinate p in s.GegnerPositionen) yield return $"gegner;{p.X};{p.Y}";
     }
 
     internal static Spielstand StandAus(IEnumerable<string> zeilen)
@@ -276,7 +276,7 @@ public class CsvSpielstandSpeicher : ISpielstandSpeicher
             nummer++;
             if (zeile.Trim().Length == 0) continue;
             string[] f = zeile.Split(';');
-            Position Pos() => new(Zahl(f, 1, nummer), Zahl(f, 2, nummer));
+            Koordinate Pos() => new(Zahl(f, 1, nummer), Zahl(f, 2, nummer));
 
             switch (f[0])
             {

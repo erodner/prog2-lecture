@@ -74,7 +74,7 @@ Referenzieren sich zwei Projekte gegenseitig, meldet `dotnet build` einen Zirkel
 
 Neben `console`, `classlib` und `sln` zeigt `dotnet new list` alle Vorlagen des SDK. Für uns wichtig sind noch zwei: aus `blazor` entsteht in [Vorlesung 04](/lectures/04/04.md) das Projekt `Adventure.Web`, aus `nunit` in [Vorlesung 12](/lectures/12/12.md) das Projekt `Adventure.Tests`. Alles, was du per CLI anlegst, kannst du anschließend normal in deiner IDE öffnen.
 
-Übung: Lege die Solution `Adventure` mit `Adventure.Kern` und `Adventure.Konsole` wie oben an. Schreibe im Kern eine Klasse `Position` mit den Properties `X` und `Y` und einer Methode `Entfernung(Position andere)`, die den Abstand in Feldern liefert. Gib im Konsolenprojekt die Entfernung zwischen zwei Positionen aus und baue alles mit einem einzigen `dotnet build` im Solution-Ordner. Was passiert, wenn du die Projektreferenz wieder aus der `.csproj` löschst? Und was meldet der Compiler, wenn du aus `Adventure.Kern` heraus eine Klasse aus `Adventure.Konsole` benutzen willst?
+Übung: Lege die Solution `Adventure` mit `Adventure.Kern` und `Adventure.Konsole` wie oben an. Schreibe im Kern eine Klasse `Koordinate` mit den Properties `X` und `Y` und einer Methode `Entfernung(Koordinate andere)`, die den Abstand in Feldern liefert. Gib im Konsolenprojekt die Entfernung zwischen zwei Positionen aus und baue alles mit einem einzigen `dotnet build` im Solution-Ordner. Was passiert, wenn du die Projektreferenz wieder aus der `.csproj` löschst? Und was meldet der Compiler, wenn du aus `Adventure.Kern` heraus eine Klasse aus `Adventure.Konsole` benutzen willst?
 {: .notice--info}
 
 ## Weitere Quellen

@@ -15,7 +15,7 @@ Ein Ordner auf der Festplatte enthält Dateien – und andere Ordner, die wieder
 
 Bisher entstehen unsere Level Zeichen für Zeichen: `LevelParser.Parsen` liest die Textkarte und ruft für jedes `#` ein `feld.Hinzufuegen(new Wand(position))` auf. Für eine handgebaute Schatzkammer heißt das zwanzig einzelne Aufrufe, und wenn die Kammer drei Felder weiter rechts liegen soll, muss man zwanzig Positionen anfassen. Schlimmer wird es, sobald Räume geschachtelt sind: Ein Kerker enthält Räume, ein Raum enthält Nischen und Möblierung. Ohne Muster müsste der Code bei jeder Operation unterscheiden: Ist das ein einzelnes Objekt? Dann setze es. Ist das eine Gruppe? Dann gehe die Liste durch – und für jedes Element wieder dieselbe Frage. Diese Fallunterscheidung wiederholt sich in jeder Operation und wird mit jeder neuen Bauteilart länger.
 
-Naheliegend wäre eine Klasse `Raum : Spielobjekt`, damit ein Raum überall dort hinpasst, wo ein Spielobjekt erwartet wird. Das funktioniert hier aber nicht: `Spielobjekt` hat *eine* `Position` und *ein* `Symbol`, `StatischesObjekt` ist ausdrücklich „bewegt sich nie“, und `Spielfeld` legt statische Objekte in einem `Dictionary<Position, StatischesObjekt>` ab – ein Raum hat weder eine einzelne Rasterzelle noch ein einzelnes Zeichen. Die Komponente des Composite ist deshalb ein **eigenes, neues Interface**, das nur die Bauoperationen beschreibt. Ein Muster zwingt man nicht in eine vorhandene Vererbungshierarchie.
+Naheliegend wäre eine Klasse `Raum : Spielobjekt`, damit ein Raum überall dort hinpasst, wo ein Spielobjekt erwartet wird. Das funktioniert hier aber nicht: `Spielobjekt` hat *eine* `Position` und *ein* `Symbol`, `StatischesObjekt` ist ausdrücklich „bewegt sich nie“, und `Spielfeld` legt statische Objekte in einem `Dictionary<Koordinate, StatischesObjekt>` ab – ein Raum hat weder eine einzelne Rasterzelle noch ein einzelnes Zeichen. Die Komponente des Composite ist deshalb ein **eigenes, neues Interface**, das nur die Bauoperationen beschreibt. Ein Muster zwingt man nicht in eine vorhandene Vererbungshierarchie.
 {: .notice--warning}
 
 ## Lösung
@@ -36,27 +36,27 @@ public interface IBauteil
 }
 ```
 
-Das Blatt ist eine gewöhnliche Klasse, die das Interface für sich selbst erfüllt. Weil ein `StatischesObjekt` seine Position nach dem Erzeugen nicht mehr ändert, merkt sich der `Baustein` nur *wo* und *was* gebaut werden soll – das „was“ ist ein `Func<Position, StatischesObjekt>`, also eine Fabrikfunktion, wie wir sie im Modul [`Func` und `Action`](/modules/func_action/func_action.md) kennengelernt haben:
+Das Blatt ist eine gewöhnliche Klasse, die das Interface für sich selbst erfüllt. Weil ein `StatischesObjekt` seine Position nach dem Erzeugen nicht mehr ändert, merkt sich der `Baustein` nur *wo* und *was* gebaut werden soll – das „was“ ist ein `Func<Koordinate, StatischesObjekt>`, also eine Fabrikfunktion, wie wir sie im Modul [`Func` und `Action`](/modules/func_action/func_action.md) kennengelernt haben:
 
 ```csharp
 public sealed class Baustein : IBauteil
 {
-    private readonly Func<Position, StatischesObjekt> erzeugen;
-    private Position position;
+    private readonly Func<Koordinate, StatischesObjekt> erzeugen;
+    private Koordinate position;
 
-    public Baustein(Position position, Func<Position, StatischesObjekt> erzeugen)
+    public Baustein(Koordinate position, Func<Koordinate, StatischesObjekt> erzeugen)
     {
         this.position = position;
         this.erzeugen = erzeugen;
     }
 
-    public void Verschieben(int dx, int dy) => position = new Position(position.X + dx, position.Y + dy);
+    public void Verschieben(int dx, int dy) => position = new Koordinate(position.X + dx, position.Y + dy);
 
     public void AufFeldSetzen(Spielfeld feld) => feld.Hinzufuegen(erzeugen(position));
 }
 ```
 
-Ein einzelner Baustein ist damit `new Baustein(new Position(3, 2), p => new Wand(p))` oder `new Baustein(new Position(4, 1), p => new Truhe(p, wert: 100))`. Das Kompositum implementiert *dasselbe* Interface, tut aber selbst nichts außer Weiterreichen. Es hält eine `List<IBauteil>` – nicht `List<Baustein>`, denn nur so passen auch andere Gruppen hinein:
+Ein einzelner Baustein ist damit `new Baustein(new Koordinate(3, 2), p => new Wand(p))` oder `new Baustein(new Koordinate(4, 1), p => new Truhe(p, wert: 100))`. Das Kompositum implementiert *dasselbe* Interface, tut aber selbst nichts außer Weiterreichen. Es hält eine `List<IBauteil>` – nicht `List<Baustein>`, denn nur so passen auch andere Gruppen hinein:
 
 ```csharp
 public sealed class Objektgruppe : IBauteil
@@ -87,13 +87,13 @@ public sealed class Objektgruppe : IBauteil
 Beide Methoden sind rekursiv, ohne dass es so aussieht: Ist ein `teil` selbst eine `Objektgruppe`, ruft `teil.Verschieben(dx, dy)` wieder diese Methode auf, eine Ebene tiefer. Die Rekursion endet automatisch bei den Bausteinen. Ein Raum ist damit nur noch eine Gruppe, die jemand mit Wänden füllt:
 
 ```csharp
-static Objektgruppe Raum(string name, Position ecke, int breite, int hoehe)
+static Objektgruppe Raum(string name, Koordinate ecke, int breite, int hoehe)
 {
     Objektgruppe raum = new(name);
     for (int x = 0; x < breite; x++)
         for (int y = 0; y < hoehe; y++)
             if (x == 0 || y == 0 || x == breite - 1 || y == hoehe - 1)
-                raum.Hinzufuegen(new Baustein(new Position(ecke.X + x, ecke.Y + y), p => new Wand(p)));
+                raum.Hinzufuegen(new Baustein(new Koordinate(ecke.X + x, ecke.Y + y), p => new Wand(p)));
     return raum;
 }
 ```
@@ -101,10 +101,10 @@ static Objektgruppe Raum(string name, Position ecke, int breite, int hoehe)
 Jetzt baut der Client ein ganzes Level als Baum und arbeitet nur noch mit der Wurzel:
 
 ```csharp
-Objektgruppe kammer = Raum("Schatzkammer", new Position(0, 0), 5, 4);
-kammer.Hinzufuegen(new Baustein(new Position(2, 2), p => new Truhe(p, wert: 100)));
+Objektgruppe kammer = Raum("Schatzkammer", new Koordinate(0, 0), 5, 4);
+kammer.Hinzufuegen(new Baustein(new Koordinate(2, 2), p => new Truhe(p, wert: 100)));
 
-Objektgruppe wachstube = Raum("Wachstube", new Position(0, 0), 4, 3);
+Objektgruppe wachstube = Raum("Wachstube", new Koordinate(0, 0), 4, 3);
 wachstube.Verschieben(6, 0);
 
 Objektgruppe kerker = new("Kerker");
@@ -112,7 +112,7 @@ kerker.Hinzufuegen(kammer);
 kerker.Hinzufuegen(wachstube);
 kerker.Verschieben(1, 1);            // ein Aufruf, 25 Bauteile auf zwei Ebenen
 
-Spielfeld feld = new(12, 6, new Spieler("Held", new Position(2, 2)));
+Spielfeld feld = new(12, 6, new Spieler("Held", new Koordinate(2, 2)));
 kerker.AufFeldSetzen(feld);
 Console.Write(feld.AlsText());
 // ............

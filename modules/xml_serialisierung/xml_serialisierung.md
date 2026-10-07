@@ -46,17 +46,17 @@ using (StreamReader reader = File.OpenText(pfad))
   <Punkte>100</Punkte>
   <Inventar />
   <OffeneTueren>
-    <Position>
+    <Koordinate>
       <X>7</X>
       <Y>4</Y>
     </Position>
   </OffeneTueren>
   <GegnerPositionen>
-    <Position>
+    <Koordinate>
       <X>8</X>
       <Y>2</Y>
     </Position>
-    <Position>
+    <Koordinate>
       <X>15</X>
       <Y>4</Y>
     </Position>
@@ -64,7 +64,7 @@ using (StreamReader reader = File.OpenText(pfad))
 </Spielstand>
 ```
 
-Jede Property wird zu einem Element mit öffnendem und schließendem Tag; der Klassenname wird zum Wurzelelement, und die Elemente einer Liste bekommen den Namen ihres Elementtyps (`<Position>`). Eine leere Liste wie `Inventar` schrumpft auf ein einzelnes `<Inventar />`. Die `xmlns`-Attribute in der zweiten Zeile schreibt der Serialisierer immer, auch wenn man sie nicht braucht. Vergleicht man die Datei mit der JSON-Fassung, fällt sofort auf: Dieselbe Information braucht rund die doppelte Menge Text, weil jeder Name zweimal dasteht.
+Jede Property wird zu einem Element mit öffnendem und schließendem Tag; der Klassenname wird zum Wurzelelement, und die Elemente einer Liste bekommen den Namen ihres Elementtyps (`<Koordinate>`). Eine leere Liste wie `Inventar` schrumpft auf ein einzelnes `<Inventar />`. Die `xmlns`-Attribute in der zweiten Zeile schreibt der Serialisierer immer, auch wenn man sie nicht braucht. Vergleicht man die Datei mit der JSON-Fassung, fällt sofort auf: Dieselbe Information braucht rund die doppelte Menge Text, weil jeder Name zweimal dasteht.
 
 ## Anforderungen an die Klasse
 
@@ -76,7 +76,7 @@ XmlSerializer tuerSerializer = new XmlSerializer(typeof(Tuer));
 // because it does not have a parameterless constructor.
 ```
 
-Der Fehler kommt bereits beim Erzeugen des Serialisierers, nicht erst beim Schreiben. Auch `Dictionary<,>` und Interfaces als Property-Typen lehnt der `XmlSerializer` ab – das `Dictionary<Position, StatischesObjekt>` im `Spielfeld` wäre also ohnehin chancenlos –, und Polymorphie über eine abstrakte Basisklasse braucht zusätzliche `[XmlInclude]`-Attribute. Wer eine Klasse für XML entwirft, hält sie deshalb bewusst einfach: parameterloser Konstruktor, öffentliche Auto-Properties, konkrete Typen. Genau das ist unser `Spielstand` – und das ist kein Zufall, sondern derselbe Entwurf, der ihn auch für JSON tauglich macht.
+Der Fehler kommt bereits beim Erzeugen des Serialisierers, nicht erst beim Schreiben. Auch `Dictionary<,>` und Interfaces als Property-Typen lehnt der `XmlSerializer` ab – das `Dictionary<Koordinate, StatischesObjekt>` im `Spielfeld` wäre also ohnehin chancenlos –, und Polymorphie über eine abstrakte Basisklasse braucht zusätzliche `[XmlInclude]`-Attribute. Wer eine Klasse für XML entwirft, hält sie deshalb bewusst einfach: parameterloser Konstruktor, öffentliche Auto-Properties, konkrete Typen. Genau das ist unser `Spielstand` – und das ist kein Zufall, sondern derselbe Entwurf, der ihn auch für JSON tauglich macht.
 
 ## Aufbau steuern mit Attributen
 
@@ -93,7 +93,7 @@ public class Spielstand
     public int Runde { get; set; }
 
     [XmlElement("spieler")]
-    public Position SpielerPosition { get; set; }
+    public Koordinate SpielerPosition { get; set; }
 
     [XmlIgnore]
     public DateTime Gespeichert { get; set; }

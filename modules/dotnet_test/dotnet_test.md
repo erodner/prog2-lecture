@@ -31,7 +31,7 @@ Dreizehn Tests in unter einer Zehntelsekunde – neun aus `SpielfeldTests`, vier
 ```
   Failed Tuer_Ohne_Schluessel_Bleibt_Zu [5 ms]
   Error Message:
-     Assert.That(f.Spieler.Position, Is.EqualTo(new Position(0, 0)))
+     Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(0, 0)))
     Expected: (0, 0)
     But was:  (1, 0)
   Stack Trace:
@@ -76,7 +76,7 @@ Egal ob Terminal oder IDE – der Arbeitsrhythmus ist immer derselbe: Test schre
     Spielfeld f = Feld("@X");
     f.SpielerZieht(Richtung.Rechts);
     Assert.That(f.Spieler.Lebenspunkte, Is.EqualTo(2));
-    Assert.That(f.Spieler.Position, Is.EqualTo(new Position(1, 0)));
+    Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(1, 0)));
 }
 ```
 

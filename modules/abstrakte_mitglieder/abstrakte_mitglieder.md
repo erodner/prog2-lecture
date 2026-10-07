@@ -26,7 +26,7 @@ public abstract class Spielobjekt
 Das `{ get; }` legt fest, dass die Unterklasse einen Getter liefern muss – und nur einen Getter. Ein Symbol von außen zu setzen, wäre auch sinnlos: Eine Wand ist ein `#`, Punkt. Wie die Unterklasse den Getter schreibt, bleibt ihr überlassen. `Wand` antwortet mit einer Konstanten, `Tuer` rechnet:
 
 ```csharp
-public sealed class Tuer : StatischesObjekt, IInteragierbar
+public sealed class Tuer : StatischesObjekt
 {
     public bool IstOffen { get; private set; }
 
@@ -47,7 +47,7 @@ public abstract class BeweglichesObjekt : Spielobjekt
 {
     public bool Bewegen(Richtung richtung, Spielfeld feld)
     {
-        Position ziel = Position.Verschoben(richtung);
+        Koordinate ziel = Position.Verschoben(richtung);
         if (!feld.IstFrei(ziel)) return false;
         Position = ziel;
         return true;
@@ -58,7 +58,7 @@ public abstract class BeweglichesObjekt : Spielobjekt
 `Bewegen` fragt das Spielfeld, ob das Zielfeld frei ist. Und `IstFrei` beantwortet das, indem es das dort liegende Objekt nach `IstPassierbar` fragt:
 
 ```csharp
-public bool IstFrei(Position p)
+public bool IstFrei(Koordinate p)
 {
     if (!IstInnerhalb(p)) return false;
     StatischesObjekt? s = StatischesObjektAn(p);
@@ -81,7 +81,7 @@ Noch deutlicher wird das Muster bei den Gegnern. Alle Gegner haben gemeinsam, da
 /// <summary>Alle Gegner bewegen sich einmal pro Runde – wie, entscheidet jede Art selbst.</summary>
 public abstract class Gegner : BeweglichesObjekt
 {
-    protected Gegner(string name, Position position) : base(name, position) { }
+    protected Gegner(string name, Koordinate position) : base(name, position) { }
 
     /// <summary>Liefert die Richtung für diese Runde oder null, wenn der Gegner stehen bleibt.</summary>
     public abstract Richtung? NaechsterZug(Spielfeld feld);
@@ -119,7 +119,7 @@ public sealed class Verfolger : Gegner
 
     public override Richtung? NaechsterZug(Spielfeld feld)
     {
-        Position ziel = feld.Spieler.Position;
+        Koordinate ziel = feld.Spieler.Position;
         if (Position.Entfernung(ziel) > Sichtweite || !feld.HatSichtlinie(Position, ziel))
         {
             return null;   // noch nicht entdeckt – stehen bleiben
@@ -139,7 +139,7 @@ private void GegnerZiehen(StringBuilder meldung)
         Richtung? zug = g.NaechsterZug(this);
         if (zug is Richtung r)
         {
-            Position ziel = g.Position.Verschoben(r);
+            Koordinate ziel = g.Position.Verschoben(r);
             if (ziel == Spieler.Position)
             {
                 Spieler.SchadenNehmen();

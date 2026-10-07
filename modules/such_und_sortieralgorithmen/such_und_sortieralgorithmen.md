@@ -18,7 +18,7 @@ Die einfachste Suche prüft ein Element nach dem anderen, bis der Treffer gefund
 ```csharp
 private readonly List<Spielobjekt> objekte = new();
 
-public Spielobjekt? ObjektAn(Position position)
+public Spielobjekt? ObjektAn(Koordinate position)
 {
     foreach (Spielobjekt o in objekte)
     {
@@ -34,18 +34,18 @@ Für ein Spielfeld ist das teurer, als es klingt. Das Level „Kerker“ ist 20 
 
 ## Nachschlagen statt suchen
 
-Ab [Vorlesung 02](/lectures/02/02.md) sieht das Spielfeld deshalb anders aus. Die statischen Objekte liegen in einem `Dictionary<Position, StatischesObjekt>`, und aus der Schleife wird ein einziger Zugriff:
+Ab [Vorlesung 02](/lectures/02/02.md) sieht das Spielfeld deshalb anders aus. Die statischen Objekte liegen in einem `Dictionary<Koordinate, StatischesObjekt>`, und aus der Schleife wird ein einziger Zugriff:
 
 ```csharp
-private readonly Dictionary<Position, StatischesObjekt> statische = new();
+private readonly Dictionary<Koordinate, StatischesObjekt> statische = new();
 private readonly List<Gegner> gegner = new();
 
-public StatischesObjekt? StatischesObjektAn(Position p)
+public StatischesObjekt? StatischesObjektAn(Koordinate p)
 {
     return statische.TryGetValue(p, out StatischesObjekt? s) ? s : null;
 }
 
-public Spielobjekt? ObjektAn(Position p)
+public Spielobjekt? ObjektAn(Koordinate p)
 {
     if (p == Spieler.Position) return Spieler;
     Gegner? g = gegner.FirstOrDefault(x => x.Position == p);

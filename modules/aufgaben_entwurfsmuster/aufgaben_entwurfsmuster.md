@@ -78,7 +78,7 @@ public class Spielfeld
 // Ausschnitt E
 public static class LevelParser
 {
-    private static Spielobjekt ObjektFuer(char zeichen, Position pos) => zeichen switch
+    private static Spielobjekt ObjektFuer(char zeichen, Koordinate pos) => zeichen switch
     {
         '#' => new Wand(pos),
         'D' => new Tuer(pos),
@@ -144,14 +144,14 @@ Einzelne Bauteile und Gruppen sollen über dieselben Operationen angesprochen we
 
 **Schritt 2 — Warum kein `Raum : Spielobjekt`?**
 
-`Spielobjekt` hat genau eine `Position` und genau ein `Symbol`; `StatischesObjekt` heißt ausdrücklich „bewegt sich nie“, und `Spielfeld.Hinzufuegen` legt statische Objekte in einem `Dictionary<Position, StatischesObjekt>` ab – ein Eintrag pro Rasterzelle. Ein Raum hat weder eine einzelne Zelle noch ein einzelnes Zeichen; er würde in das Dictionary nicht hineinpassen, und `Verschieben` gäbe es in der Basisklasse gar nicht. Die Komponente des Composite ist deshalb ein neues, eigenes Interface neben der bestehenden Hierarchie.
+`Spielobjekt` hat genau eine `Position` und genau ein `Symbol`; `StatischesObjekt` heißt ausdrücklich „bewegt sich nie“, und `Spielfeld.Hinzufuegen` legt statische Objekte in einem `Dictionary<Koordinate, StatischesObjekt>` ab – ein Eintrag pro Rasterzelle. Ein Raum hat weder eine einzelne Zelle noch ein einzelnes Zeichen; er würde in das Dictionary nicht hineinpassen, und `Verschieben` gäbe es in der Basisklasse gar nicht. Die Komponente des Composite ist deshalb ein neues, eigenes Interface neben der bestehenden Hierarchie.
 
 **Schritt 3 — Schnittstelle festlegen:**
 
 In das Interface gehört nur, was *jedes* Bauteil sinnvoll kann. `Hinzufuegen` gehört nicht dazu – eine einzelne Wand kann nichts aufnehmen, und eine Methode, die dort immer eine Exception wirft, würde das Substitutionsprinzip verletzen.
 
 ```csharp
-public readonly record struct Ausdehnung(Position LinksOben, Position RechtsUnten);
+public readonly record struct Ausdehnung(Koordinate LinksOben, Koordinate RechtsUnten);
 
 public interface IBauteil
 {
@@ -168,16 +168,16 @@ Der `Baustein` merkt sich, *wo* und *was* gebaut werden soll. Das „was“ ist 
 ```csharp
 public sealed class Baustein : IBauteil
 {
-    private readonly Func<Position, StatischesObjekt> erzeugen;
-    private Position position;
+    private readonly Func<Koordinate, StatischesObjekt> erzeugen;
+    private Koordinate position;
 
-    public Baustein(Position position, Func<Position, StatischesObjekt> erzeugen)
+    public Baustein(Koordinate position, Func<Koordinate, StatischesObjekt> erzeugen)
     {
         this.position = position;
         this.erzeugen = erzeugen;
     }
 
-    public void Verschieben(int dx, int dy) => position = new Position(position.X + dx, position.Y + dy);
+    public void Verschieben(int dx, int dy) => position = new Koordinate(position.X + dx, position.Y + dy);
 
     public void AufFeldSetzen(Spielfeld feld) => feld.Hinzufuegen(erzeugen(position));
 
@@ -221,8 +221,8 @@ public sealed class Objektgruppe : IBauteil
 
         IEnumerable<Ausdehnung> kinder = teile.Select(t => t.Umriss());
         return new Ausdehnung(
-            new Position(kinder.Min(a => a.LinksOben.X), kinder.Min(a => a.LinksOben.Y)),
-            new Position(kinder.Max(a => a.RechtsUnten.X), kinder.Max(a => a.RechtsUnten.Y)));
+            new Koordinate(kinder.Min(a => a.LinksOben.X), kinder.Min(a => a.LinksOben.Y)),
+            new Koordinate(kinder.Max(a => a.RechtsUnten.X), kinder.Max(a => a.RechtsUnten.Y)));
     }
 }
 ```
@@ -232,8 +232,8 @@ public sealed class Objektgruppe : IBauteil
 ```csharp
 Objektgruppe kammer = new("Schatzkammer");
 for (int x = 0; x < 5; x++)
-    kammer.Hinzufuegen(new Baustein(new Position(x, 0), p => new Wand(p)));
-kammer.Hinzufuegen(new Baustein(new Position(2, 2), p => new Truhe(p, wert: 100)));
+    kammer.Hinzufuegen(new Baustein(new Koordinate(x, 0), p => new Wand(p)));
+kammer.Hinzufuegen(new Baustein(new Koordinate(2, 2), p => new Truhe(p, wert: 100)));
 
 Objektgruppe kerker = new("Kerker");
 kerker.Hinzufuegen(kammer);
@@ -260,7 +260,7 @@ Ein Aufruf an der Wurzel hat sechs Bauteile auf zwei Ebenen verschoben. `kerker`
 Die folgende Iterator-Methode soll die Gegner liefern, die dem Helden nicht weiter als `reichweite` Felder entfernt sind (Manhattan-Entfernung über `Position.Entfernung`).
 
 ```csharp
-static IEnumerable<Gegner> InSichtweite(List<Gegner> gegner, Position held, int reichweite)
+static IEnumerable<Gegner> InSichtweite(List<Gegner> gegner, Koordinate held, int reichweite)
 {
     foreach (Gegner g in gegner)
     {
@@ -270,18 +270,18 @@ static IEnumerable<Gegner> InSichtweite(List<Gegner> gegner, Position held, int 
     }
 }
 
-Position held = new(1, 1);
+Koordinate held = new(1, 1);
 List<Gegner> gegner =
 [
-    new Wache(new Position(3, 1)),
-    new Verfolger(new Position(8, 6)),
-    new Wache(new Position(1, 4)),
-    new Verfolger(new Position(2, 2)),
+    new Wache(new Koordinate(3, 1)),
+    new Verfolger(new Koordinate(8, 6)),
+    new Wache(new Koordinate(1, 4)),
+    new Verfolger(new Koordinate(2, 2)),
 ];
 
 IEnumerable<Gegner> nah = InSichtweite(gegner, held, 3);
 Console.WriteLine("Auswahl definiert");
-gegner.Add(new Wache(new Position(1, 2)));
+gegner.Add(new Wache(new Koordinate(1, 2)));
 
 foreach (Gegner g in nah)
     Console.WriteLine($"{g.Name} {g.Position}");
@@ -371,7 +371,7 @@ public sealed class Spielfeld
 
     private Spielfeld(int breite, int hoehe, Spieler spieler) { /* ... */ }
 
-    public bool IstFrei(Position p) { /* ... */ }
+    public bool IstFrei(Koordinate p) { /* ... */ }
     public void SpielerZieht(Richtung richtung) { /* ... */ }
 }
 
@@ -407,7 +407,7 @@ private static Spielfeld Feld(params string[] zeilen) => LevelParser.Parsen(new 
 {
     Spielfeld f = Feld("#####", "#@#..", "#####");
     f.SpielerZieht(Richtung.Rechts);
-    Assert.That(f.Spieler.Position, Is.EqualTo(new Position(1, 1)));
+    Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(1, 1)));
 }
 ```
 

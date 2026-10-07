@@ -25,7 +25,7 @@ Ein **Unit-Test** ist nichts anderes als Programmcode, der ein kleines Stück an
     Spielfeld f = Feld("@D");
     f.SpielerZieht(Richtung.Rechts);
     Assert.That(f.LetzteMeldung, Does.Contain("Schlüssel"));
-    Assert.That(f.Spieler.Position, Is.EqualTo(new Position(0, 0)));
+    Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(0, 0)));
 }
 ```
 

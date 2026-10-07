@@ -85,7 +85,7 @@ public sealed class Zufallsgegner : Gegner
 {
     private readonly ZugVerhalten verhalten;
 
-    public Zufallsgegner(Position position, ZugVerhalten verhalten) : base("Streuner", position)
+    public Zufallsgegner(Koordinate position, ZugVerhalten verhalten) : base("Streuner", position)
     {
         this.verhalten = verhalten;
     }
@@ -115,8 +115,8 @@ static Richtung? BleibtStehen(Spielfeld feld, Gegner gegner) => null;
 Beim Erzeugen wird das Verhalten eingesetzt, und das Spielfeld merkt keinen Unterschied: Es ruft in `GegnerZiehen` weiterhin nur `g.NaechsterZug(this)` auf.
 
 ```csharp
-feld.Hinzufuegen(new Zufallsgegner(new Position(4, 2), ZufaelligerZug));
-feld.Hinzufuegen(new Zufallsgegner(new Position(7, 5), BleibtStehen));
+feld.Hinzufuegen(new Zufallsgegner(new Koordinate(4, 2), ZufaelligerZug));
+feld.Hinzufuegen(new Zufallsgegner(new Koordinate(7, 5), BleibtStehen));
 ```
 
 Zwei Gegner derselben Klasse, zwei völlig verschiedene Verhalten – ohne Vererbung. Das ist der Unterschied zwischen „Verhalten festlegen, indem man eine Klasse ableitet“ und „Verhalten übergeben, wie man einen Wert übergibt“. Welche der beiden Varianten besser ist, hängt davon ab, ob das Verhalten eigenen Zustand braucht: `Wache` merkt sich ihre `Laufrichtung` und dreht sie um – das wäre in einer statischen Methode nicht unterzubringen.

@@ -127,7 +127,7 @@ Fast jeder Test hat dieselben drei Abschnitte, die sich als Kommentare oder zumi
     f.SpielerZieht(Richtung.Rechts);
 
     // Assert – Ergebnis prüfen
-    Assert.That(f.Spieler.Position, Is.EqualTo(new Position(1, 1)));
+    Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(1, 1)));
     Assert.That(f.LetzteMeldung, Does.Contain("nicht weiter"));
 }
 ```

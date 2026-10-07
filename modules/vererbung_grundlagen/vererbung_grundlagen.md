@@ -15,33 +15,56 @@ Ohne Vererbung müssten wir `Name` und `Position` in jeder dieser Klassen erneut
 
 ## Die Basisklasse `Spielobjekt`
 
-Bevor wir Objekte platzieren können, brauchen wir einen Typ für ein Feld auf der Karte. `Position` ist ein `readonly record struct` mit den Koordinaten `X` (nach rechts) und `Y` (nach unten) – warum das ein Wert und keine Klasse ist, schauen wir uns im Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md) genauer an:
+Bevor wir Objekte platzieren können, brauchen wir einen Typ für ein Feld auf der Karte. `Koordinate` ist eine kleine Klasse mit den Werten `X` (nach rechts) und `Y` (nach unten):
 
 ```csharp
-public readonly record struct Position(int X, int Y)
+public class Koordinate
 {
-    /// <summary>Liefert das Nachbarfeld in der angegebenen Richtung.</summary>
-    public Position Verschoben(Richtung richtung) => richtung switch
+    public int X { get; }
+    public int Y { get; }
+
+    public Koordinate(int x, int y)
     {
-        Richtung.Oben => new Position(X, Y - 1),
-        Richtung.Unten => new Position(X, Y + 1),
-        Richtung.Links => new Position(X - 1, Y),
-        _ => new Position(X + 1, Y)
-    };
+        X = x;
+        Y = y;
+    }
+
+    /// <summary>Liefert das Nachbarfeld in der angegebenen Richtung.</summary>
+    public Koordinate Verschoben(Richtung richtung)
+    {
+        if (richtung == Richtung.Oben)
+        {
+            return new Koordinate(X, Y - 1);
+        }
+        else if (richtung == Richtung.Unten)
+        {
+            return new Koordinate(X, Y + 1);
+        }
+        else if (richtung == Richtung.Links)
+        {
+            return new Koordinate(X - 1, Y);
+        }
+        else
+        {
+            return new Koordinate(X + 1, Y);
+        }
+    }
 
     public override string ToString() => $"({X}, {Y})";
 }
 ```
 
-Darauf baut die gemeinsame Basisklasse auf. Sie enthält genau das, was *alles* hat, was auf dem Spielfeld liegt – vom Aufbau her ist das eine ganz normale Klasse, wie wir sie aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/klassen/klassen/) kennen:
+`Verschoben` verändert die Koordinate nicht, sondern liefert eine neue. Mit `ToString` legen wir fest, dass eine Position als `(3, 4)` ausgegeben wird; was das `override` davor bedeutet, klärt das Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md). Diese erste Fassung hat noch einen Haken, den wir im Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md) aufdecken.
+
+Auf `Koordinate` baut die gemeinsame Basisklasse auf. Sie enthält genau das, was *alles* hat, was auf dem Spielfeld liegt – vom Aufbau her ist das eine ganz normale Klasse, wie wir sie aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/klassen/klassen/) kennen:
 
 ```csharp
 public class Spielobjekt
 {
     public string Name { get; }
-    public Position Position { get; protected set; }
+    public Koordinate Position { get; protected set; }
 
-    public Spielobjekt(string name, Position position)
+    public Spielobjekt(string name, Koordinate position)
     {
         Name = name;
         Position = position;
@@ -69,7 +92,7 @@ Die Vererbung wird in C# mit einem Doppelpunkt hinter dem Klassennamen angegeben
 ```csharp
 public sealed class Wand : Spielobjekt
 {
-    public Wand(Position position) : base("Wand", position)
+    public Wand(Koordinate position) : base("Wand", position)
     {
     }
 
@@ -86,7 +109,7 @@ public class Spieler : Spielobjekt
 {
     public int Lebenspunkte { get; private set; } = 3;
 
-    public Spieler(string name, Position position) : base(name, position)
+    public Spieler(string name, Koordinate position) : base(name, position)
     {
     }
 
@@ -95,7 +118,7 @@ public class Spieler : Spielobjekt
     /// <summary>Versucht einen Schritt; bleibt stehen, wenn das Zielfeld belegt ist.</summary>
     public bool Bewegen(Richtung richtung, Spielfeld feld)
     {
-        Position ziel = Position.Verschoben(richtung);
+        Koordinate ziel = Position.Verschoben(richtung);
         if (!feld.IstFrei(ziel))
         {
             return false;
@@ -126,11 +149,11 @@ public class Spielfeld
 
 ```csharp
 Spielfeld feld = new Spielfeld(10, 6, held);
-feld.Hinzufuegen(new Wand(new Position(0, 0)));
-feld.Hinzufuegen(new Wand(new Position(5, 2)));
+feld.Hinzufuegen(new Wand(new Koordinate(0, 0)));
+feld.Hinzufuegen(new Wand(new Koordinate(5, 2)));
 ```
 
-Man nennt das **Substituierbarkeit**: Die abgeleitete Klasse kann die Basisklasse vollständig ersetzen. `Hinzufuegen` muss keine einzige Zeile ändern, wenn morgen eine Tür oder ein Gegner dazukommt – solange beide von `Spielobjekt` erben. Über eine Variable vom Typ `Spielobjekt` können wir allerdings nur das aufrufen, was jedes Spielobjekt kann; `objekte[0].Bewegen(...)` würde der Compiler ablehnen, selbst wenn dort tatsächlich der Spieler steht. Warum das so ist und wie man trotzdem an den Spieler herankommt, klären wir im Modul [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md).
+Man nennt das **Substituierbarkeit**: Die abgeleitete Klasse kann die Basisklasse vollständig ersetzen. `Hinzufuegen` muss keine einzige Zeile ändern, wenn morgen eine Tür oder ein Gegner dazukommt – solange beide von `Spielobjekt` erben. Über eine Variable vom Typ `Spielobjekt` können wir allerdings nur das aufrufen, was jedes Spielobjekt kann; `objekte[0].Bewegen(...)` würde der Compiler ablehnen, selbst wenn dort tatsächlich der Spieler steht. Warum das so ist und wie man trotzdem an den Spieler herankommt, klären wir im Modul [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md).
 
 Vererbung nur einsetzen, wenn die Ist-eine-Beziehung wirklich stimmt. Der Spieler *hat* ein Spielfeld, auf dem er sich bewegt, aber er *ist* kein Spielfeld – deshalb ist das Spielfeld ein Parameter von `Bewegen` und keine Basisklasse. Wer Vererbung nur benutzt, um an ein paar Methoden heranzukommen, bekommt Hierarchien, die niemand mehr versteht.
 {: .notice--warning}
@@ -144,7 +167,7 @@ Lässt man `: base(...)` weg, ruft C# automatisch den **parameterlosen** Konstru
 ```csharp
 public class Spielobjekt
 {
-    public Spielobjekt(string name, Position position)
+    public Spielobjekt(string name, Koordinate position)
     {
         Name = name;
         Position = position;
@@ -155,13 +178,13 @@ public class Spielobjekt
 
 public class Spieler : Spielobjekt
 {
-    public Spieler(string name, Position position) : base(name, position)
+    public Spieler(string name, Koordinate position) : base(name, position)
     {
         Console.WriteLine("Spieler-Konstruktor");
     }
 }
 
-new Spieler("Held", new Position(1, 1));
+new Spieler("Held", new Koordinate(1, 1));
 // Spielobjekt-Konstruktor
 // Spieler-Konstruktor
 ```
@@ -172,12 +195,12 @@ Das ist logisch: Der Spieler-Konstruktor darf sich darauf verlassen, dass `Name`
 
 Aus Programmierung 1 kennen wir `public` und `private`. `private`-Mitglieder der Basisklasse werden zwar mit vererbt (sie sind Teil des Objekts), sind aber in der abgeleiteten Klasse **nicht zugreifbar**. Dazwischen liegt `protected`: sichtbar in der Klasse selbst und in allen abgeleiteten Klassen, aber nicht von außen.
 
-Genau deshalb steht in `Spielobjekt` die Zeile `public Position Position { get; protected set; }`. Ein zusammengesetzter Zugriffsmodifizierer am Setter: Lesen darf jeder – das Spielfeld muss schließlich wissen, wo ein Objekt steht –, aber **verschieben darf sich ein Objekt nur selbst**. Die Karte und die Konsolenausgabe können keinem Gegner heimlich eine neue Position zuweisen.
+Genau deshalb steht in `Spielobjekt` die Zeile `public Koordinate Position { get; protected set; }`. Ein zusammengesetzter Zugriffsmodifizierer am Setter: Lesen darf jeder – das Spielfeld muss schließlich wissen, wo ein Objekt steht –, aber **verschieben darf sich ein Objekt nur selbst**. Die Karte und die Konsolenausgabe können keinem Gegner heimlich eine neue Position zuweisen.
 
 ```csharp
-Spieler held = new Spieler("Held", new Position(1, 1));
+Spieler held = new Spieler("Held", new Koordinate(1, 1));
 Console.WriteLine(held.Position);        // (1, 1) – lesen ist erlaubt
-held.Position = new Position(5, 5);      // Fehler CS0272: der Setter ist nicht zugreifbar
+held.Position = new Koordinate(5, 5);      // Fehler CS0272: der Setter ist nicht zugreifbar
 held.Bewegen(Richtung.Rechts, feld);     // so herum: geprüfter Schritt auf (2, 1)
 ```
 
@@ -190,7 +213,7 @@ C# kennt nur **Einfachvererbung**: Eine Klasse hat genau eine direkte Basisklass
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`).
 
-Übung: Lege eine Klasse `Tuer : Spielobjekt` an, die im Konstruktor nur eine `Position` bekommt, dort `: base("Tür", position)` aufruft und zusätzlich eine Property `bool IstOffen { get; private set; }` sowie eine Methode `Oeffnen()` erhält. Füge eine Tür zum Spielfeld hinzu und gib `tuer.Beschreibung()` aus – woher kommt diese Methode? Versuche anschließend, in `Oeffnen()` die Zeile `Position = new Position(0, 0);` zu schreiben: Warum ist das erlaubt, obwohl der Setter `protected` ist?
+Übung: Lege eine Klasse `Tuer : Spielobjekt` an, die im Konstruktor nur eine `Koordinate` bekommt, dort `: base("Tür", position)` aufruft und zusätzlich eine Property `bool IstOffen { get; private set; }` sowie eine Methode `Oeffnen()` erhält. Füge eine Tür zum Spielfeld hinzu und gib `tuer.Beschreibung()` aus – woher kommt diese Methode? Versuche anschließend, in `Oeffnen()` die Zeile `Position = new Koordinate(0, 0);` zu schreiben: Warum ist das erlaubt, obwohl der Setter `protected` ist?
 {: .notice--info}
 
 ## Weitere Quellen

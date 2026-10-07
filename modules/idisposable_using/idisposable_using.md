@@ -13,7 +13,7 @@ In den letzten beiden Modulen stand vor fast jedem `FileStream` und `StreamReade
 
 ## Warum der Garbage Collector hier nicht hilft
 
-Im Modul [Garbage Collection](/modules/garbage_collection/garbage_collection.md) haben wir gesehen: Der GC gibt den Speicher von Objekten frei, die von keiner Wurzel mehr erreichbar sind – aber wann er das tut, entscheidet er selbst. Für ein paar Kilobyte Objektspeicher ist das egal. Ein Datei-Handle, eine Datenbankverbindung oder ein Netzwerk-Socket sind aber **nicht-verwaltete Ressourcen** (*unmanaged resources*): Sie gehören dem Betriebssystem, der GC weiß nichts über sie, und solange der Handle offen ist, bleibt die Datei gesperrt und der Schreibpuffer ungeleert. Das lässt sich mit einem Spielstand leicht vorführen:
+Der Garbage Collector (GC) gibt den Speicher von Objekten frei, auf die keine Variable mehr verweist. Wann er das tut, entscheidet er aber selbst (Details im Modul [Garbage Collection](/modules/garbage_collection/garbage_collection.md), erweitertes Wissen aus Vorlesung 01). Für ein paar Kilobyte Objektspeicher ist das egal. Ein Datei-Handle, eine Datenbankverbindung oder ein Netzwerk-Socket sind aber **nicht-verwaltete Ressourcen** (*unmanaged resources*): Sie gehören dem Betriebssystem, der GC weiß nichts über sie, und solange der Handle offen ist, bleibt die Datei gesperrt und der Schreibpuffer ungeleert. Das lässt sich mit einem Spielstand leicht vorführen:
 
 ```csharp
 string pfad = Path.Combine(Path.GetTempPath(), "spielstand.json");

@@ -30,7 +30,7 @@ bedrohlich.Sort(new NachEntfernungComparer(feld.Spieler.Position));
 Drei Zeilen Verwaltung, eine Hilfsliste und eine eigene Comparer-Klasse – und das alles für eine einzige Frage. Dieselbe Aufgabe deklarativ, also mit der Beschreibung, *was* wir haben wollen:
 
 ```csharp
-Position held = feld.Spieler.Position;
+Koordinate held = feld.Spieler.Position;
 
 IEnumerable<Gegner> bedrohlich =
     from g in feld.Gegner
@@ -62,20 +62,20 @@ Die Reihenfolge ist absichtlich anders als in SQL: `from` steht zuerst, damit de
 Bauen wir ein kleines Spielfeld auf, an dem sich das Ergebnis nachrechnen lässt. Der Held steht auf `(5, 3)`, drum herum liegen ein paar Objekte und drei Gegner:
 
 ```csharp
-Spielfeld feld = new Spielfeld(12, 6, new Spieler("Held", new Position(5, 3)));
-feld.Hinzufuegen(new Wand(new Position(0, 3)));
-feld.Hinzufuegen(new Wand(new Position(11, 3)));
-feld.Hinzufuegen(new Truhe(new Position(2, 1), wert: 100));
-feld.Hinzufuegen(new Schluessel(new Position(4, 4)));
-feld.Hinzufuegen(new Wache(new Position(7, 3)));
-feld.Hinzufuegen(new Verfolger(new Position(8, 2)));
-feld.Hinzufuegen(new Wache(new Position(1, 5)));
+Spielfeld feld = new Spielfeld(12, 6, new Spieler("Held", new Koordinate(5, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(0, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(11, 3)));
+feld.Hinzufuegen(new Truhe(new Koordinate(2, 1), wert: 100));
+feld.Hinzufuegen(new Schluessel(new Koordinate(4, 4)));
+feld.Hinzufuegen(new Wache(new Koordinate(7, 3)));
+feld.Hinzufuegen(new Verfolger(new Koordinate(8, 2)));
+feld.Hinzufuegen(new Wache(new Koordinate(1, 5)));
 ```
 
 Die Entfernung ist die Manhattan-Distanz aus `Position.Entfernung`, also die Anzahl der Schritte ohne Diagonalen: zur Wache auf `(7, 3)` sind es 2, zum Verfolger auf `(8, 2)` sind es 3 + 1 = 4, zur zweiten Wache auf `(1, 5)` sind es 4 + 2 = 6. Die dritte fällt also aus dem Filter heraus:
 
 ```csharp
-Position held = feld.Spieler.Position;
+Koordinate held = feld.Spieler.Position;
 
 var bedrohlich =
     from g in feld.Gegner
@@ -98,7 +98,7 @@ Dass `orderby` zweimal dieselbe Entfernung ausrechnet, stört bei drei Gegnern n
 
 ## Gruppieren mit `group by`
 
-Statt zu filtern, können wir alle Objekte des Spielfelds auch nach ihrer Art zusammenfassen – praktisch für eine Statistik oder einen Editor, der anzeigt, was auf der Karte liegt. Dafür ersetzt `group … by` das `select`, und als Gruppenschlüssel darf ein beliebiger Ausdruck stehen. Der Laufzeittyp eines Objekts liefert ihn uns frei Haus, wie wir im Modul [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) gesehen haben:
+Statt zu filtern, können wir alle Objekte des Spielfelds auch nach ihrer Art zusammenfassen – praktisch für eine Statistik oder einen Editor, der anzeigt, was auf der Karte liegt. Dafür ersetzt `group … by` das `select`, und als Gruppenschlüssel darf ein beliebiger Ausdruck stehen. Der Laufzeittyp eines Objekts liefert ihn uns frei Haus, wie wir im Modul [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md) gesehen haben:
 
 ```csharp
 var nachArt =

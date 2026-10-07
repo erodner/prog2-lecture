@@ -40,7 +40,7 @@ Für jeden Levelnamen entsteht eine `<option>`. Es gibt keine Methode `ListeAktu
 
 ## Das Spielfeld: zwei Schleifen über das Raster
 
-Der interessanteste Teil der Seite ist die Karte. Ein `Spielfeld` kennt seine `Breite` und `Hoehe` und beantwortet mit `ObjektAn(Position)`, was an einer Stelle liegt – oder `null`, wenn dort Boden ist. Genau daraus entsteht das Markup:
+Der interessanteste Teil der Seite ist die Karte. Ein `Spielfeld` kennt seine `Breite` und `Hoehe` und beantwortet mit `ObjektAn(Koordinate)`, was an einer Stelle liegt – oder `null`, wenn dort Boden ist. Genau daraus entsteht das Markup:
 
 ```razor
 <div class="spielfeld" style="grid-template-columns: repeat(@feld.Breite, 1fr);">
@@ -48,7 +48,7 @@ Der interessanteste Teil der Seite ist die Karte. Ein `Spielfeld` kennt seine `B
     {
         for (int x = 0; x < feld.Breite; x++)
         {
-            Spielobjekt? objekt = feld.ObjektAn(new Position(x, y));
+            Spielobjekt? objekt = feld.ObjektAn(new Koordinate(x, y));
             <div class="feld @KlasseFuer(objekt)" title="@objekt?.Beschreibung()">@SymbolFuer(objekt)</div>
         }
     }

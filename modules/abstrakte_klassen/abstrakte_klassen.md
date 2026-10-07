@@ -19,9 +19,9 @@ In der [letzten Vorlesung](/lectures/01/01.md) ist `Spielobjekt` als ganz normal
 public class Spielobjekt
 {
     public string Name { get; }
-    public Position Position { get; protected set; }
+    public Koordinate Position { get; protected set; }
 
-    public Spielobjekt(string name, Position position)
+    public Spielobjekt(string name, Koordinate position)
     {
         Name = name;
         Position = position;
@@ -35,7 +35,7 @@ public class Spielobjekt
 Das `'?'` ist der wunde Punkt. Es steht da nur, weil ein `virtual`-Property einen Rumpf braucht – eine sinnvolle Antwort gibt es nicht, denn „irgendein Spielobjekt“ hat kein Zeichen. Schlimmer noch: Der Compiler erlaubt damit Code, der fachlich Unsinn ist.
 
 ```csharp
-Spielobjekt ding = new Spielobjekt("Ding", new Position(3, 4));
+Spielobjekt ding = new Spielobjekt("Ding", new Koordinate(3, 4));
 feld.Hinzufuegen(ding);   // liegt jetzt als '?' im Dungeon herum
 ```
 
@@ -49,9 +49,9 @@ Mit `abstract` erklären wir eine Klasse zu einer reinen Verallgemeinerung: Sie 
 public abstract class Spielobjekt
 {
     public string Name { get; }
-    public Position Position { get; protected set; }
+    public Koordinate Position { get; protected set; }
 
-    protected Spielobjekt(string name, Position position)
+    protected Spielobjekt(string name, Koordinate position)
     {
         Name = name;
         Position = position;
@@ -79,7 +79,7 @@ Das vollständige Projekt findest du im Repository [prog2-adventure](https://git
 Was passiert jetzt mit dem Codestück von oben?
 
 ```csharp
-Spielobjekt ding = new Spielobjekt("Ding", new Position(3, 4));
+Spielobjekt ding = new Spielobjekt("Ding", new Koordinate(3, 4));
 // error CS0144: Eine Instanz des abstrakten Typs oder der abstrakten Schnittstelle
 //               "Spielobjekt" kann nicht erstellt werden.
 ```
@@ -91,13 +91,13 @@ Eine Klasse, die auch nur ein einziges abstraktes Mitglied enthält, muss selbst
 
 ## Zwei abstrakte Zwischenklassen
 
-Genau dieser Fall tritt in unserem Spiel sofort ein. Die Objekte zerfallen in zwei Gruppen: Manche liegen fest an ihrem Platz, andere laufen über die Karte. Diese Unterscheidung braucht das Spielfeld ständig – Wände werden in einem `Dictionary<Position, StatischesObjekt>` abgelegt, Gegner in einer Liste. Also bekommt sie zwei eigene Klassen:
+Genau dieser Fall tritt in unserem Spiel sofort ein. Die Objekte zerfallen in zwei Gruppen: Manche liegen fest an ihrem Platz, andere laufen über die Karte. Diese Unterscheidung braucht das Spielfeld ständig – Wände werden in einem `Dictionary<Koordinate, StatischesObjekt>` abgelegt, Gegner in einer Liste. Also bekommt sie zwei eigene Klassen:
 
 ```csharp
 /// <summary>Objekte, die sich nie bewegen: Wände, Türen, Truhen, Gegenstände auf dem Boden.</summary>
 public abstract class StatischesObjekt : Spielobjekt
 {
-    protected StatischesObjekt(string name, Position position) : base(name, position)
+    protected StatischesObjekt(string name, Koordinate position) : base(name, position)
     {
     }
 }
@@ -105,14 +105,14 @@ public abstract class StatischesObjekt : Spielobjekt
 /// <summary>Objekte, die sich über das Spielfeld bewegen: der Spieler und alle Gegner.</summary>
 public abstract class BeweglichesObjekt : Spielobjekt
 {
-    protected BeweglichesObjekt(string name, Position position) : base(name, position)
+    protected BeweglichesObjekt(string name, Koordinate position) : base(name, position)
     {
     }
 
     /// <summary>Versucht einen Schritt; bleibt stehen, wenn das Zielfeld nicht frei ist.</summary>
     public bool Bewegen(Richtung richtung, Spielfeld feld)
     {
-        Position ziel = Position.Verschoben(richtung);
+        Koordinate ziel = Position.Verschoben(richtung);
         if (!feld.IstFrei(ziel)) return false;
         Position = ziel;
         return true;
@@ -209,14 +209,14 @@ Erst die konkreten Klassen am Ende der Kette lösen das Versprechen ein. Jede ni
 ```csharp
 public sealed class Wand : StatischesObjekt
 {
-    public Wand(Position position) : base("Wand", position) { }
+    public Wand(Koordinate position) : base("Wand", position) { }
 
     public override char Symbol => '#';
 }
 
 public sealed class Ausgang : StatischesObjekt
 {
-    public Ausgang(Position position) : base("Ausgang", position) { }
+    public Ausgang(Koordinate position) : base("Ausgang", position) { }
 
     public override char Symbol => 'E';
     public override bool IstPassierbar => true;
@@ -237,7 +237,7 @@ public string AlsText()
     {
         for (int x = 0; x < Breite; x++)
         {
-            sb.Append(ObjektAn(new Position(x, y))?.Symbol ?? '.');
+            sb.Append(ObjektAn(new Koordinate(x, y))?.Symbol ?? '.');
         }
         sb.AppendLine();
     }

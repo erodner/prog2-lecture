@@ -35,7 +35,7 @@ public sealed class Zufallsgegner : Gegner
 {
     private readonly Func<Spielfeld, Gegner, Richtung?> verhalten;
 
-    public Zufallsgegner(Position position, Func<Spielfeld, Gegner, Richtung?> verhalten)
+    public Zufallsgegner(Koordinate position, Func<Spielfeld, Gegner, Richtung?> verhalten)
         : base("Streuner", position)
     {
         this.verhalten = verhalten;
@@ -85,7 +85,7 @@ Zwei weitere vordefinierte Delegaten begegnen dir ständig, weil `List<T>` und `
 static bool IstVerfolger(Gegner g) => g is Verfolger;
 static bool StehtAmRand(Gegner g) => g.Position.X == 0 || g.Position.Y == 0;
 
-List<Gegner> gegner = [new Wache(new Position(3, 1)), new Verfolger(new Position(8, 4))];
+List<Gegner> gegner = [new Wache(new Koordinate(3, 1)), new Verfolger(new Koordinate(8, 4))];
 
 Predicate<Gegner> jagt = IstVerfolger;
 List<Gegner> jaeger = gegner.FindAll(jagt);
@@ -97,7 +97,7 @@ gegner.RemoveAll(StehtAmRand);     // Methodengruppe direkt übergeben
 `Comparison<T>` beschreibt eine Vergleichsmethode `int Vergleiche(T x, T y)` mit der bekannten Rückgabekonvention negativ / null / positiv. Im Modul [IComparable und Sortieren](/modules/icomparable_sortieren/icomparable_sortieren.md) haben wir die Sortierreihenfolge in die Klasse selbst eingebaut, indem sie `IComparable<T>` implementiert. Für `Gegner` wäre das die falsche Stelle: „Welcher Gegner ist kleiner?“ hat keine allgemeingültige Antwort – *für diese Anzeige* ist es der, der dem Helden am nächsten steht. Mit `Comparison<T>` geben wir die Reihenfolge deshalb *von außen* vor, ohne die Klasse anzufassen:
 
 ```csharp
-static readonly Position Ecke = new(0, 0);
+static readonly Koordinate Ecke = new(0, 0);
 
 static int NachEntfernungZurEcke(Gegner a, Gegner b)
     => a.Position.Entfernung(Ecke).CompareTo(b.Position.Entfernung(Ecke));

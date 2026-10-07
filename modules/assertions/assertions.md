@@ -9,21 +9,21 @@ toc: false
 classes: wide
 ---
 
-Der Assert-Teil ist das Herz eines Tests: Hier wird behauptet, wie das Ergebnis aussehen muss. Man könnte das mit einem `if` und einer Exception nachbauen – aber dann müsste man bei jedem Fehlschlag selbst formulieren, was erwartet wurde und was stattdessen kam. NUnit nimmt dir das mit dem **Constraint-Modell** ab: Du beschreibst die Erwartung als lesbaren Ausdruck wie `Is.EqualTo(new Position(1, 1))` oder `Does.Contain("Schlüssel")`, und NUnit erzeugt daraus sowohl die Prüfung als auch eine Fehlermeldung, die man ohne Debugger versteht.
+Der Assert-Teil ist das Herz eines Tests: Hier wird behauptet, wie das Ergebnis aussehen muss. Man könnte das mit einem `if` und einer Exception nachbauen – aber dann müsste man bei jedem Fehlschlag selbst formulieren, was erwartet wurde und was stattdessen kam. NUnit nimmt dir das mit dem **Constraint-Modell** ab: Du beschreibst die Erwartung als lesbaren Ausdruck wie `Is.EqualTo(new Koordinate(1, 1))` oder `Does.Contain("Schlüssel")`, und NUnit erzeugt daraus sowohl die Prüfung als auch eine Fehlermeldung, die man ohne Debugger versteht.
 
 ## Das Muster: `Assert.That(actual, constraint)`
 
 Jede Assertion in NUnit 4 hat dieselbe Form: `Assert.That` bekommt als erstes den tatsächlichen Wert und als zweites eine Bedingung, das *Constraint*. Die Constraints entstehen aus wenigen Einstiegspunkten, die sich fast wie ein englischer Satz lesen – hier fünf Zeilen aus den Tests des Adventures:
 
 ```csharp
-Assert.That(f.Spieler.Position, Is.EqualTo(new Position(1, 1)));      // Wertgleichheit
+Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(1, 1)));      // Wertgleichheit
 Assert.That(f.Spieler.Inventar.Enthaelt<Schluessel>(), Is.True);      // bool
-Assert.That(f.StatischesObjektAn(new Position(1, 0)), Is.Null);       // Schlüssel ist weg
+Assert.That(f.StatischesObjektAn(new Koordinate(1, 0)), Is.Null);       // Schlüssel ist weg
 Assert.That(f.Status, Is.EqualTo(Spielstatus.Gewonnen));              // enum
 Assert.That(wieder.AlsText(), Is.EqualTo(feld.AlsText()));            // ganze Karte
 ```
 
-`Is.EqualTo` nutzt `Equals` – deshalb funktioniert der Vergleich mit `new Position(1, 1)`, obwohl das ein frisch erzeugter Wert ist: `Position` ist ein `readonly record struct` und bringt Wertgleichheit automatisch mit, wie wir es bei [Hashcodes und Equals](/modules/hashcodes_equals/hashcodes_equals.md) besprochen haben. Bei Objekten mit Referenzgleichheit prüft `Is.SameAs` dagegen Identität: Ist es *genau dieses* Objekt? `Is.Not` kehrt jedes Constraint um (`Is.Not.Null`, `Is.False` ist die Kurzform für `Is.Not.True`).
+`Is.EqualTo` nutzt `Equals` – deshalb funktioniert der Vergleich mit `new Koordinate(1, 1)`, obwohl das ein frisch erzeugter Wert ist: `Koordinate` ist ein `readonly record struct` und bringt Wertgleichheit automatisch mit, wie wir es bei [Hashcodes und Equals](/modules/hashcodes_equals/hashcodes_equals.md) besprochen haben. Bei Objekten mit Referenzgleichheit prüft `Is.SameAs` dagegen Identität: Ist es *genau dieses* Objekt? `Is.Not` kehrt jedes Constraint um (`Is.Not.Null`, `Is.False` ist die Kurzform für `Is.Not.True`).
 
 Die letzte Zeile ist ein hübscher Spezialfall: `AlsText()` zeichnet das ganze Spielfeld als Zeichenkette. Ein einziges `Is.EqualTo` vergleicht damit jedes Feld der Karte auf einmal – nach dem Laden eines Spielstands muss das wiederhergestellte Feld Zeichen für Zeichen dem gespeicherten entsprechen.
 
@@ -77,11 +77,11 @@ Wenn ein Test mehrmals mit anderen Werten laufen soll, muss man ihn nicht kopier
 [TestCase(Richtung.Rechts, 3, 2)]
 public void Verschoben_LiefertNachbarfeld(Richtung richtung, int erwartetX, int erwartetY)
 {
-    Position start = new Position(2, 2);
+    Koordinate start = new Koordinate(2, 2);
 
-    Position ziel = start.Verschoben(richtung);
+    Koordinate ziel = start.Verschoben(richtung);
 
-    Assert.That(ziel, Is.EqualTo(new Position(erwartetX, erwartetY)));
+    Assert.That(ziel, Is.EqualTo(new Koordinate(erwartetX, erwartetY)));
 }
 ```
 
@@ -94,7 +94,7 @@ Normalerweise beendet die erste fehlgeschlagene Assertion den Test – die weite
 ```csharp
 Assert.Multiple(() =>
 {
-    Assert.That(f.Spieler.Position, Is.EqualTo(new Position(1, 1)));
+    Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(1, 1)));
     Assert.That(f.LetzteMeldung, Does.Contain("nicht weiter"));
     Assert.That(f.Runde, Is.EqualTo(1));
 });
@@ -109,14 +109,14 @@ Der eigentliche Grund für das Constraint-Modell zeigt sich erst, wenn ein Test 
 ```
 Failed Wand_Blockiert [4 ms]
   Error Message:
-     Assert.That(f.Spieler.Position, Is.EqualTo(new Position(1, 1)))
+     Assert.That(f.Spieler.Position, Is.EqualTo(new Koordinate(1, 1)))
     Expected: (1, 1)
     But was:  (2, 1)
 ```
 
 Erwartung, tatsächlicher Wert und sogar der Assertion-Ausdruck stehen in der Meldung – ohne dass du eine eigene Fehlermeldung formulieren musstest. Man sieht direkt: Der Held ist ein Feld nach rechts gelaufen, obwohl dort eine Wand steht. Bei Sammlungen zeigt NUnit zusätzlich, an welchem Index der erste Unterschied liegt; beim Vergleich zweier `AlsText()`-Karten ist das die Stelle, an der sich die Spielfelder unterscheiden. Ein selbstgebautes `if (!position.Equals(erwartet)) throw new Exception("falsch")` könnte das nicht.
 
-Damit die Meldung etwas aussagt, muss `ToString()` etwas aussagen. `Position` überschreibt es zu `(1, 1)`, und `Spielobjekt.ToString()` liefert `Beschreibung()`, also etwa `Tür bei (2, 0)`. Ohne diese Überschreibungen stünde in der Meldung `<Adventure.Kern.Tuer>` – zweimal, für Erwartung und Ergebnis. Wer Klassen testbar machen will, gibt ihnen eine sinnvolle `ToString`-Darstellung.
+Damit die Meldung etwas aussagt, muss `ToString()` etwas aussagen. `Koordinate` überschreibt es zu `(1, 1)`, und `Spielobjekt.ToString()` liefert `Beschreibung()`, also etwa `Tür bei (2, 0)`. Ohne diese Überschreibungen stünde in der Meldung `<Adventure.Kern.Tuer>` – zweimal, für Erwartung und Ergebnis. Wer Klassen testbar machen will, gibt ihnen eine sinnvolle `ToString`-Darstellung.
 {: .notice--primary}
 
 ## Legacy: `ClassicAssert`

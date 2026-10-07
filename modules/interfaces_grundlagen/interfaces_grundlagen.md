@@ -66,7 +66,7 @@ public sealed class Tuer : StatischesObjekt, IInteragierbar
 {
     public bool IstOffen { get; private set; }
 
-    public Tuer(Position position) : base("Tür", position) { }
+    public Tuer(Koordinate position) : base("Tür", position) { }
 
     public override char Symbol => IstOffen ? '/' : 'D';
     public override bool IstPassierbar => IstOffen;
@@ -92,7 +92,7 @@ Nach demselben Muster wird die `Truhe` interagierbar, und die Gegenstände erfü
 ```csharp
 public abstract class Gegenstand : StatischesObjekt, ISammelbar
 {
-    protected Gegenstand(string name, Position position) : base(name, position) { }
+    protected Gegenstand(string name, Koordinate position) : base(name, position) { }
 
     // Man kann auf einen Gegenstand treten – dabei wird er aufgehoben.
     public override bool IstPassierbar => true;
@@ -102,7 +102,7 @@ public abstract class Gegenstand : StatischesObjekt, ISammelbar
 
 public sealed class Schluessel : Gegenstand
 {
-    public Schluessel(Position position) : base("Schlüssel", position) { }
+    public Schluessel(Koordinate position) : base("Schlüssel", position) { }
     public override char Symbol => 'k';
 }
 
@@ -191,7 +191,7 @@ Die durchgezogenen Linien sind derselbe Baum wie im Modul über [abstrakte Klass
 Ein Interface kann überall dort als Typ stehen, wo auch eine Klasse stehen könnte: bei Variablen, Parametern, Rückgabewerten und in Sammlungen. Genau das nutzt die Zugregel des Spielfelds. Wenn der Spieler in eine Richtung zieht, schaut sie zuerst nach, was dort steht:
 
 ```csharp
-Position ziel = Spieler.Position.Verschoben(richtung);
+Koordinate ziel = Spieler.Position.Verschoben(richtung);
 StatischesObjekt? davor = StatischesObjektAn(ziel);
 
 if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
@@ -226,7 +226,7 @@ Diese Schreibweise mit dem `T` schauen wir uns in Vorlesung 05 genauer an; hier 
 
 Die .NET-Klassenbibliothek ist voll von Interfaces, und du hast einige davon längst benutzt, ohne es zu merken. `foreach` funktioniert über jede Klasse, die `IEnumerable` implementiert – deshalb kann man Arrays, Listen und auch unser `Inventar<T>` mit derselben Schleife durchlaufen. `IComparable` beschreibt, dass sich Objekte vergleichen lassen, was `Sort()` für eigene Klassen möglich macht. Und `IDisposable` kennzeichnet Objekte, die Ressourcen wie Dateien freigeben müssen. Alle drei tauchen in späteren Vorlesungen im Detail auf; hier reicht die Erkenntnis: Ein Interface ist die Art, wie .NET „dieses Objekt kann X“ ausdrückt.
 
-Übung: Schreibe eine Klasse `Hebel : StatischesObjekt, IInteragierbar`, die beim Interagieren zwischen „umgelegt“ und „zurückgestellt“ wechselt, das Symbol entsprechend `'-'` (umgelegt) oder `'|'` (zurückgestellt) liefert und nicht passierbar ist. Teste sie, indem du sie mit `feld.Hinzufuegen(new Hebel(new Position(3, 4)))` ins Spielfeld setzt und davorläufst. Welche Zeile in `Spielfeld.SpielerZieht` sorgt dafür, dass der Hebel ohne eine einzige Änderung am Spielfeld funktioniert? Und was passiert, wenn du `IstPassierbar` versehentlich auf `true` setzt?
+Übung: Schreibe eine Klasse `Hebel : StatischesObjekt, IInteragierbar`, die beim Interagieren zwischen „umgelegt“ und „zurückgestellt“ wechselt, das Symbol entsprechend `'-'` (umgelegt) oder `'|'` (zurückgestellt) liefert und nicht passierbar ist. Teste sie, indem du sie mit `feld.Hinzufuegen(new Hebel(new Koordinate(3, 4)))` ins Spielfeld setzt und davorläufst. Welche Zeile in `Spielfeld.SpielerZieht` sorgt dafür, dass der Hebel ohne eine einzige Änderung am Spielfeld funktioniert? Und was passiert, wenn du `IstPassierbar` versehentlich auf `true` setzt?
 {: .notice--info}
 
 ## Weitere Quellen

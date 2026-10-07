@@ -1,5 +1,5 @@
 ---
-title: "Laufzeittyp und Verstecken"
+title: "Kompilierzeittyp und Laufzeittyp"
 layout: single
 author_profile: true
 author: Erik Rodner
@@ -9,76 +9,69 @@ toc: false
 classes: wide
 ---
 
-Seit dem Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) wissen wir, dass `ObjektAn(p)?.Symbol` je nach Objekt `#`, `@` oder `?` liefert, obwohl die Variable immer den Typ `Spielobjekt` hat. Um wirklich zu verstehen, *warum* das so ist – und warum es manchmal nicht klappt –, müssen wir zwei Typen auseinanderhalten, die bei jeder Variablen im Spiel sind: den Typ, den der Compiler sieht, und den Typ, der zur Laufzeit tatsächlich im Speicher liegt. Wer diesen Unterschied verinnerlicht hat, versteht auch, was das Schlüsselwort `new` vor einem Mitglied anrichtet und wann ein Cast scheitert.
+Seit dem Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) wissen wir, dass `ObjektAn(p)?.Symbol` je nach Objekt `#` oder `@` liefert, obwohl `ObjektAn` immer ein `Spielobjekt?` zurückgibt. Um zu verstehen, *warum* das funktioniert, müssen wir bei jeder Variablen zwei Typen auseinanderhalten: den Typ, den der Compiler sieht, und den Typ des Objekts, das zur Laufzeit wirklich dahintersteckt. Diese Unterscheidung ist eine der wichtigsten in der objektorientierten Programmierung. Sie erklärt, was der Compiler erlaubt, welche Methode tatsächlich läuft und wann ein Cast scheitert.
 
-## Kompilierzeittyp und Laufzeittyp
+## Zwei Typen für eine Variable
 
 Betrachten wir eine einzige Zeile:
 
 ```csharp
-Spielobjekt o = new Spieler("Held", new Position(1, 1));
+Spielobjekt o = new Spieler("Held", new Koordinate(1, 1));
 ```
 
-Links steht der **Kompilierzeittyp** (auch statischer Typ): `Spielobjekt`. Er ist der Typ der Variablen und legt fest, welche Mitglieder man über `o` aufrufen *darf*. Rechts vom `new` steht der **Laufzeittyp** (dynamischer Typ): `Spieler`. Er beschreibt, welches Objekt sich zur Laufzeit wirklich hinter der Variablen verbirgt. Der Laufzeittyp ist immer der Kompilierzeittyp selbst oder eine davon abgeleitete Klasse – niemals etwas Allgemeineres.
+- Der **Kompilierzeittyp** (auch *statischer Typ*) ist `Spielobjekt`. Er steht bei der Deklaration der Variablen und ändert sich nie.
+- Der **Laufzeittyp** (auch *dynamischer Typ*) ist `Spieler`. Er gehört zum Objekt, das mit `new` erzeugt wurde, und steht erst fest, wenn das Programm läuft.
+
+Erlaubt ist diese Zuweisung, weil ein Spieler ein Spielobjekt *ist* (die Ist-eine-Beziehung aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md)). Daraus folgt eine feste Regel: Der Laufzeittyp ist immer der Kompilierzeittyp selbst oder eine davon abgeleitete Klasse, nie etwas Allgemeineres.
+
+Eine Analogie: Eine Variable ist wie ein beschrifteter Karton. Auf dem Karton steht „Spielobjekt“, das ist der Kompilierzeittyp. Was tatsächlich drinliegt, ein Spieler oder eine Wand, ist der Laufzeittyp. Der Compiler liest nur die Beschriftung, die Laufzeitumgebung schaut hinein.
+
+Im Adventure begegnen uns die beiden Typen ständig, und fast nie stehen sie so offensichtlich in einer Zeile wie oben:
+
+| Code | Kompilierzeittyp | Laufzeittyp |
+| :--- | :--- | :--- |
+| `Spielobjekt o = new Wand(...)` | `Spielobjekt` | `Wand` |
+| `foreach (Spielobjekt o in objekte)` | `Spielobjekt` | wechselt mit jedem Element: `Wand`, `Wand`, … |
+| `Spielobjekt? o = feld.ObjektAn(p)` | `Spielobjekt?` | das Objekt auf dem Feld, oder kein Objekt (`null`) |
+| Parameter `objekt` in `Hinzufuegen(Spielobjekt objekt)` | `Spielobjekt` | das, was der Aufrufer übergibt |
+| `Spieler held = new Spieler(...)` | `Spieler` | `Spieler` |
+
+Bei einem Parameter oder einem Rückgabewert kann der Compiler den Laufzeittyp gar nicht kennen: `Hinzufuegen` wird mal mit einer Wand und mal mit einer Tür aufgerufen. Deshalb verlässt er sich ausschließlich auf den Kompilierzeittyp.
+
+## Wer entscheidet was?
+
+Beide Typen haben eine klare Aufgabe:
+
+- **Der Kompilierzeittyp entscheidet, was aufgerufen werden darf.** Der Compiler prüft jeden Aufruf gegen die Mitglieder des Kompilierzeittyps.
+- **Der Laufzeittyp entscheidet, welche Implementierung läuft**, und zwar bei `virtual`-Mitgliedern.
 
 ```csharp
+Spielobjekt o = new Spieler("Held", new Koordinate(1, 1));
 Console.WriteLine(o.Symbol);                  // @ – erlaubt, jedes Spielobjekt hat ein Symbol
 o.Bewegen(Richtung.Rechts, feld);             // Fehler CS1061: 'Spielobjekt' enthält keine
                                               // Definition für 'Bewegen'
 ```
 
-Der Compiler kennt nur den Kompilierzeittyp. Dass hinter `o` in Wirklichkeit ein Spieler steckt, könnte er in diesem einfachen Fall zwar erraten – bei einem Parameter oder beim Rückgabewert von `ObjektAn` aber nicht. Deshalb gilt konsequent: **Was aufgerufen werden darf, entscheidet der Kompilierzeittyp. Welche Implementierung läuft, entscheidet der Laufzeittyp** – jedenfalls bei `virtual`-Mitgliedern.
+`o.Symbol` ist erlaubt, weil `Spielobjekt` ein `Symbol` hat. Welches Symbol herauskommt, entscheidet der Laufzeittyp: `@`. `o.Bewegen` verbietet der Compiler, obwohl das Objekt einen Spieler enthält, denn auf dem Karton steht nur „Spielobjekt“.
 
-## Wie die CLR die Methode findet
+Wie findet die Laufzeitumgebung (die CLR, *Common Language Runtime*) die richtige Implementierung? Sie beginnt beim Laufzeittyp und sucht nach oben: Hat `Spieler` ein `override` für `Symbol`? Ja, also `@`. Wenn nicht, schaut sie in der Basisklasse nach, dann in deren Basisklasse, bis sie eine Implementierung findet. Ein `Magier : Spieler`, der `Symbol` nicht überschreibt, erscheint deshalb als `@` und nicht als `?`.
 
-Beim Aufruf eines `virtual`-Mitglieds sucht die Laufzeitumgebung (die CLR, *Common Language Runtime*) **im Laufzeittyp beginnend hierarchisch nach oben**: Hat `Spieler` ein `override` für `Symbol`? Ja, also `@`. Wenn nicht, schaut sie in der Basisklasse nach, dann in deren Basisklasse, bis sie eine Implementierung findet. Ein `Magier : Spieler`, der `Symbol` nicht überschreibt, erscheint deshalb als `@` – nicht als `?`.
+Übung: Bestimme für jede Zeile Kompilierzeittyp und Laufzeittyp von `x` und entscheide, ob der Aufruf kompiliert und was er ausgibt: (a) `Spielobjekt x = new Wand(new Koordinate(0, 0)); Console.WriteLine(x.Symbol);` (b) `Spielobjekt x = new Spieler("Held", new Koordinate(1, 1)); Console.WriteLine(x.Lebenspunkte);` (c) `Spieler x = new Spielobjekt("Held", new Koordinate(1, 1));` (d) `Spielobjekt? x = feld.ObjektAn(new Koordinate(1, 1));` für das Spielfeld aus [`virtual` und `override`](/modules/virtual_override/virtual_override.md).
+{: .notice--info}
 
-Bei einem Mitglied **ohne** `virtual` findet diese Suche nicht statt. Der Compiler bindet den Aufruf fest an das Mitglied des Kompilierzeittyps. Und genau hier lauert eine Falle.
+## Den Laufzeittyp abfragen und nutzen
 
-## Verstecken mit `new` statt Überschreiben
-
-Was passiert, wenn eine abgeleitete Klasse ein Mitglied mit demselben Namen deklariert, aber `override` fehlt? Dann wird das geerbte Mitglied nicht ersetzt, sondern **versteckt** (englisch *hiding*). Das Schlüsselwort `new` davor macht diese Absicht explizit. Bauen wir den Spieler einmal absichtlich falsch:
-
-```csharp
-public class Spielobjekt
-{
-    public virtual string Beschreibung() => $"{Name} bei {Position}";
-
-    public override string ToString() => Beschreibung();
-}
-
-public class Spieler : Spielobjekt
-{
-    // FALSCH: versteckt statt überschreibt
-    public new string Beschreibung() => base.Beschreibung() + $", {Lebenspunkte} Lebenspunkte";
-}
-```
+Manchmal muss man wissen, was im Karton liegt. Die Methode `GetType()`, die jedes Objekt von `object` erbt, liefert den Laufzeittyp:
 
 ```csharp
-Spieler held = new Spieler("Held", new Position(1, 1));
-Console.WriteLine(held.Beschreibung());   // Held bei (1, 1), 3 Lebenspunkte
-
-Spielobjekt o = held;                     // dasselbe Objekt, anderer Kompilierzeittyp
-Console.WriteLine(o.Beschreibung());      // Held bei (1, 1)
-Console.WriteLine(held);                  // Held bei (1, 1)
-```
-
-Über die Variable `held` sieht alles richtig aus – deshalb ist dieser Fehler so tückisch. Der Unterschied zeigt sich bei `o`: `Beschreibung` ist nicht überschrieben, also entscheidet der Kompilierzeittyp, und der ist `Spielobjekt`. Besonders unangenehm ist die letzte Zeile: `ToString()` steht in `Spielobjekt` und ruft dort `Beschreibung()` auf – aus Sicht dieser Methode gibt es nur die eigene Fassung. Die Lebenspunkte verschwinden also überall dort, wo der Spieler als Spielobjekt behandelt wird: in `Console.WriteLine(held)`, in jeder Statusausgabe, in jeder Schleife über die Objektliste des Spielfelds. Dasselbe Muster mit `Symbol` in `Wand` hätte eine Karte zur Folge, deren Mauern aus `?` bestehen, obwohl `wand.Symbol` im Debugger brav `#` liefert – denn `AlsText` fragt über `ObjektAn(p)`, und das ist eine Variable vom Typ `Spielobjekt?`. Für eine `List<Spielobjekt>` gilt: **Versteckte Mitglieder sind für Polymorphie unsichtbar.**
-
-Lässt man sowohl `override` als auch `new` weg, verhält sich der Code exakt wie mit `new` – aber der Compiler warnt mit CS0114 („blendet den geerbten Member `Spielobjekt.Beschreibung()` aus. Fügen Sie das Schlüsselwort `override` hinzu, wenn der aktuelle Member diese Implementierung überschreiben soll. Andernfalls fügen Sie das Schlüsselwort `new` hinzu.“). Diese Warnung ist fast immer ein Zeichen für ein vergessenes `override` (oder ein vergessenes `virtual` in der Basisklasse). Nimm sie ernst: Das Programm kompiliert, tut aber nicht, was du meinst. Bewusstes Verstecken mit `new` ist in sauberem Code sehr selten nötig.
-{: .notice--warning}
-
-## Den Laufzeittyp herausfinden
-
-Manchmal muss man wissen, was sich hinter einer Referenz verbirgt. Die Methode `GetType()`, die jedes Objekt von `object` erbt, liefert den Laufzeittyp:
-
-```csharp
-Spielobjekt o = new Spieler("Held", new Position(1, 1));
+Spielobjekt o = new Spieler("Held", new Koordinate(1, 1));
 Console.WriteLine(o.GetType().Name);                    // Spieler
 Console.WriteLine(o.GetType() == typeof(Spielobjekt));  // False
 ```
 
-`GetType()` ist nützlich für Ausgaben und im Debugger – setze einen Haltepunkt in `AlsText` und schau dir an, was die Watch-Ansicht für `ObjektAn(p)` anzeigt: dort steht `Wand`, obwohl die Variable `Spielobjekt?` heißt. Im Code will man aber meist nicht den Typ vergleichen, sondern **mit dem spezielleren Objekt arbeiten** – etwa die Lebenspunkte des Spielers lesen. Dafür gibt es drei Werkzeuge:
+Auch im Debugger sieht man beide Typen: Setze einen Haltepunkt in `AlsText` und schau dir `ObjektAn(p)` in der Überwachung an. Visual Studio zeigt den Kompilierzeittyp `Spielobjekt?` und daneben den Laufzeittyp `Adventure.Kern.Wand`.
+
+Meist will man aber nicht nur den Typ wissen, sondern **mit dem spezielleren Objekt arbeiten**, etwa die Lebenspunkte des Spielers lesen. Dafür braucht man eine Variable mit passendem Kompilierzeittyp, und es gibt drei Wege dorthin:
 
 ```csharp
 // 1. Pattern Matching mit is: prüfen und gleichzeitig eine typisierte Variable anlegen
@@ -97,21 +90,48 @@ Spieler sicher = (Spieler)o;
 sicher.Bewegen(Richtung.Unten, feld);
 ```
 
-`is` mit Pattern Matching ist heute die erste Wahl: Die Prüfung und die Umwandlung passieren in einem Schritt, und die neue Variable ist nur im `if`-Block gültig. `as` ist praktisch, wenn man mit `null` weiterarbeiten kann – etwa mit dem `?.`-Operator, den wir aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/nullable/nullable/) kennen. Der harte Cast ist dann angebracht, wenn ein falscher Typ ein Programmierfehler wäre, der laut auffallen soll:
+Alle drei prüfen den **Laufzeittyp** und liefern eine Variable mit dem Kompilierzeittyp `Spieler`. `is` mit Pattern Matching ist heute die erste Wahl: Prüfung und Umwandlung passieren in einem Schritt, und `s` ist nur im `if`-Block gültig. `as` ist praktisch, wenn man mit `null` weiterarbeiten kann, etwa mit dem `?.`-Operator aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/nullable/nullable/). Der harte Cast passt, wenn ein falscher Typ ein Programmierfehler wäre, der laut auffallen soll:
 
 ```csharp
-Spielobjekt wand = new Wand(new Position(5, 2));
+Spielobjekt wand = new Wand(new Koordinate(5, 2));
 Spieler p = (Spieler)wand;
 // System.InvalidCastException: Unable to cast object of type 'Adventure.Kern.Wand'
 // to type 'Adventure.Kern.Spieler'.
 ```
 
-Der Compiler lässt den Cast durch, weil er zur Kompilierzeit nicht wissen kann, was in `wand` steckt. Zur Laufzeit stellt die CLR fest, dass eine `Wand` eben kein `Spieler` ist – die Ist-eine-Beziehung gilt nur in eine Richtung.
+Der Compiler lässt den Cast durch, weil er nur den Kompilierzeittyp `Spielobjekt` sieht, und ein Spielobjekt *könnte* ein Spieler sein. Erst zur Laufzeit stellt die CLR fest, dass im Karton eine `Wand` liegt.
 
-Wenn du beim Zeichnen der Karte mehrere `is`-Abfragen nacheinander schreibst („wenn Wand, dann `#`, wenn Spieler, dann `@` …“), ist das meist ein Zeichen, dass ein `virtual`-Mitglied fehlt. Genau dafür gibt es `Symbol`: Polymorphie erledigt die Fallunterscheidung für dich – und vergisst keine der Objektarten, die im Laufe des Semesters noch dazukommen.
+Wenn du mehrere `is`-Abfragen nacheinander schreibst („wenn Wand, dann `#`, wenn Spieler, dann `@` …“), fehlt meist ein `virtual`-Mitglied. Genau dafür gibt es `Symbol`: Polymorphie erledigt die Fallunterscheidung für dich und vergisst keine der Objektarten, die im Laufe des Semesters noch dazukommen.
 {: .notice--primary}
 
-Übung: Lege ein Array `Spielobjekt[] objekte = { new Wand(new Position(0, 0)), new Spieler("Held", new Position(1, 1)) };` an. Schreibe eine Schleife, die für jedes Element den Laufzeittyp und das Symbol ausgibt und nur den Spieler einen Schritt nach rechts gehen lässt. Ersetze anschließend `is` durch einen harten Cast – bei welchem Element fliegt die Exception, und warum erst zur Laufzeit? Baue danach in `Wand` das `override` vor `Symbol` in ein `new` um und beobachte, wie sich die Ausgabe von `feld.AlsText()` verändert, während `new Wand(...).Symbol` unverändert `#` liefert.
+## Sonderfall: versteckte Mitglieder
+
+Die Regel „der Laufzeittyp entscheidet“ gilt nur für `virtual`-Mitglieder, die mit `override` überschrieben werden. Deklariert eine abgeleitete Klasse ein Mitglied mit demselben Namen, aber **ohne** `override`, wird das geerbte Mitglied nicht ersetzt, sondern **versteckt** (englisch *hiding*). Das Schlüsselwort `new` vor dem Mitglied macht das ausdrücklich. Dann entscheidet der **Kompilierzeittyp**, welche Fassung läuft.
+
+Bauen wir den Spieler absichtlich falsch:
+
+```csharp
+public class Spieler : Spielobjekt
+{
+    // FALSCH: versteckt statt überschreibt
+    public new string Beschreibung() => base.Beschreibung() + $", {Lebenspunkte} Lebenspunkte";
+}
+```
+
+```csharp
+Spieler held = new Spieler("Held", new Koordinate(1, 1));
+Console.WriteLine(held.Beschreibung());   // Held bei (1, 1), 3 Lebenspunkte
+
+Spielobjekt o = held;                     // dasselbe Objekt, anderer Kompilierzeittyp
+Console.WriteLine(o.Beschreibung());      // Held bei (1, 1)
+```
+
+Beide Variablen zeigen auf dasselbe Objekt, liefern aber verschiedene Beschreibungen. Über `held` (Kompilierzeittyp `Spieler`) läuft die neue Fassung, über `o` (Kompilierzeittyp `Spielobjekt`) die alte. Weil das Spielfeld alle Objekte als `Spielobjekt` behandelt, verschwinden die Lebenspunkte damit überall, wo es darauf ankommt. Dasselbe mit `Symbol` in `Wand` ergibt eine Karte voller `?`, obwohl `new Wand(...).Symbol` weiterhin `#` liefert. **Versteckte Mitglieder sind für Polymorphie unsichtbar.**
+
+Lässt man `override` und `new` beide weg, verhält sich der Code wie mit `new`, aber der Compiler warnt mit CS0114 („blendet den geerbten Member aus …“). Diese Warnung ist fast immer ein vergessenes `override` (oder ein vergessenes `virtual` in der Basisklasse). Nimm sie ernst. Bewusstes Verstecken mit `new` braucht man in sauberem Code praktisch nie.
+{: .notice--warning}
+
+Übung: Lege ein Array `Spielobjekt[] objekte = { new Wand(new Koordinate(0, 0)), new Spieler("Held", new Koordinate(1, 1)) };` an. Schreibe eine Schleife, die für jedes Element den Laufzeittyp und das Symbol ausgibt und nur den Spieler einen Schritt nach rechts gehen lässt. Ersetze anschließend `is` durch einen harten Cast: Bei welchem Element fliegt die Exception, und warum erst zur Laufzeit? Baue danach in `Wand` das `override` vor `Symbol` in ein `new` um und beobachte, wie sich die Ausgabe von `feld.AlsText()` verändert, während `new Wand(...).Symbol` unverändert `#` liefert.
 {: .notice--info}
 
 ## Weitere Quellen

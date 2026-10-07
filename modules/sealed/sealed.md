@@ -9,6 +9,9 @@ toc: false
 classes: wide
 ---
 
+**➕ Erweitertes Wissen.** Was `sealed` bedeutet, weißt du schon aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md): Von einer versiegelten Klasse darf niemand erben. Dieses Modul zeigt, wann und warum man versiegelt. Die folgenden Module setzen es nicht voraus.
+{: .notice--success}
+
 Vererbung ist mächtig – und genau deshalb manchmal gefährlich. Wer von einer Klasse erbt und ein `virtual`-Mitglied überschreibt, kann ihr Verhalten beliebig verändern: versehentlich, weil man die Semantik nicht verstanden hat, oder absichtlich, um eine Prüfung zu umgehen. Bei einer Klasse `Konto` ist das kein Spaß mehr, und selbst in unserem Spiel wäre eine Wand, durch die man plötzlich hindurchlaufen kann, kein Feature, sondern ein Fehler. Mit dem Schlüsselwort `sealed` lässt sich Vererbung an einer Stelle der Hierarchie gezielt **beenden** – die Klasse ist dann versiegelt, man könnte auch sagen: enterbt.
 
 ## Eine Wand ist eine Wand
@@ -18,7 +21,7 @@ Im Adventure gibt es genau eine versiegelte Klasse, und das ist kein Zufall:
 ```csharp
 public sealed class Wand : Spielobjekt
 {
-    public Wand(Position position) : base("Wand", position)
+    public Wand(Koordinate position) : base("Wand", position)
     {
     }
 
@@ -141,7 +144,7 @@ class MeinZinsrechner : Zinsrechner   // Fehler CS0709
 Es gibt zwei gute Gründe für `sealed`:
 
 - **Sicherheit und Klarheit:** Die Klasse hat eine feste Bedeutung, die niemand durch Überschreiben verändern soll – wie bei `Wand` oder `SicheresKonto`. Auch in .NET selbst sind viele Klassen versiegelt, allen voran `string`: Ein String, der sich beim Vergleichen plötzlich anders verhält, wäre eine Katastrophe für jedes Programm.
-- **Performance:** Ruft man ein `virtual`-Mitglied auf, muss die Laufzeitumgebung nachschauen, welche Implementierung zum tatsächlichen Objekt gehört (mehr dazu im Modul [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md)). Bei einer versiegelten Klasse kann es nur eine Implementierung geben – der JIT-Compiler darf den Aufruf dann direkt auflösen und die Methode sogar inlinen. Für die meisten Programme ist dieser Effekt unmessbar klein; in einer Schleife, die bei jedem Zeichnen der Karte für jedes Feld `Symbol` abfragt, ist er immerhin messbar.
+- **Performance:** Ruft man ein `virtual`-Mitglied auf, muss die Laufzeitumgebung nachschauen, welche Implementierung zum tatsächlichen Objekt gehört (mehr dazu im Modul [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md)). Bei einer versiegelten Klasse kann es nur eine Implementierung geben – der JIT-Compiler darf den Aufruf dann direkt auflösen und die Methode sogar inlinen. Für die meisten Programme ist dieser Effekt unmessbar klein; in einer Schleife, die bei jedem Zeichnen der Karte für jedes Feld `Symbol` abfragt, ist er immerhin messbar.
 
 Im Zweifel nicht `sealed` – außer du hast einen Grund. Jedes Siegel nimmt späteren Erweiterungen eine Option weg, und die beste Erweiterung ist oft eine, an die man beim Schreiben der Klasse noch nicht gedacht hat. `Spielobjekt` und `Spieler` bleiben deshalb offen: Aus `Spieler` könnte später ein `Magier` mit eigenen Fähigkeiten werden. Wenn du aber weißt, dass eine Klasse ein abgeschlossenes Konzept ist, dann versiegle sie und dokumentiere damit deine Absicht.
 {: .notice--primary}

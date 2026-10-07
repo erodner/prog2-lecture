@@ -9,82 +9,91 @@ toc: false
 classes: wide
 ---
 
-Im Modul [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) haben `Wand` und `Spieler` ihren Namen, ihre Position und ihre Beschreibung von `Spielobjekt` geerbt. Für die Position ist das genau richtig – aber beim Zeichnen der Karte hört die Gemeinsamkeit auf: Eine Wand ist ein `#`, der Held ein `@`, eine Tür ein `D`. Wir wollen eine geerbte Eigenschaft also nicht nur übernehmen, sondern **anpassen** – und zwar so, dass auch Code, der nur `Spielobjekt` kennt, automatisch die angepasste Variante benutzt. Genau das leisten `virtual` und `override`. Dieses Prinzip heißt **Polymorphie** (griechisch für Vielgestaltigkeit) und ist der eigentliche Grund, warum objektorientierte Programmierung so mächtig ist.
+Im Modul [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) haben `Wand` und `Spieler` Name, Position und Beschreibung von `Spielobjekt` geerbt. Beim Zeichnen der Karte hört die Gemeinsamkeit aber auf: Eine Wand ist ein `#`, der Held ein `@`. In diesem Modul sehen wir, wie das Spielfeld jedes Objekt richtig zeichnet, obwohl es nur `Spielobjekt` kennt. Dieses Prinzip heißt **Polymorphie**.
 
-## `virtual` – die Basisklasse erlaubt das Überschreiben
+## Das Spielfeld
 
-Eine Methode oder Property kann in einer abgeleiteten Klasse nur dann ersetzt werden, wenn die Basisklasse das ausdrücklich erlaubt. Dafür wird sie mit `virtual` gekennzeichnet – in `Spielobjekt` betrifft das gleich drei Mitglieder:
+Das `Spielfeld` ist ein Raster aus `Breite` mal `Hoehe` Feldern. Den Spieler merkt es sich in einer eigenen Property, alle anderen Objekte liegen in einer einzigen Liste:
+
+```csharp
+public class Spielfeld
+{
+    public int Breite { get; }
+    public int Hoehe { get; }
+    public Spieler Spieler { get; }
+
+    private readonly List<Spielobjekt> objekte = new();
+
+    public Spielfeld(int breite, int hoehe, Spieler spieler)
+    {
+        Breite = breite;
+        Hoehe = hoehe;
+        Spieler = spieler;
+    }
+
+    public void Hinzufuegen(Spielobjekt objekt)
+    {
+        objekte.Add(objekt);
+    }
+}
+```
+
+Das Raster selbst wird nirgends gespeichert. Ein Feld ist nur eine `Koordinate`; was dort liegt, steht in der Position des jeweiligen Objekts. Ein Raum von 10 × 6 Feldern braucht also kein Array mit 60 Einträgen, sondern nur eine Liste mit den Wänden. Weil die Liste den Typ `List<Spielobjekt>` hat, passt jede Unterklasse hinein, wie wir im Modul [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) gesehen haben.
+
+## Was liegt auf diesem Feld? `ObjektAn`
+
+Zum Zeichnen und für Kollisionen muss das Spielfeld immer wieder dieselbe Frage beantworten: Was liegt an einer bestimmten Koordinate? Das erledigt `ObjektAn`. Die Methode geht die Liste durch und liefert das erste Objekt, dessen Position passt:
+
+```csharp
+public Spielobjekt? ObjektAn(Koordinate position)
+{
+    foreach (Spielobjekt o in objekte)
+    {
+        if (o.Position == position) return o;
+    }
+    return null;
+}
+```
+
+Das Fragezeichen in `Spielobjekt?` bedeutet: Das Ergebnis kann `null` sein, nämlich wenn das Feld leer ist. Den Spieler findet `ObjektAn` nicht, weil er nicht in der Liste steht.
+
+Interessant ist der Rückgabetyp. Wer `ObjektAn` aufruft, bekommt ein `Spielobjekt` zurück und weiß nicht, ob es eine Wand oder etwas ganz anderes ist. Trotzdem muss er es zeichnen können. Er kann also nur fragen: „Spielobjekt, welches Zeichen hast du?“ Damit die Antwort von der Art des Objekts abhängt, braucht es `virtual` und `override`.
+
+## Das Symbol: `virtual` und `override`
+
+`Spielobjekt` erlaubt mit `virtual`, dass Unterklassen das Symbol (und die Passierbarkeit) ersetzen. Die Vorgaben `?` und `false` greifen nur, wenn eine Unterklasse nichts überschreibt:
 
 ```csharp
 public class Spielobjekt
 {
-    public string Name { get; }
-    public Position Position { get; protected set; }
-
-    /// <summary>Das Zeichen, mit dem das Objekt auf der Karte gezeichnet wird.</summary>
     public virtual char Symbol => '?';
-
-    /// <summary>Kann der Spieler dieses Feld betreten?</summary>
     public virtual bool IstPassierbar => false;
-
-    public virtual string Beschreibung()
-    {
-        return $"{Name} bei {Position}";
-    }
+    // Name, Position, Konstruktor, Beschreibung wie bisher
 }
 ```
 
-`virtual` ist lediglich die Erlaubnis: „Erben dürfen das durch etwas Eigenes ersetzen.“ Wird nichts überschrieben, gilt weiterhin die Implementierung der Basisklasse – ein Objekt ohne eigenes Symbol erscheint als `?` auf der Karte und versperrt den Weg. Beides sind bewusst gewählte Vorgaben: Ein neues Spielobjekt fällt beim Testen sofort auf, und es lässt niemanden versehentlich hindurchlaufen.
-
-`virtual` und `override` funktionieren für Methoden (`Beschreibung()`) genauso wie für Properties – `Symbol` und `IstPassierbar` sind hier als *Expression-bodied Property* geschrieben, also als `get`-Zugriff mit `=>`.
-{: .notice--primary}
-
-## `override` – die abgeleitete Klasse ersetzt das Mitglied
-
-Die Wand überschreibt nur das Symbol; die geerbte Beschreibung („Wand bei (5, 2)“) passt schon:
+`Wand` und `Spieler` überschreiben das Symbol mit `override`. Die Signatur muss dabei exakt dieselbe sein wie in der Basisklasse:
 
 ```csharp
 public sealed class Wand : Spielobjekt
 {
-    public Wand(Position position) : base("Wand", position)
-    {
-    }
-
+    // Konstruktor wie bisher
     public override char Symbol => '#';
 }
-```
 
-Der Spieler geht einen Schritt weiter: Er hat Lebenspunkte, die in der Beschreibung auftauchen sollen. Die Signatur muss beim Überschreiben exakt dieselbe sein wie in der Basisklasse – gleicher Name, gleiche Parameter, gleicher Rückgabetyp.
-
-```csharp
 public class Spieler : Spielobjekt
 {
-    public int Lebenspunkte { get; private set; } = 3;
-
+    // Lebenspunkte, Konstruktor, Bewegen wie bisher
     public override char Symbol => '@';
-
-    public override string Beschreibung()
-    {
-        return base.Beschreibung() + $", {Lebenspunkte} Lebenspunkte";
-    }
 }
 ```
 
-Interessant ist `base.Beschreibung()`: Mit `base` greifen wir auf die **Originalimplementierung** der Basisklasse zu. Der Spieler ersetzt die Beschreibung also nicht komplett, sondern *erweitert* sie – erst Name und Position wie bei jedem Spielobjekt, dann die Lebenspunkte. Ob und wann man `base` aufruft, ist eine Designentscheidung: Manchmal will man das Verhalten vollständig austauschen, manchmal nur ergänzen. Hier lohnt es sich: Ergänzen wir in `Spielobjekt.Beschreibung` später die Himmelsrichtung, erbt der Spieler diese Ergänzung automatisch mit.
+`virtual` und `override` funktionieren für Properties wie `Symbol` genauso wie für Methoden. `Symbol` ist hier eine *Expression-bodied Property*, also ein `get`-Zugriff mit `=>`.
+{: .notice--primary}
 
-```csharp
-Spieler held = new Spieler("Held", new Position(1, 1));
-Console.WriteLine(held.Beschreibung());   // Held bei (1, 1), 3 Lebenspunkte
+## Polymorphie beim Zeichnen
 
-Wand wand = new Wand(new Position(5, 2));
-Console.WriteLine(wand.Beschreibung());   // Wand bei (5, 2)
-```
-
-Bis hierhin könnte man einwenden: Das hätte man auch mit zwei verschieden benannten Methoden erreicht. Der Unterschied zeigt sich erst, wenn wir die Objekte über ihre Basisklasse ansprechen – und genau das tut das Spielfeld.
-
-## Polymorphie – die richtige Implementierung zur Laufzeit
-
-Das Spielfeld hält alle Objekte in einer `List<Spielobjekt>` und zeichnet die Karte Zeile für Zeile. Für jedes Feld fragt es das dort liegende Objekt nach seinem Symbol – und zwar über eine Variable vom Typ `Spielobjekt`, nicht `Wand` oder `Spieler`:
+Jetzt kann das Spielfeld die Karte zeichnen. `AlsText` geht alle Felder Zeile für Zeile durch:
 
 ```csharp
 /// <summary>Zeichnet das Spielfeld als Text – Zeile für Zeile.</summary>
@@ -95,7 +104,7 @@ public string AlsText()
     {
         for (int x = 0; x < Breite; x++)
         {
-            Position p = new(x, y);
+            Koordinate p = new(x, y);
             char zeichen = p == Spieler.Position ? Spieler.Symbol : ObjektAn(p)?.Symbol ?? '.';
             sb.Append(zeichen);
         }
@@ -105,24 +114,26 @@ public string AlsText()
 }
 ```
 
-Beim Aufruf von `ObjektAn(p)?.Symbol` entscheidet **nicht** der Typ der Variablen, sondern das tatsächliche Objekt, welche Implementierung läuft. Legen wir einen kleinen Raum an, kommt dabei genau die Karte heraus, die wir erwarten:
+Die Zeile mit `zeichen` hat drei Fälle. Steht dort der Spieler, wird sein Symbol gezeichnet. Sonst fragt `ObjektAn(p)?.Symbol` das Objekt auf dem Feld nach seinem Symbol; das `?.` liefert `null`, wenn das Feld leer ist. In dem Fall greift `?? '.'` und zeichnet einen Punkt.
+
+Entscheidend ist `ObjektAn(p)?.Symbol`. Der Ausdruck hat den Typ `Spielobjekt`, aber welches `Symbol` läuft, entscheidet das **tatsächliche Objekt** zur Laufzeit. Für eine Wand ist das `#`:
 
 ```csharp
-Spieler held = new Spieler("Held", new Position(1, 1));
+Spieler held = new Spieler("Held", new Koordinate(1, 1));
 Spielfeld feld = new Spielfeld(10, 6, held);
 
 for (int x = 0; x < feld.Breite; x++)
 {
-    feld.Hinzufuegen(new Wand(new Position(x, 0)));
-    feld.Hinzufuegen(new Wand(new Position(x, feld.Hoehe - 1)));
+    feld.Hinzufuegen(new Wand(new Koordinate(x, 0)));
+    feld.Hinzufuegen(new Wand(new Koordinate(x, feld.Hoehe - 1)));
 }
 for (int y = 1; y < feld.Hoehe - 1; y++)
 {
-    feld.Hinzufuegen(new Wand(new Position(0, y)));
-    feld.Hinzufuegen(new Wand(new Position(feld.Breite - 1, y)));
+    feld.Hinzufuegen(new Wand(new Koordinate(0, y)));
+    feld.Hinzufuegen(new Wand(new Koordinate(feld.Breite - 1, y)));
 }
-feld.Hinzufuegen(new Wand(new Position(5, 2)));
-feld.Hinzufuegen(new Wand(new Position(5, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(5, 2)));
+feld.Hinzufuegen(new Wand(new Koordinate(5, 3)));
 
 Console.WriteLine(feld.AlsText());
 // ##########
@@ -133,12 +144,20 @@ Console.WriteLine(feld.AlsText());
 // ##########
 ```
 
-In `AlsText` steht nirgends das Wort `Wand`. Die Zeichenroutine weiß nichts von Wänden und muss es auch nicht – sie fragt jedes Objekt nach seinem Symbol und bekommt die passende Antwort. Man sagt: `Symbol` ist **polymorph**. Die Laufzeitumgebung schaut bei jedem Zugriff nach, welches Objekt wirklich dort liegt, und wählt die passende Implementierung.
+Programmierst du mit der Klasse `Koordinate` aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) mit, besteht deine Karte nur aus Punkten, und der Held läuft durch alle Wände. Das liegt nicht an der Polymorphie, sondern am Vergleich `o.Position == position` in `ObjektAn`. Warum, klärt das Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md).
+{: .notice--warning}
 
-Dasselbe passiert bei `IstPassierbar`. Die Methode `IstFrei` prüft nur die Spielfeldgrenzen und stellt dann genau eine polymorphe Frage:
+In `AlsText` steht nirgends das Wort `Wand`. Das Spielfeld fragt jedes Objekt nach seinem Symbol und bekommt die passende Antwort. Man sagt: `Symbol` ist **polymorph**.
+
+Dasselbe gilt für Kollisionen. Bevor der Held einen Schritt macht, fragt `Bewegen` das Spielfeld, ob das Zielfeld frei ist. Dafür gibt es zwei Methoden:
 
 ```csharp
-public bool IstFrei(Position p)
+public bool IstInnerhalb(Koordinate p)
+{
+    return p.X >= 0 && p.Y >= 0 && p.X < Breite && p.Y < Hoehe;
+}
+
+public bool IstFrei(Koordinate p)
 {
     if (!IstInnerhalb(p)) return false;
     Spielobjekt? o = ObjektAn(p);
@@ -146,14 +165,34 @@ public bool IstFrei(Position p)
 }
 ```
 
-Warum ist das der Kern der OOP? Weil sich dadurch die Abhängigkeiten umdrehen: `AlsText` und `IstFrei` hängen nur von `Spielobjekt` ab. Kommt morgen eine `Tuer` dazu, die `IstPassierbar` zurückgibt, sobald sie offen ist, oder ein `Verfolger` mit dem Symbol `V`, dann funktionieren beide Methoden **ohne eine einzige Änderung** weiter. Bestehender Code bleibt stabil, während neue Varianten hinzukommen – und genau davon lebt dieses Spiel, das über das Semester um ein gutes Dutzend Objektarten wächst. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`).
+`IstInnerhalb` prüft nur, ob die Koordinate auf dem Raster liegt: `X` zwischen `0` und `Breite - 1`, `Y` zwischen `0` und `Hoehe - 1`. Ohne diese Prüfung könnte der Held aus einem Raum ohne geschlossene Wand einfach hinauslaufen. `IstFrei` nutzt sie als ersten Schritt. Liegt das Feld auf dem Raster, fragt die Methode `ObjektAn`: Ein leeres Feld ist frei, ein belegtes nur, wenn das Objekt passierbar ist. `o.IstPassierbar` ist wieder eine polymorphe Frage, deren Antwort das tatsächliche Objekt gibt.
+
+`AlsText` und `IstFrei` hängen nur von `Spielobjekt` ab. Kommt später eine `Tuer` dazu, die passierbar ist, sobald sie offen ist, oder ein `Verfolger` mit dem Symbol `V`, funktionieren beide Methoden **ohne Änderung** weiter. Das ist der eigentliche Gewinn der Polymorphie: Bestehender Code bleibt stabil, während neue Objektarten hinzukommen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`).
+
+## Erweitern statt ersetzen: `base`
+
+Auch `Beschreibung()` ist `virtual`. Der Spieler will die geerbte Beschreibung nicht ersetzen, sondern um seine Lebenspunkte ergänzen. Mit `base.Beschreibung()` ruft er die Fassung der Basisklasse auf:
+
+```csharp
+public override string Beschreibung()
+{
+    return base.Beschreibung() + $", {Lebenspunkte} Lebenspunkte";
+}
+```
+
+```csharp
+Console.WriteLine(held.Beschreibung());                        // Held bei (1, 1), 3 Lebenspunkte
+Console.WriteLine(new Wand(new Koordinate(5, 2)).Beschreibung()); // Wand bei (5, 2)
+```
+
+Ändern wir später `Spielobjekt.Beschreibung`, bekommt der Spieler die Änderung automatisch mit.
 
 ## Ohne `virtual` keine Polymorphie
 
-Die Erlaubnis der Basisklasse ist keine Formalität. Fehlt das `virtual`, lässt sich das Mitglied nicht überschreiben – der Compiler meldet CS0506 („kann den geerbten Member nicht überschreiben, da er nicht als `virtual`, `abstract` oder `override` markiert ist“). Und wer dann *beide* Schlüsselwörter weglässt und in `Wand` einfach eine zweite Property `Symbol` schreibt, bekommt zwar nur eine Warnung, aber ein anderes Verhalten: Die Mauern des Raums bestünden plötzlich aus `?` statt aus `#`, weil `AlsText` die Objekte über den Typ `Spielobjekt` befragt. Das Mitglied wird dann nicht überschrieben, sondern **versteckt** – was das genau bedeutet, zeigt das Modul [Laufzeittyp und Verstecken](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md).
+Fehlt in der Basisklasse das `virtual`, meldet der Compiler beim `override` den Fehler CS0506. Lässt man auch das `override` weg und schreibt in `Wand` einfach eine zweite Property `Symbol`, gibt es nur eine Warnung, aber die Mauern bestehen plötzlich aus `?`: `AlsText` fragt über den Typ `Spielobjekt` und bekommt dessen Symbol. Das Mitglied wird dann nicht überschrieben, sondern **versteckt**, siehe [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md).
 {: .notice--warning}
 
-Im Zweifel gilt: Ein Mitglied, das abgeleitete Klassen sinnvoll anpassen könnten, wird `virtual`. Eines, dessen Verhalten für alle Erben verbindlich sein soll (etwa die geprüfte Schrittlogik in `Bewegen`), bleibt ohne `virtual` – oder wird ausdrücklich versiegelt, siehe [`sealed`](/modules/sealed/sealed.md).
+Im Zweifel gilt: Ein Mitglied, das abgeleitete Klassen sinnvoll anpassen könnten, wird `virtual`. Eines, dessen Verhalten für alle Erben verbindlich sein soll (etwa die geprüfte Schrittlogik in `Bewegen`), bleibt ohne `virtual` oder wird ausdrücklich versiegelt, siehe [`sealed`](/modules/sealed/sealed.md).
 
 Übung: Schreibe eine dritte Klasse `Ausgang : Spielobjekt`, die `: base("Ausgang", position)` aufruft, das Symbol `E` bekommt und `IstPassierbar` mit `=> true` überschreibt – der Held soll den Ausgang schließlich betreten können. Setze einen Ausgang in die rechte Wand des Raums oben und gib das Spielfeld aus. Überlege *vorher*, was passiert, wenn du das `override` bei `IstPassierbar` weglässt: Welche der beiden Methoden `AlsText` und `IstFrei` verhält sich dann anders, und warum musstest du an keiner von beiden etwas ändern, um den Ausgang einzubauen?
 {: .notice--info}
