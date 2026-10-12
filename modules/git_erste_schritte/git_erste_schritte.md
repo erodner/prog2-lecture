@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-In [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) haben wir gesehen, dass ein Repository ein Graph von Momentaufnahmen ist. In diesem Modul legen wir ein solches Repository für unser Adventure an und halten die ersten Versionen fest – ausschließlich auf der Kommandozeile. Das ist kein Selbstzweck: Auch die Git-Schaltflächen in Visual Studio rufen genau diese Befehle auf, und wenn etwas schiefgeht, zeigen sie meist nur deren Fehlermeldung an. Wer die Befehle kennt, kann sie lesen.
+In [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) haben wir gesehen, dass ein Repository ein Graph von Commits ist, also von Änderungspaketen, die jeweils auf ihren Vorgänger zeigen. In diesem Modul legen wir ein solches Repository für unser Adventure an und halten die ersten Versionen fest – ausschließlich auf der Kommandozeile. Das ist kein Selbstzweck: Auch die Git-Schaltflächen in Visual Studio rufen genau diese Befehle auf, und wenn etwas schiefgeht, zeigen sie meist nur deren Fehlermeldung an. Wer die Befehle kennt, kann sie lesen.
 
 ## Installation und Konfiguration
 
@@ -52,15 +52,20 @@ Wer die Projekte schon einmal gebaut hat, findet in jedem Projektordner die Ordn
 ```bash
 dotnet new gitignore
 # The template ".NET gitignore file" was created successfully.
-head -n 12 .gitignore
-# # Build results
-# [Dd]ebug/
-# [Rr]elease/
-# x64/
-# [Bb]in/
-# [Oo]bj/
-# ...
 ```
+
+Die erzeugte Datei ist eine einfache Textdatei mit einem Muster pro Zeile. Ein Ausschnitt:
+
+```
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+[Bb]in/
+[Oo]bj/
+```
+
+Eckige Klammern stehen für „eines dieser Zeichen“: `[Bb]in/` passt also auf `bin/` und auf `Bin/`, der Schrägstrich am Ende bedeutet „nur Ordner“.
 
 Die Vorlage deckt `bin/`, `obj/`, `.vs/`, Testergebnisse und Dutzende weitere Fälle ab. Ein `git status` zeigt jetzt nur noch Quelltexte und Projektdateien. Die `.gitignore` selbst wird mit committet, damit alle im Team dieselben Regeln haben.
 
@@ -69,7 +74,7 @@ Erst `.gitignore` anlegen, dann `git add`. Ist `bin/` einmal committet, hilft di
 
 ## Der erste Commit: add und commit
 
-Ein Commit entsteht in zwei Schritten. `git add` legt Änderungen in den Staging-Bereich, `git commit` macht daraus eine Version. Der Punkt bei `git add .` bedeutet „alles im aktuellen Ordner“ – abzüglich dessen, was `.gitignore` ausschließt:
+Ein Commit entsteht in zwei Schritten. `git add` legt Änderungen in den Staging-Bereich, `git commit` schnürt daraus ein Änderungspaket. Der Punkt bei `git add .` bedeutet „alles im aktuellen Ordner“ – abzüglich dessen, was `.gitignore` ausschließt:
 
 ```bash
 git add .
@@ -93,16 +98,7 @@ Die Ausgabe nennt den Branch, die ersten sieben Zeichen des Commit-Hashs und die
 
 Jede Datei in einem Repository befindet sich in einem von drei Zuständen, und die drei Befehle bewegen sie zwischen ihnen:
 
-```
-   Arbeitskopie              Staging-Bereich            Repository
-   (modified)                (staged)                   (committed)
-        │                         │                          │
-        │──── git add Datei ─────►│                          │
-        │                         │──── git commit ─────────►│
-        │                         │                          │
-        │◄─── git restore Datei ──┘ (--staged: aus dem Index)│
-        │◄──────────────── git switch / neuer Stand ─────────┘
-```
+<svg viewBox="0 0 700 222" role="img" aria-labelledby="git-zyklus-titel" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif"><title id="git-zyklus-titel">Der Zyklus einer Änderung: git add bringt sie von der Arbeitskopie in den Staging-Bereich, git commit vom Staging-Bereich ins Repository; git restore --staged nimmt sie aus dem Staging-Bereich zurück, git switch holt einen anderen Stand aus dem Repository in die Arbeitskopie.</title><defs><marker id="pfeil-zyklus" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker></defs><g stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.06"><rect x="20" y="10" width="180" height="46" rx="4"/><rect x="260" y="10" width="180" height="46" rx="4"/><rect x="500" y="10" width="180" height="46" rx="4"/></g><g stroke="currentColor" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="4 4"><line x1="110" y1="56" x2="110" y2="215"/><line x1="350" y1="56" x2="350" y2="215"/><line x1="590" y1="56" x2="590" y2="215"/></g><g stroke="currentColor" stroke-width="1.5" fill="none" marker-end="url(#pfeil-zyklus)"><line x1="114" y1="92" x2="346" y2="92"/><line x1="354" y1="127" x2="586" y2="127"/><line x1="346" y1="162" x2="114" y2="162"/><line x1="586" y1="197" x2="114" y2="197"/></g><g fill="currentColor" text-anchor="middle"><text x="110" y="30" font-size="13">Arbeitskopie</text><text x="110" y="47" font-size="12">(modified)</text><text x="350" y="30" font-size="13">Staging-Bereich</text><text x="350" y="47" font-size="12">(staged)</text><text x="590" y="30" font-size="13">Repository</text><text x="590" y="47" font-size="12">(committed)</text></g><g fill="currentColor" font-family="ui-monospace,monospace" font-size="12" text-anchor="middle"><text x="230" y="85">git add Datei</text><text x="470" y="120">git commit</text><text x="230" y="155">git restore --staged Datei</text><text x="350" y="190">git switch (anderen Stand holen)</text></g></svg>
 
 Wir ändern jetzt eine Datei – etwa eine neue Methode in `Spielfeld.cs`, mit der man ein eingesammeltes Objekt wieder vom Feld nehmen kann – und sehen uns den Weg einmal komplett an:
 
@@ -144,45 +140,23 @@ git restore Adventure.Kern/Gegner.cs            # Änderung komplett verwerfen
 `git restore` ohne `--staged` löscht deine ungespeicherten Änderungen unwiderruflich – Git hat davon keine Kopie, weil sie nie committet wurden. Im Zweifel erst committen, dann aufräumen: Ein überflüssiger Commit ist harmlos, verlorene Arbeit nicht.
 {: .notice--warning}
 
-## Stände benennen: Tags
+## ➕ Stände benennen: Tags
 
-Ein Hash wie `a1f9c3e` ist eindeutig, aber nichts, was man sich merkt. Deshalb kann man einzelne Commits mit einem **Tag** benennen – einem festen Namen für genau diese Momentaufnahme. Anders als ein Branch wandert ein Tag nie weiter; er markiert dauerhaft einen Stand, typischerweise eine veröffentlichte Version. Das vollständige Adventure findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure), und dort ist jeder Vorlesungsstand getaggt. Wenn du es dir mit `git clone https://github.com/erodner/prog2-adventure.git` holst (mehr dazu in [Remote-Repositorys](/modules/git_remote/git_remote.md)), findest du im Wesentlichen einen Commit pro Vorlesung und fünf Tags, die auf diese Stände zeigen:
+**➕ Erweitertes Wissen.** Die folgenden Module setzen diesen Abschnitt nicht voraus.
+{: .notice--success}
 
-```bash
-git log --oneline
-# c5f7d94 CI: dotnet build und test bei jedem Push
-# e784378 Vorlesung 12: NUnit-Tests für Spielfeld, Datenhaltung und Inventar
-# 6cdc213 Vorlesung 09: Level aus Textdateien, Spielstände als JSON, Level per HTTP
-# f15b001 Vorlesung 04: Blazor-Oberfläche und Schichten (Web → Kern ← Daten)
-# a3ff341 Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen – spielbar in der Konsole
-# b946807 Vorlesung 01: Spielobjekt, Wand und Spieler – ein Raum in der Konsole
-git tag
-# v01-vererbung
-# v02-interfaces
-# v04-blazor
-# v09-daten
-# v12-tests
-```
-
-Der oberste Commit fällt aus der Reihe: Er gehört zu keiner Vorlesung, sondern richtet eine automatische Prüfung ein, die bei jedem Push `dotnet build` und `dotnet test` laufen lässt (siehe [Branches und Merges](/modules/git_branching/git_branching.md)). `v12-tests` zeigt auf genau diesen obersten Commit und damit immer auf den aktuellen Endstand: Ein Tag bewegt sich nie von selbst, wohl aber, wenn man ihn mit `git tag -f` ausdrücklich neu setzt.
-
-Mit `git checkout <tag>` legt Git die Arbeitskopie auf diesen Stand zurück – alle Dateien im Ordner sehen aus wie damals. Das ist genau der Weg, um den Code einer älteren Vorlesung nachzulesen:
+Ein Hash wie `a1f9c3e` ist eindeutig, aber nichts, was man sich merkt. Mit einem **Tag** gibt man einem Commit einen festen Namen, typischerweise für eine veröffentlichte Version. Anders als ein Branch wandert ein Tag nicht mit. Im Adventure-Repository markieren Tags wie `v01-vererbung` den Stand nach jeder Vorlesung.
 
 ```bash
-git checkout v01-vererbung
-# Note: switching to 'v01-vererbung'.
-# You are in 'detached HEAD' state. ...
-ls Adventure.Kern
-# Adventure.Kern.csproj  Position.cs  Richtung.cs  Spieler.cs  Spielfeld.cs  Spielobjekt.cs  Wand.cs
-git switch -                              # zurück zum vorherigen Branch
-# Switched to branch 'main'
+git tag -a v1.0 -m "Erste spielbare Version"   # Tag setzen
+git push --tags                                 # Tags werden nicht automatisch gepusht
+git checkout v01-vererbung                      # alten Stand ansehen
+git switch main                                 # zurück zum aktuellen Stand
 ```
-
-Der Hinweis *detached HEAD* bedeutet nur: Du stehst auf einem Commit, nicht auf einem Branch. Zum Ansehen ist das völlig in Ordnung; wer von hier aus weiterarbeiten will, legt mit `git switch -c name` erst einen Branch an. Einen eigenen Tag setzt man mit `git tag -a v1.0 -m "Erste spielbare Version"`, und weil `git push` Tags nicht automatisch mitnimmt, braucht es dafür ein `git push --tags`.
 
 ## Gute Commits
 
-Ein Commit sollte **eine** zusammengehörige Änderung enthalten: ein Bugfix, ein kleines Feature, eine Umbenennung. Wer „Wachen-Bug gefixt, Fallen angefangen, Beschreibung umformuliert“ in einen Commit packt, kann später nichts davon einzeln ansehen oder rückgängig machen. Die Nachricht beschreibt im **Imperativ**, was der Commit tut, wie eine Anweisung an das Projekt: „Wache beim Anstoßen umdrehen lassen“, nicht „habe was an der Wache gemacht“. Die erste Zeile bleibt unter 70 Zeichen; braucht man mehr, folgt nach einer Leerzeile ein Absatz mit dem *Warum*.
+Wie in [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) gesagt: Ein Commit ist ein Änderungspaket mit **inhaltlich zusammenhängenden** Änderungen, also genau ein Feature, ein Bugfix, eine Dokumentationsänderung oder ein Refactoring. „Wachen-Bug gefixt, Fallen angefangen, Beschreibung umformuliert“ sind drei Pakete, nicht eines. Die Nachricht beschreibt im **Imperativ**, was der Commit tut, wie eine Anweisung an das Projekt: „Wache beim Anstoßen umdrehen lassen“, nicht „habe was an der Wache gemacht“. Die erste Zeile bleibt unter 70 Zeichen; braucht man mehr, folgt nach einer Leerzeile ein Absatz mit dem *Warum*.
 
 Übung: Lege ein Repository für dein eigenes Adventure an (`dotnet new gitignore`, `git init` im Projektordner). Baue die Solution, prüfe mit `git status`, dass `bin/` und `obj/` nicht auftauchen, und mache drei Commits mit sinnvollen Nachrichten – zum Beispiel eine neue Gegenstandsart, ein weiteres Level und eine Korrektur an der Konsolenausgabe. Sieh dir mit `git log --oneline` und `git diff HEAD~1` an, was du festgehalten hast.
 {: .notice--info}

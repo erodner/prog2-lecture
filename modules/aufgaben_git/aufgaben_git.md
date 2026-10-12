@@ -190,7 +190,7 @@ Weder „ours übernehmen“ noch „theirs übernehmen“ hätte dieses Ergebni
 ```bash
 git status                                       # zeigt "both modified: Adventure.Kern/Gegenstand.cs"
 # Datei im Editor wie oben bearbeiten, alle Marker entfernen
-grep -rn "<<<<<<<\|>>>>>>>" --include=*.cs .     # keine Marker mehr übrig?
+git diff --check                                 # keine Konfliktmarker mehr übrig?
 dotnet build                                     # kompiliert?
 dotnet run --project Adventure.Konsole           # mit vollen Lebenspunkten über einen Trank laufen
 git add Adventure.Kern/Gegenstand.cs
@@ -254,7 +254,7 @@ Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, die beim Spielen e
 
 **Schritt 2 — Das Secret behandeln:**
 
-Zuerst den Schlüssel beim Dienst **zurückziehen** und einen neuen erzeugen. Alles andere ist zweitrangig, denn: Git ist ein Graph von Momentaufnahmen. Ein neuer Commit, der den Schlüssel aus `levelserver.json` löscht, ändert nichts an den drei alten Commits – `git show HEAD~2:Adventure.Konsole/levelserver.json` zeigt ihn weiterhin, und jeder Klon enthält die gesamte Historie. Man kann die Historie mit Spezialwerkzeugen umschreiben (`git filter-repo`) und dann per Force-Push ersetzen, aber Klone, die bereits existieren, erreicht man damit nicht. Deshalb gilt die Regel: **Ein einmal gepushtes Secret ist kompromittiert, Punkt.** Das Umschreiben der Historie ist Aufräumen, kein Ersatz für das Zurückziehen.
+Zuerst den Schlüssel beim Dienst **zurückziehen** und einen neuen erzeugen. Alles andere ist zweitrangig, denn: Git ist ein Graph von Änderungspaketen, und jedes alte Paket bleibt erhalten. Ein neuer Commit, der den Schlüssel aus `levelserver.json` löscht, ändert nichts an den drei alten Commits – `git show HEAD~2:Adventure.Konsole/levelserver.json` zeigt ihn weiterhin, und jeder Klon enthält die gesamte Historie. Man kann die Historie mit Spezialwerkzeugen umschreiben (`git filter-repo`) und dann per Force-Push ersetzen, aber Klone, die bereits existieren, erreicht man damit nicht. Deshalb gilt die Regel: **Ein einmal gepushtes Secret ist kompromittiert, Punkt.** Das Umschreiben der Historie ist Aufräumen, kein Ersatz für das Zurückziehen.
 
 **Schritt 3 — Repository bereinigen:**
 

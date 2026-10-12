@@ -1,0 +1,61 @@
+---
+# Nur das Front Matter sorgt dafür, dass Jekyll die Datei verarbeitet.
+---
+
+@charset "utf-8";
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}";
+@import "minimal-mistakes";
+
+/* Zwei (oder mehr) schreibgeschützte "Editoren" nebeneinander:
+   <div class="editoren" markdown="1">
+   <div class="editor" markdown="1">
+   <div class="editor-titel">main – Spielfeld.cs</div>
+   ```csharp ... ```
+   </div> ... </div> */
+.editoren {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin-bottom: 1.3em;
+}
+
+.editor {
+  flex: 1 1 16em;
+  min-width: 0;
+  border: 1px solid rgba(127, 127, 127, 0.35);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  .editor-titel {
+    padding: 0.35em 0.8em;
+    font-family: $monospace;
+    font-size: 0.7em;
+    background: rgba(127, 127, 127, 0.12);
+    border-bottom: 1px solid rgba(127, 127, 127, 0.35);
+  }
+
+  div.highlighter-rouge,
+  pre.highlight {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  pre.highlight {
+    font-size: 0.7em;
+  }
+
+  /* Beide Editoren gleich hoch, auch bei unterschiedlich langem Code */
+  div.highlighter-rouge {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  div.highlight,
+  pre.highlight {
+    flex: 1;
+  }
+}

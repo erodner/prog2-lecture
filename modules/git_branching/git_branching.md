@@ -9,6 +9,9 @@ toc: false
 classes: wide
 ---
 
+**➕ Erweitertes Wissen.** Was ein Branch ist (ein Zeiger auf einen Commit), weißt du aus [Git-Konzepte](/modules/git_konzepte/git_konzepte.md). Dieses Modul zeigt, wie man mit mehreren Branches arbeitet und sie wieder zusammenführt. Die folgenden Module setzen es nicht voraus.
+{: .notice--success}
+
 Stell dir vor, du ergänzt im Adventure eine neue Objektart `Falle` und bist mittendrin – die Methode `Ausloesen` ist fertig, das überschriebene `Symbol` fehlt noch, und weil die abstrakte Property nicht implementiert ist, kompiliert das Projekt nicht. Genau jetzt meldet eine Kommilitonin einen Fehler in `Spieler.Heilen`, der schnell behoben werden muss. Ohne Branches müsstest du deinen halbfertigen Umbau irgendwie beiseitelegen oder den Bugfix mit deinem Chaos zusammen committen. Mit Branches arbeitest du am Feature in einem eigenen Zweig, wechselst kurz auf `main`, behebst den Fehler, und kehrst zurück. Der Hauptzweig bleibt dabei zu jedem Zeitpunkt baubar. Branches sind in Git so billig – ein Zeiger auf einen Commit, wie wir in [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) gesehen haben –, dass man sie für jedes Feature und jeden Bugfix anlegt.
 
 ## Branches anlegen und wechseln
@@ -75,13 +78,7 @@ git switch feature/falle               # zurück zum Feature, Falle.cs ist wiede
 
 Ist das Feature fertig, kommt es zurück nach `main`. Dazu wechselt man in den Branch, der die Änderungen **aufnehmen** soll, und ruft `git merge` mit dem Namen des Branches auf, der **hineinfließen** soll. Der einfachste Fall tritt ein, wenn `main` sich seit dem Abzweigen nicht bewegt hat:
 
-```
- vorher:                            nachher (Fast-Forward):
-
- C2 ◄── C3 ◄── C5                   C2 ◄── C3 ◄── C5
-        ▲      ▲                                  ▲
-       main   feature                        main, feature
-```
+<svg viewBox="0 0 700 145" role="img" aria-labelledby="git-ff-titel" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif"><title id="git-ff-titel">Fast-Forward-Merge: vorher zeigt main auf C3 und feature auf C5; nachher zeigen main und feature beide auf C5.</title><defs><marker id="pfeil-ff" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker></defs><g fill="currentColor" font-size="13"><text x="20" y="18">vorher</text><text x="380" y="18">nachher (Fast-Forward)</text></g><line x1="350" y1="10" x2="350" y2="138" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"/><g stroke="currentColor" stroke-width="1.5" fill="none" marker-end="url(#pfeil-ff)"><line x1="73" y1="70" x2="157" y2="70"/><line x1="183" y1="70" x2="267" y2="70"/><line x1="170" y1="114" x2="170" y2="87"/><line x1="280" y1="114" x2="280" y2="87"/><line x1="433" y1="70" x2="517" y2="70"/><line x1="543" y1="70" x2="627" y2="70"/><line x1="640" y1="114" x2="640" y2="87"/></g><g stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.06"><circle cx="60" cy="70" r="13"/><circle cx="170" cy="70" r="13"/><circle cx="280" cy="70" r="13"/><circle cx="420" cy="70" r="13"/><circle cx="530" cy="70" r="13"/><circle cx="640" cy="70" r="13"/></g><g fill="currentColor" font-size="13" text-anchor="middle"><text x="60" y="46">C2</text><text x="170" y="46">C3</text><text x="280" y="46">C5</text><text x="420" y="46">C2</text><text x="530" y="46">C3</text><text x="640" y="46">C5</text></g><g fill="currentColor" font-family="ui-monospace,monospace" font-size="12" text-anchor="middle"><text x="170" y="130">main</text><text x="280" y="130">feature</text><text x="640" y="130">main, feature</text></g></svg>
 
 Git muss nichts zusammenführen – es schiebt den Zeiger `main` einfach nach vorn auf `C5`, weil `C5` alle Commits von `main` bereits enthält. Die Ausgabe nennt das *Fast-forward*; genau das haben wir beim `git pull` in [Remote-Repositorys](/modules/git_remote/git_remote.md) schon gesehen.
 
@@ -121,7 +118,7 @@ git push origin --delete feature/falle      # falls er auch auf dem Server lag
 `git branch -d` weigert sich, einen Branch zu löschen, der noch nicht gemergte Commits enthält – eine Sicherung gegen Datenverlust. Wer die Commits wirklich verwerfen will, braucht `-D`.
 {: .notice--primary}
 
-## Der Feature-Branch-Workflow
+## Der Feature-Branch-Workflow (erweitertes Thema!)
 
 Das Muster aus diesem Modul ist der in Teams verbreitetste Arbeitsablauf:
 

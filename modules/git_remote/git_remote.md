@@ -78,7 +78,7 @@ git pull
 #  Adventure.Kern/Gegner.cs | 4 +++-
 ```
 
-Im Alltag reicht meist `git pull`; `git fetch` ist der vorsichtige Weg, wenn man erst sehen will, was die anderen getan haben. Das „Fast-forward“ in der Ausgabe bedeutet, dass dein `main` einfach auf den neuen Commit vorgespult wurde, weil du selbst nichts geändert hattest – die andere Variante lernen wir in [Branches und Merges](/modules/git_branching/git_branching.md) kennen.
+Im Alltag reicht meist `git pull`; `git fetch` ist der vorsichtige Weg, wenn man erst sehen will, was die anderen getan haben. Das „Fast-forward“ in der Ausgabe bedeutet, dass dein `main` einfach auf den neuen Commit vorgespult wurde, weil du selbst nichts geändert hattest – die andere Variante zeigt das Modul [Branches und Merges](/modules/git_branching/git_branching.md) (erweitertes Wissen).
 
 ## Ein typischer Arbeitstag
 
@@ -103,7 +103,7 @@ git push
 # hint: have locally. ... Integrate the remote changes (e.g. 'git pull ...')
 ```
 
-Git verweigert den Push, weil auf dem Server inzwischen Commits liegen, die du nicht hast. Dein Push würde sie nicht überschreiben – Git lässt das gar nicht zu –, aber die Historie wäre nicht mehr eine Linie. Die Lösung steht in der Meldung: erst `git pull`, dabei die fremden Commits mit deinen zusammenführen (meist automatisch, im Konfliktfall siehe [Merge-Konflikte lösen](/modules/git_merge_konflikte/git_merge_konflikte.md)), dann erneut `git push`.
+Git verweigert den Push, weil auf dem Server inzwischen Commits liegen, die du nicht hast. Dein Push würde sie nicht überschreiben – Git lässt das gar nicht zu –, aber die Historie wäre nicht mehr eine Linie. Die Lösung steht in der Meldung: erst `git pull`, dabei die fremden Commits mit deinen zusammenführen (meist automatisch, im Konfliktfall siehe [Merge-Konflikte lösen](/modules/git_merge_konflikte/git_merge_konflikte.md), erweitertes Wissen), dann erneut `git push`.
 
 Niemals `git push --force` auf `main`, um eine abgelehnte Übertragung zu erzwingen. Damit überschreibst du die Commits der anderen auf dem Server – genau das, was Git eigentlich verhindert.
 {: .notice--primary}

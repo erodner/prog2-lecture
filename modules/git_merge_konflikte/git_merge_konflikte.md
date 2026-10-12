@@ -9,25 +9,68 @@ toc: false
 classes: wide
 ---
 
+**➕ Erweitertes Wissen.** Meist führt Git Änderungen beim `git pull` automatisch zusammen. Dieses Modul zeigt, was zu tun ist, wenn zwei Personen dieselbe Stelle geändert haben. Die folgenden Module setzen es nicht voraus.
+{: .notice--success}
+
 Ein Merge-Konflikt ist kein Fehler und kein Zeichen, dass jemand etwas falsch gemacht hat. Er ist Gits Art zu sagen: „Zwei Leute haben dieselbe Stelle unterschiedlich geändert, und ich weiß nicht, welche Version stimmt – entscheidet ihr.“ Git ist beim Zusammenführen erstaunlich klug, solange Änderungen in verschiedenen Dateien oder verschiedenen Bereichen einer Datei liegen. Bei denselben Zeilen kann es aber keine inhaltliche Entscheidung treffen – ob ein Zug gegen eine Wand eine Runde kosten soll oder nicht, weiß nur, wer die Spielregeln kennt. Deshalb lernen wir hier, Konflikte gelassen zu lesen und aufzulösen.
 
 ## Wann entsteht ein Konflikt?
 
-Beim Merge in [Branches und Merges](/modules/git_branching/git_branching.md) hat Git einen **Drei-Wege-Merge** durchgeführt. Es betrachtet drei Versionen jeder Datei: den **gemeinsamen Vorfahren** (*base*, der letzte Commit, den beide Branches teilen), **unsere** Seite (*ours*, der Branch, in dem du bist) und **ihre** Seite (*theirs*, der Branch, den du hereinholst). Für jede Zeile gilt: Hat nur eine Seite sie gegenüber dem Vorfahren geändert, übernimmt Git diese Änderung. Haben beide Seiten dieselben Zeilen unterschiedlich geändert, gibt es einen Konflikt:
-
-```
-              base (C3)
-             /         \
-   ours (main, C4)    theirs (feature, C5)
-             \         /
-           Merge-Ergebnis
-```
+Beim Merge in [Branches und Merges](/modules/git_branching/git_branching.md) hat Git einen **Drei-Wege-Merge** durchgeführt. Es betrachtet drei Versionen jeder Datei: den **gemeinsamen Vorfahren** (*base*, der letzte Commit, den beide Branches teilen), **unsere** Seite (*ours*, der Branch, in dem du bist) und **ihre** Seite (*theirs*, der Branch, den du hereinholst). Für jede Zeile gilt: Hat nur eine Seite sie gegenüber dem Vorfahren geändert, übernimmt Git diese Änderung. Haben beide Seiten dieselben Zeilen unterschiedlich geändert, gibt es einen Konflikt.
 
 Konflikte entstehen also nur, wenn drei Bedingungen zusammenkommen: zwei Branches, dieselbe Datei, überlappende Zeilen. Ein Umbenennen der Datei auf einer Seite und eine Änderung auf der anderen kann Git meist noch auflösen – eine Zeile, die beide Seiten unterschiedlich geschrieben haben, nicht.
 
 ## Ein Konflikt im Adventure
 
-Zwei Personen arbeiten am Herzstück des Spiels, der Methode `Spielfeld.SpielerZieht`, die eine komplette Runde abwickelt. Auf `main` hat jemand eine Regel korrigiert: Ein Zug gegen eine Wand soll keine Runde kosten, die Gegner dürfen dafür also nicht ziehen. Im Branch `feature/falle` baut jemand anderes die neue Objektart aus [Branches und Merges](/modules/git_branching/git_branching.md) ein: Steht der Spieler zu Beginn seines Zuges auf einer Falle, löst sie aus. Beide haben dafür die ersten Zeilen derselben Methode umgestellt. Nebenbei hat der Feature-Branch auch `Gegner.cs` angefasst, damit eine `Wache` nicht in die eigene Falle läuft – diese Datei hat auf `main` niemand berührt. Beim Merge meldet Git:
+Zwei Personen arbeiten am Herzstück des Spiels, der Methode `Spielfeld.SpielerZieht`, die eine komplette Runde abwickelt. Auf `main` hat jemand eine Regel korrigiert: Ein Zug gegen eine Wand soll keine Runde kosten, die Gegner dürfen dafür also nicht ziehen. Im Branch `feature/falle` baut jemand anderes die neue Objektart aus [Branches und Merges](/modules/git_branching/git_branching.md) ein: Steht der Spieler zu Beginn seines Zuges auf einer Falle, löst sie aus. Beide haben dafür die ersten Zeilen derselben Methode umgestellt. Nebenbei hat der Feature-Branch auch `Gegner.cs` angefasst, damit eine `Wache` nicht in die eigene Falle läuft – diese Datei hat auf `main` niemand berührt. So sehen die ersten Zeilen der Methode auf beiden Seiten aus:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">main (ours) – Spielfeld.cs</div>
+
+```csharp
+public void SpielerZieht(Richtung richtung)
+{
+    if (Status != Spielstatus.Laeuft) return;
+
+    Koordinate ziel = Spieler.Position.Verschoben(richtung);
+    StatischesObjekt? davor = StatischesObjektAn(ziel);
+    if (davor is Wand)
+    {
+        LetzteMeldung = "Da ist eine Wand.";
+        return;   // kostet keine Runde
+    }
+
+    Runde++;
+    StringBuilder meldung = new();
+    // ...
+```
+
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel">feature/falle (theirs) – Spielfeld.cs</div>
+
+```csharp
+public void SpielerZieht(Richtung richtung)
+{
+    if (Status != Spielstatus.Laeuft) return;
+
+    Runde++;
+    StringBuilder meldung = new();
+    if (StatischesObjektAn(Spieler.Position) is Falle falle)
+    {
+        meldung.Append(falle.Ausloesen(Spieler));
+    }
+
+    Koordinate ziel = Spieler.Position.Verschoben(richtung);
+    StatischesObjekt? davor = StatischesObjektAn(ziel);
+    // ...
+```
+
+</div>
+</div>
+
+Beide Seiten haben dieselben Zeilen umgestellt, nur in unterschiedlicher Reihenfolge und mit unterschiedlichem Inhalt. Beim Merge meldet Git:
 
 ```bash
 git switch main
