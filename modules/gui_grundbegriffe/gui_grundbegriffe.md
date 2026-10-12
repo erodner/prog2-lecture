@@ -11,11 +11,28 @@ classes: wide
 
 Unser Adventure lässt sich seit [Vorlesung 02](/lectures/02/02.md) spielen – in der Konsole. Die Schleife in `Adventure.Konsole` ist dabei ein Musterbeispiel für die Art, wie wir bisher programmiert haben: Das Programm zeichnet die Karte, wartet mit `Console.ReadKey` auf eine Taste, rechnet eine Runde und beginnt von vorn. Das Programm bestimmt die Reihenfolge, der Benutzer folgt. Bei einer grafischen Oberfläche ist es genau umgekehrt: Der Benutzer entscheidet, ob er eine Pfeiltaste drückt, ein anderes Level aus einer Liste wählt oder auf „Neu starten“ klickt – und das Programm muss auf alles reagieren können, in beliebiger Reihenfolge. Dieser Perspektivwechsel ist die eigentliche Neuerung, nicht die bunten Schaltflächen. Bevor wir Blazor anfassen, klären wir deshalb die Begriffe, die jedes GUI-Framework gemeinsam hat – egal ob es Fenster auf dem Desktop oder Seiten im Browser zeichnet.
 
+**Neu bei HTML oder Client/Server?** Für Blazor brauchst du ein Grundverständnis davon, wie Browser und Server miteinander reden und wie eine HTML-Seite aufgebaut ist. Beides erklären wir hier nicht selbst. Lies bei Bedarf vorab [Wie das Web funktioniert (MDN)](https://developer.mozilla.org/de/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works) und den [HTML-Einstieg von SELFHTML](https://wiki.selfhtml.org/wiki/HTML/Tutorials/Einstieg).
+{: .notice--primary}
+
 ## Steuerelemente und Ereignisse
 
 **GUI** steht für *Graphical User Interface*: Der Benutzer interagiert grafisch mit der Anwendung, per Maus, Tastatur oder Touch. Eine GUI setzt sich aus **Steuerelementen** zusammen (englisch *Controls* oder *Widgets*). Sie haben zwei Aufgaben: Informationen anzeigen – ein Beschriftungstext, eine Lebenspunkteanzeige, eine Liste – und Interaktion ermöglichen – ein Button, ein Textfeld, eine Auswahlliste. Steuerelemente liegen in einem Container: auf dem Desktop ist das ein **Fenster**, im Browser eine **Seite**.
 
-Wenn der Benutzer etwas tut, entsteht ein **Ereignis** (*Event*): ein Klick, ein Tastendruck, eine geänderte Auswahl. Unser Code reagiert darauf mit einem **Ereignisbehandler** (*Event Handler*) – einer Methode, die wir schreiben, die aber nicht wir aufrufen, sondern das Framework, sobald das Ereignis eintritt.
+Wenn der Benutzer etwas tut, entsteht ein **Ereignis** (*Event*): ein Klick, ein Tastendruck, eine geänderte Auswahl. Unser Code reagiert darauf mit einem **Ereignishandler** (*Event Handler*). Das ist eine ganz normale Methode mit einer Besonderheit: Wir schreiben sie, aber wir rufen sie nie selbst auf. Stattdessen **registrieren** wir sie beim Steuerelement, und das Framework ruft sie auf, sobald das Ereignis eintritt. Für den Button „Neu starten“ in der Browserversion des Adventures sieht das so aus:
+
+```csharp
+// 1. Die Reaktion schreiben wir selbst – eine gewöhnliche Methode
+private void NeuStarten()
+{
+    feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
+}
+
+// 2. Registrieren: "Wenn auf diesen Button geklickt wird, rufe NeuStarten auf."
+//    Wie das genau aussieht, hängt vom Framework ab; in Blazor schreibt man
+//    <button @onclick="NeuStarten">Neu starten</button>
+```
+
+Wann und wie oft `NeuStarten` läuft, entscheidet also nicht unser Programm, sondern der Benutzer: keinmal, einmal oder zwanzigmal. Ein Steuerelement kann mehrere Ereignisse anbieten (ein Eingabefeld etwa „Text geändert“ und „Taste gedrückt“), und für jedes können wir einen eigenen Handler registrieren.
 
 ## Die Ereignisschleife – das Programm wartet
 
@@ -77,11 +94,11 @@ Ein Ereignis in Blazor Server ist also eine Nachricht vom Browser an den Server,
 Der Preis des Server-Modus ist die Latenz: Jeder Tastendruck ist eine Netzwerknachricht. Bei einem rundenbasierten Spiel wie unserem fällt das nicht auf – bei einem Actionspiel mit 60 Bildern pro Sekunde wäre WebAssembly die richtige Wahl. Die Wahl des Render-Modus ist also auch eine Entscheidung über die Art der Interaktion.
 {: .notice--warning}
 
-Übung: Schreibe auf, welche Steuerelemente die Browserversion des Adventures braucht, damit sie mindestens so viel kann wie die Konsolenversion: Karte anzeigen, Lebenspunkte und Punkte anzeigen, letzte Meldung anzeigen, Zug machen, Level wechseln, neu starten. Ordne jedem Steuerelement das Ereignis zu, auf das es reagiert – und markiere anschließend alles, was dafür im Spielkern geändert werden müsste. Wenn deine Markierung leer bleibt, ist die Trennung gelungen.
-{: .notice--info}
 
 ## Weitere Quellen
 
+- [Wie das Web funktioniert – MDN](https://developer.mozilla.org/de/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works) – Client, Server, HTTP: was passiert, wenn der Browser eine Seite lädt.
+- [HTML-Einstieg – SELFHTML](https://wiki.selfhtml.org/wiki/HTML/Tutorials/Einstieg) – Grundlagen von HTML für alle, die noch keine Webseite geschrieben haben.
 - [ASP.NET Core Blazor – Übersicht – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/)
 - [Blazor-Rendermodi – Microsoft Learn](https://learn.microsoft.com/de-de/aspnet/core/blazor/components/render-modes)
 - [Was ist .NET MAUI? – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/maui/what-is-maui)

@@ -80,6 +80,7 @@ The running example of the course is **Adventure**, a turn-based 2D dungeon game
 - Blazor: Razor components with markup + `@code`, `@onclick`/`@bind`, dialogs as components with `EventCallback<T>`, no JavaScript, no Bootstrap (plain CSS flexbox/grid in `wwwroot/app.css`)
 - Cross-module references should mention previously learned concepts by name
 - Connecting prose between code blocks is expected — no "code dump" style
+- Lectures with an Adventure tag (01, 02, 04, 09, 12) end with `## Außerdem im Code`: one sentence per code change in that tag that the modules don't cover, each linked to the file at the tag (`https://github.com/erodner/prog2-adventure/blob/<tag>/<path>`) and pointing to the lecture that explains the concept later
 - Never include organisational content (dates, team, exam rules), credentials, internal server addresses, or verbatim textbook prose from the slides
 
 ## Writing Style Preferences

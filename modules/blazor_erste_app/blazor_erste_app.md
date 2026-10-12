@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Bisher begann jedes unserer Programme mit `Console.WriteLine` – auch das Adventure. Heute beginnt es mit einer Seite im Browser, und trotzdem schreiben wir ausschließlich C#. Damit das gelingt, müssen ein paar Dinge zusammenspielen, die uns bei Konsolenprogrammen erspart blieben: ein Webserver, der auf Anfragen wartet, ein HTML-Grundgerüst, das der Browser anzeigt, und eine Verbindung zwischen beiden, über die Klicks in die eine und neue Seiteninhalte in die andere Richtung wandern. Das klingt nach viel, aber die Projektvorlage von Blazor legt fast alles davon für uns an. Weil man den Aufbau am besten an etwas ganz Kleinem versteht, legen wir zuerst ein Wegwerf-Projekt an, tippen darin eine Seite mit Eingabefeld, Button und Ausgabe – und übertragen das Gelernte danach auf `Adventure.Web`.
+Bisher lief das Adventure in der Konsole, jetzt bekommt es eine Seite im Browser, und trotzdem schreiben wir nur C#. Dafür braucht es einen Webserver, ein HTML-Grundgerüst und eine Verbindung zwischen Browser und Server. All das legt die Projektvorlage von Blazor für uns an. Wir probieren sie zuerst an einem kleinen Wegwerf-Projekt aus und übertragen das Gelernte dann auf `Adventure.Web`.
 
 ## Projekt anlegen und starten
 
@@ -101,7 +101,7 @@ Damit sind wir bei `Home.razor`, der einzigen Datei, die wir in diesem Modul sel
 
 Gehen wir die Datei von oben nach unten durch. `@page "/"` macht aus der Komponente eine **Seite**, die unter der Wurzeladresse erreichbar ist – ohne diese Zeile wäre `Home` nur ein Baustein, den andere Seiten einbetten könnten. `<PageTitle>` setzt den Text in der Browser-Registerkarte. `<h1>` und `<p>` sind gewöhnliches HTML; das kann der Browser ohne unser Zutun anzeigen.
 
-Interessant wird es bei `<input @bind="name" />`. Das Attribut `@bind` verbindet das Eingabefeld mit dem Feld `name` aus dem `@code`-Block in beide Richtungen: Der Anfangswert des Feldes erscheint im Textfeld, und sobald der Benutzer das Feld verlässt, landet der eingegebene Text in `name`. `<button @onclick="Begruessen">` registriert die Methode `Begruessen` als Ereignisbehandler für den Klick – wir schreiben die Methode, aufgerufen wird sie von Blazor. Und `@ausgabe` in der letzten Markup-Zeile fügt den aktuellen Wert des Feldes `ausgabe` als Text in den Absatz ein.
+Interessant wird es bei `<input @bind="name" />`. Das Attribut `@bind` verbindet das Eingabefeld mit dem Feld `name` aus dem `@code`-Block in beide Richtungen: Der Anfangswert des Feldes erscheint im Textfeld, und sobald der Benutzer das Feld verlässt, landet der eingegebene Text in `name`. `<button @onclick="Begruessen">` registriert die Methode `Begruessen` als [Ereignishandler](/modules/gui_grundbegriffe/gui_grundbegriffe.md) für den Klick – wir schreiben die Methode, aufgerufen wird sie von Blazor. Und `@ausgabe` in der letzten Markup-Zeile fügt den aktuellen Wert des Feldes `ausgabe` als Text in den Absatz ein.
 
 Im `@code`-Block stehen drei private Felder und eine Methode – ganz gewöhnlicher C#-Code, so wie wir ihn seit [Klassen und Objekten](https://www.erodner.de/prog-lecture/modules/klassen/klassen/) schreiben. Auffällig ist, was fehlt: Nirgends steht „schreibe `ausgabe` jetzt in den Absatz“. Das erledigt Blazor.
 

@@ -11,6 +11,9 @@ classes: wide
 
 Mit den Steuerelementen aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) können wir alles auf die Seite bringen, was das Spiel braucht – aber der Browser stellt es dann untereinander dar, wie einen Fließtext. Die 180 `<div>`-Elemente, die das Level „Kerker“ mit seinen 20 × 9 Feldern erzeugt, würden zu einer endlosen Kolonne, die Werkzeugleiste stünde in drei Zeilen, und die Statusleiste läge irgendwo darunter statt daneben. Aus dieser Kolonne ein Raster zu machen, ist die Aufgabe des **Layouts**. Auf dem Desktop übernehmen das spezielle Container-Steuerelemente, im Web erledigt es **CSS**. Die gute Nachricht: Für eine aufgeräumte Oberfläche reichen zwei CSS-Werkzeuge, Flexbox und Grid, und wenige Zeilen pro Bereich – das gesamte Layout von `Adventure.Web` passt auf eine knappe Bildschirmseite.
 
+Die einzelnen CSS-Eigenschaften musst du nicht auswendig können. Kaum jemand schreibt `align-items` oder `grid-template-columns` aus dem Kopf: Man sucht sie heraus, wenn man sie braucht (zum Beispiel in den [MDN Web Docs](https://developer.mozilla.org/de/docs/Web/CSS)), oder lässt sie sich generieren. Wichtig ist, dass du die Prinzipien verstehst: Klassen verbinden Markup und CSS, Flexbox ordnet in einer Richtung, Grid in zwei.
+{: .notice--primary}
+
 ## Struktur und Gestaltung trennen
 
 Eine Webseite besteht aus zwei Ebenen. **HTML** beschreibt die Struktur: Was ist eine Überschrift, was eine Liste, was gehört zusammen. **CSS** (*Cascading Style Sheets*) beschreibt die Gestaltung: Farben, Abstände, Schriften – und eben die Anordnung. Diese Trennung ist dieselbe Idee wie Markup und `@code`: Jede Ebene hat ihre Aufgabe, und man kann eine ändern, ohne die andere anzufassen.

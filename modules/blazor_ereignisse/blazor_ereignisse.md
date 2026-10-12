@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-In [GUI-Grundbegriffe](/modules/gui_grundbegriffe/gui_grundbegriffe.md) haben wir festgehalten, was Oberflächenprogrammierung ausmacht: Wir schreiben keinen Ablauf mehr, sondern Reaktionen. Die Konsolenversion des Adventures fragt mit `Console.ReadKey` aktiv nach der nächsten Taste; die Browserversion wird *gefragt*, sobald eine Taste fällt. Genau drei Ereignisse hält die Startseite bereit: ein Klick auf „Neu starten“, eine geänderte Auswahl in der Levelliste und – das wichtigste – ein Tastendruck auf dem Spielfeld. Dieses Modul zeigt die Formen, in denen Ereignisbehandler in Blazor auftreten, was Blazor nach jedem Handler von selbst erledigt und welche drei Details nötig sind, damit ein `<div>` überhaupt Tastendrücke bekommt.
+In [GUI-Grundbegriffe](/modules/gui_grundbegriffe/gui_grundbegriffe.md) haben wir festgehalten, was Oberflächenprogrammierung ausmacht: Wir schreiben keinen Ablauf mehr, sondern Reaktionen. Die Konsolenversion des Adventures fragt mit `Console.ReadKey` aktiv nach der nächsten Taste; die Browserversion wird *gefragt*, sobald eine Taste fällt. Genau drei Ereignisse hält die Startseite bereit: ein Klick auf „Neu starten“, eine geänderte Auswahl in der Levelliste und – das wichtigste – ein Tastendruck auf dem Spielfeld. Dieses Modul zeigt die Formen, in denen Ereignishandler in Blazor auftreten, was Blazor nach jedem Handler von selbst erledigt und welche drei Details nötig sind, damit ein `<div>` überhaupt Tastendrücke bekommt.
 
 ## Eine Methode als Handler
 
@@ -31,7 +31,7 @@ Die Grundform kennen wir: Das Attribut `@onclick` bekommt den Namen einer Method
 
 Der Handler ist eine gewöhnliche Methode ohne Parameter und ohne Rückgabewert. Er tut genau das, was sein Name sagt – ein frisches Spielfeld aus dem gewählten Level bauen – und überlässt die eigentliche Arbeit dem `LevelParser` aus dem Spielkern. Auffällig ist wieder, was fehlt: Nirgends steht, dass die 180 Zellen des Spielfelds neu gezeichnet werden sollen.
 
-Nach jedem Ereignisbehandler rendert Blazor die Komponente **automatisch neu**. Die beiden `for`-Schleifen laufen erneut, diesmal über das neue `feld`, und die Statusleiste bekommt die neuen Parameterwerte. Wir ändern nur Felder; die Anzeige folgt. Wann genau Blazor neu rendert und wie man das in Sonderfällen selbst anstößt, sehen wir in [Datenbindung und Rendern](/modules/blazor_datenbindung/blazor_datenbindung.md).
+Nach jedem Ereignishandler rendert Blazor die Komponente **automatisch neu**. Die beiden `for`-Schleifen laufen erneut, diesmal über das neue `feld`, und die Statusleiste bekommt die neuen Parameterwerte. Wir ändern nur Felder; die Anzeige folgt. Wann genau Blazor neu rendert und wie man das in Sonderfällen selbst anstößt, sehen wir in [Datenbindung und Rendern](/modules/blazor_datenbindung/blazor_datenbindung.md).
 {: .notice--primary}
 
 Der Name im Markup wird beim Kompilieren aufgelöst: `@onclick="NeuStarten"` ist kein String, sondern ein Verweis auf die Methode. Ein Tippfehler wie `@onclick="NeuStaten"` führt deshalb zu einem **Compilerfehler**, nicht zu einem stillen Fehlverhalten zur Laufzeit – ein großer Vorteil gegenüber Frameworks, die Handler über Zeichenketten verknüpfen.
@@ -137,7 +137,7 @@ Wenn ein Handler länger dauert – eine Datei laden, einen Webdienst befragen �
 
 ## Vergleich mit klassischen Ereignissen
 
-Wer ältere C#-GUI-Programme gesehen hat, kennt Ereignisbehandler in dieser Form:
+Wer ältere C#-GUI-Programme gesehen hat, kennt Ereignishandler in dieser Form:
 
 ```csharp
 // Klassische Form, wie sie Desktop-Frameworks verwenden

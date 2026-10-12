@@ -40,13 +40,13 @@ Ein `@` vor einem Ausdruck im Markup fügt seinen Wert an dieser Stelle ein. Das
 ```razor
 <div class="spielfeld" style="grid-template-columns: repeat(@feld.Breite, 1fr);">
     ...
-    <div class="feld @KlasseFuer(objekt)" title="@objekt?.Beschreibung()">@SymbolFuer(objekt)</div>
+    <div class="feld">@SymbolFuer(objekt)</div>
 </div>
 
-<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="@feld.LetzteMeldung" />
+<Statusleiste Spieler="@feld.Spieler" Runde="@feld.Runde" Meldung="@feld.LetzteMeldung" />
 ```
 
-Auch die Parameter einer Komponente sind eine Einweg-Bindung: `Runde="feld.Runde"` liest den aktuellen Wert und gibt ihn nach unten weiter. Innerhalb der `Statusleiste` – der Komponente aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) – entsteht daraus die Herzenanzeige, und zwar nicht in einem Handler, sondern in einer berechneten Property:
+Auch die Parameter einer Komponente sind eine Einweg-Bindung: `Runde="@feld.Runde"` liest den aktuellen Wert und gibt ihn nach unten weiter. Im Projekt zeigt die `Statusleiste` aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) die Lebenspunkte als Herzen an, und zwar nicht in einem Handler, sondern in einer berechneten Property:
 
 ```csharp
 private string Herzen => new string('♥', Spieler.Lebenspunkte)
