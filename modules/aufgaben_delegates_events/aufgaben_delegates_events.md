@@ -11,7 +11,7 @@ classes: wide
 
 Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Delegaten und Ereignisse sind dafür besonders geeignet, weil sie erlauben, das *Was* vom *Wer* zu trennen – und weil man bei Closures und Multicast-Delegaten sehr genau hinschauen muss, was zur Laufzeit wirklich passiert. Alle Aufgaben spielen im Adventure, dem durchgehenden Beispiel des Kurses – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Algorithmenentwurf
+## Aufgabe 1 — Ausgabe vorhersagen
 
 Sage die vollständige Ausgabe des folgenden Programms voraus, ohne es auszuführen. Vier Empfänger hängen am Ereignis `Spielfeld.RundeBeendet`, und zwischendurch wird mit `-=` wieder abgemeldet. Nimm an, dass jeder Aufruf von `SpielerZieht` tatsächlich eine Runde zu Ende spielt, `feld.Runde` also von 1 bis 3 hochzählt.
 
@@ -213,7 +213,7 @@ Ja, auch das Laden eines Spielstands soll melden – sonst zeigt die Statusleist
 
 </details>
 
-## Aufgabe 3 — Mustererkennung
+## Aufgabe 3 — Abfragen übersetzen
 
 Gegeben ist ein Spielfeld `feld` mit `feld.AlleObjekte` (`IEnumerable<Spielobjekt>`), `feld.Gegner` (`IReadOnlyList<Gegner>`) und `Koordinate held = feld.Spieler.Position;`. Übersetze die Abfragen (a) bis (c) von Query- in Methodensyntax, (d) und (e) von Methoden- in Query-Syntax. Schreibe dann (f) und begründe, warum diese Abfrage nur in Methodensyntax vollständig ausdrückbar ist.
 

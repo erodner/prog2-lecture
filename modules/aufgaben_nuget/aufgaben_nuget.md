@@ -11,7 +11,7 @@ classes: wide
 
 Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei NuGet geht es dabei weniger um Syntax als um Entscheidungen: Welchem Paket vertraue ich, was steht wirklich in meiner Projektdatei, und wo im Programm gehört Logging hin? Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Mustererkennung
+## Aufgabe 1 — Pakete bewerten
 
 Die Verfolger im Adventure sollen künftig nicht mehr stur auf den Spieler zulaufen, sondern Wände umgehen. Ihr braucht dafür eine Bibliothek für Wegfindung auf einem Gitter (A*). Das fertige Spiel soll später als geschlossenes Produkt an einen Kunden verkauft werden. Auf nuget.org findet ihr zwei Kandidaten (fiktiv):
 
@@ -55,7 +55,7 @@ Das Paket ist seit vier Jahren unverändert und das Repository archiviert – ni
 
 </details>
 
-## Aufgabe 2 — Zerlegung
+## Aufgabe 2 — Eine Projektdatei lesen
 
 Eine Kommilitonin hat `Adventure.Web` erweitert: Spielstände sollen künftig in einer SQLite-Datenbank statt in einer JSON-Datei landen, und geloggt werden soll mit NLog. Sie schickt euch ihre `.csproj`. Lest sie Zeile für Zeile:
 

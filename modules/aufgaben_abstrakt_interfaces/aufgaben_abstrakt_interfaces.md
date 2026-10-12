@@ -83,7 +83,7 @@ Damit die Falle auch in Karten vorkommen kann, braucht `LevelParser.ObjektFuer` 
 
 </details>
 
-## Aufgabe 2 — Mustererkennung
+## Aufgabe 2 — Ausgabe vorhersagen
 
 Ein `Zauberbuch` soll sowohl eingesteckt als auch gelesen werden können. Beide Interfaces verlangen zufällig ein Mitglied `Beschreibung()`. Sage die Ausgabe des folgenden Programms voraus, bevor du es ausführst:
 
@@ -223,7 +223,7 @@ Ein Interface kann wie eine Klasse von einem anderen erben: `IOrtsgebunden : IBe
 
 </details>
 
-## Aufgabe 4 — Mustererkennung
+## Aufgabe 4 — Fehler finden
 
 Der folgende Code soll einen Brunnen ins Spiel bringen, aus dem der Held trinken kann. Er enthält drei Fehler. Finde sie, erkläre jede Meldung und korrigiere den Code so, dass die Absicht erhalten bleibt.
 

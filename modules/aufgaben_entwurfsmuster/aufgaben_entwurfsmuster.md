@@ -255,7 +255,7 @@ Ein Aufruf an der Wurzel hat sechs Bauteile auf zwei Ebenen verschoben. `kerker`
 
 </details>
 
-## Aufgabe 3 — Algorithmenentwurf
+## Aufgabe 3 — Ausgabe vorhersagen
 
 Die folgende Iterator-Methode soll die Gegner liefern, die dem Helden nicht weiter als `reichweite` Felder entfernt sind (Manhattan-Entfernung über `Position.Entfernung`).
 
@@ -357,7 +357,7 @@ Stünde `gegner.Add(...)` *innerhalb* der `foreach`-Schleife, würde der nächst
 
 </details>
 
-## Aufgabe 4 — Zerlegung
+## Aufgabe 4 — Einen Entwurf bewerten
 
 Ein Kommilitone findet es umständlich, das `Spielfeld` überall herumzureichen, und baut es zum Singleton um:
 

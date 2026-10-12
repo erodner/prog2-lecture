@@ -11,7 +11,7 @@ classes: wide
 
 Programmieren lernt man nicht nur durch Codezeilen tippen — sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Collections dreht sich fast alles um eine einzige Frage: Welches Zugriffsmuster hat mein Problem – und welche Datenstruktur ist genau dafür gebaut? Und LINQ zwingt uns, eine Frage in ihre Bestandteile zu zerlegen: Was wird gefiltert, wonach wird sortiert, was wird gruppiert? Die Aufgaben 1 und 3 spielen bewusst außerhalb des Adventures – Sitzplätze und Kurslisten zeigen, dass dieselben Regeln überall gelten –, die Aufgaben 2 und 4 rechnen am Spiel. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Mustererkennung
+## Aufgabe 1 — Ausgabe vorhersagen
 
 Ein Kino verwaltet Reservierungen in einem `Dictionary`, dessen Schlüssel ein Sitzplatz ist. Die Klasse `Sitzplatz` sieht harmlos aus – und trotzdem verhält sich das Programm nicht so, wie der Autor es erwartet.
 

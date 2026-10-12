@@ -20,6 +20,14 @@
   margin-bottom: 1.3em;
 }
 
+.editoren.mittig {
+  justify-content: center;
+
+  .editor {
+    flex: 0 1 calc(50% - 0.5em);
+  }
+}
+
 .editor {
   flex: 1 1 16em;
   min-width: 0;

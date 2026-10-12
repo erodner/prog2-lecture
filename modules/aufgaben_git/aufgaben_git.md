@@ -9,9 +9,12 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking* rund um Versionsverwaltung: einen Commit-Graphen lesen, ein Feature in Schritte zerlegen, einen Konflikt systematisch auflösen und einen kaputten Repository-Zustand reparieren. Als Material dient durchgehend unser Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`). Für die meisten Aufgaben brauchst du kein Terminal, nur Papier und die Module dieser Vorlesung. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben üben den Umgang mit Versionsverwaltung: einen Commit-Graphen lesen, einen Konflikt systematisch auflösen und ein verkorkstes Repository aufräumen. Als Material dient durchgehend unser Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`). Für die meisten Aufgaben brauchst du kein Terminal, nur Papier und die Module dieser Vorlesung. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Mustererkennung
+## ➕ Aufgabe 1 — Einen Commit-Graphen lesen
+
+**➕ Erweitertes Wissen.** Diese Aufgabe setzt [Branches und Merges](/modules/git_branching/git_branching.md) und [Merge-Konflikte lösen](/modules/git_merge_konflikte/git_merge_konflikte.md) voraus.
+{: .notice--success}
 
 Gegeben ist der folgende Ausschnitt aus `git log --oneline --graph --all` im Repository einer Gruppe:
 
@@ -69,63 +72,10 @@ Dieselbe Datei reicht nicht: Ein Konflikt entsteht nur, wenn **beide** Seiten di
 
 </details>
 
-## Aufgabe 2 — Zerlegung
+## ➕ Aufgabe 2 — Einen Konflikt auflösen
 
-Du sollst im Adventure eine neue Gegnerart umsetzen: den **Bogenschützen**. Er bleibt stehen, wo er ist, schießt aber, sobald der Spieler in gerader Linie ohne Wände dazwischen vor ihm steht – ein Treffer kostet einen Lebenspunkt. Betroffen sind `Adventure.Kern/Gegner.cs` (die neue Klasse), `Adventure.Kern/Spielfeld.cs` (der Rundenablauf), `Adventure.Kern/LevelParser.cs` (das Kartenzeichen) und `Adventure.Konsole/Program.cs` (die Legende).
-
-Zerlege das Feature in eine Folge von Commits auf einem Branch `feature/bogenschuetze`:
-- Wie viele Commits sind sinnvoll, und was enthält jeder?
-- In welcher Reihenfolge – und warum ist die Reihenfolge nicht beliebig?
-- Formuliere für jeden Commit eine Nachricht nach den Regeln aus [Erste Schritte mit Git](/modules/git_erste_schritte/git_erste_schritte.md).
-- Welcher Commit darf **nicht** allein auf `main` landen, weil er den Build brechen würde?
-
-<details markdown="1">
-<summary>Lösung anzeigen</summary>
-
-**Schritt 1 — Regeln für den Schnitt:**
-
-Ein Commit soll eine zusammengehörige Änderung enthalten, und jeder Commit soll für sich bauen. Das zweite Kriterium bestimmt die Reihenfolge: Das `Spielfeld` darf erst schießen lassen, wenn es die Klasse `Bogenschuetze` gibt, und der `LevelParser` darf erst ein `B` auf sie abbilden, wenn beides existiert. Wir committen also **in Richtung der Abhängigkeiten**, von der Spiellogik nach außen zur Konsole.
-
-**Schritt 2 — Die Commit-Folge:**
-
-```
-git switch -c feature/bogenschuetze
-
-# Commit 1: die neue Gegnerart selbst
-#   Gegner.cs: sealed class Bogenschuetze : Gegner, Symbol 'B',
-#   NaechsterZug gibt null zurück (er bleibt stehen),
-#   bool KannSchiessen(Spielfeld feld) nutzt HatSichtlinie und gleiche Zeile/Spalte
-git commit -m "Bogenschütze als Gegner mit Sichtprüfung ergänzen"
-
-# Commit 2: Wirkung im Rundenablauf
-#   Spielfeld.cs: in GegnerZiehen die Bogenschützen schießen lassen,
-#   Treffer über Spieler.SchadenNehmen() und Meldung anhängen
-git commit -m "Spielfeld: Bogenschützen in jeder Runde schießen lassen"
-
-# Commit 3: Bogenschützen in Karten platzieren
-#   LevelParser.cs: 'B' => new Bogenschuetze(pos), Kommentar mit der Zeichenlegende
-git commit -m "LevelParser: Zeichen B auf den Bogenschützen abbilden"
-
-# Commit 4: Anzeige
-#   Program.cs: Legende um 'B' ergänzen
-git commit -m "Konsole: Legende um den Bogenschützen ergänzen"
-```
-
-Commit 1 ist in sich abgeschlossen – beide Projekte bauen, denn noch erzeugt niemand einen `Bogenschuetze`. Commit 2 gibt ihm Wirkung, Commit 3 macht ihn über Leveldateien erreichbar, Commit 4 erklärt ihn den Spielenden. Sobald das Adventure Unit-Tests hat (dazu mehr in [Vorlesung 12](/lectures/12/12.md)), gehört zu Commit 1 auch ein Test für `KannSchiessen` – Spieler in derselben Zeile mit freier Bahn, derselben Zeile mit Wand dazwischen, diagonal – wer testgetrieben arbeitet, committet ihn sogar **vor** der Implementierung; dann ist ein Commit mit rotem Test auf dem Feature-Branch akzeptabel, solange er vor dem Merge grün wird.
-
-**Schritt 3 — Was nicht allein auf `main` darf:**
-
-Die Commits 2, 3 und 4 allein würden `main` brechen, weil `Bogenschuetze` dort nicht existiert – am deutlichsten Commit 3, der den Konstruktor aufruft. Genau das ist der Grund, warum man Features auf einem Branch entwickelt und als Ganzes per Merge Request integriert: Zwischenstände dürfen im Branch unvollständig sein, `main` bekommt nur das fertige Feature.
-
-**Zentrale Designentscheidungen:**
-
-- **Von innen nach außen committen:** Erst die Klasse in `Adventure.Kern`, dann die Regeln, dann Parser und Konsole – in Richtung der Abhängigkeiten. Wenn ab [Vorlesung 04](/lectures/04/04.md) eine Weboberfläche als eigene Schicht dazukommt, bleibt die Regel dieselbe.
-- **Jeder Commit baut:** Wer später mit `git log` oder `git blame` sucht, kann jeden Stand ausprobieren.
-- **Imperativ und Kontext in der Nachricht:** „Spielfeld: …“, „Konsole: …“ nennt den Bereich, das Verb sagt, was passiert.
-
-</details>
-
-## Aufgabe 3 — Algorithmenentwurf
+**➕ Erweitertes Wissen.** Diese Aufgabe setzt [Branches und Merges](/modules/git_branching/git_branching.md) und [Merge-Konflikte lösen](/modules/git_merge_konflikte/git_merge_konflikte.md) voraus.
+{: .notice--success}
 
 Zwei Personen haben am Trank gearbeitet. Auf `main` ist aufgefallen, dass die Meldung lügt, sobald der Spieler fast volle Lebenspunkte hat: `Spieler.Heilen` begrenzt die Heilung auf `MaxLebenspunkte`, die Meldung nennt aber trotzdem den vollen Wert. Im Branch `feature/staerkerer-trank` wurde die Standardheilung von 1 auf 2 erhöht und die Meldung neu formuliert. Beim Merge bleibt `Adventure.Kern/Gegenstand.cs` im folgenden Zustand zurück:
 
@@ -216,12 +166,12 @@ stellt den Zustand vor dem `git merge` wieder her; beide Branches bleiben unver�
 
 </details>
 
-## Aufgabe 4 — Fehler finden
+## Aufgabe 3 — Ein Repository aufräumen
 
 Eine Gruppe hat ihr Adventure – die Klassenbibliothek und das Konsolenprogramm, das Level von einem Webdienst nachlädt – auf das GitLab gepusht. Ein Blick ins Repository zeigt:
 
 ```
-$ git ls-files | head
+$ git ls-files
 Adventure.Kern/bin/Debug/net10.0/Adventure.Kern.dll
 Adventure.Kern/obj/project.assets.json
 Adventure.Kern/Spielfeld.cs
@@ -232,8 +182,6 @@ spielstand.json
 ...
 $ cat Adventure.Konsole/levelserver.json
 { "LevelDienst": { "Url": "https://api.example.org/levels", "ApiKey": "sk-live-7f3a…" } }
-$ ls -a | grep gitignore
-$
 ```
 
 Es gibt keine `.gitignore`, `bin/` und `obj/` sind committet, die beim Spielen erzeugte Datei `spielstand.json` ebenfalls – und in `levelserver.json` liegt ein API-Schlüssel, seit drei Commits, das Repository ist für alle Studierenden des Kurses sichtbar.
@@ -262,7 +210,7 @@ Zuerst den Schlüssel beim Dienst **zurückziehen** und einen neuen erzeugen. Al
 dotnet new gitignore                          # Vorlage für .NET anlegen
 git rm -r --cached '**/bin' '**/obj'          # aus dem Index entfernen, Dateien auf der Platte bleiben
 git rm --cached Adventure.Konsole/levelserver.json spielstand.json
-printf 'levelserver.json\nspielstand*.json\n' >> .gitignore
+# in .gitignore ergänzen: levelserver.json und spielstand*.json
 git status                                    # bin/, obj/ erscheinen jetzt als gelöscht, .gitignore als neu
 git add .gitignore
 git commit -m "Build-Ausgaben, Spielstand und levelserver.json aus dem Repository entfernen"

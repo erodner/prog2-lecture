@@ -12,7 +12,7 @@ classes: wide
 **➕ Erweitertes Wissen.** Meist führt Git Änderungen beim `git pull` automatisch zusammen. Dieses Modul zeigt, was zu tun ist, wenn zwei Personen dieselbe Stelle geändert haben. Die folgenden Module setzen es nicht voraus.
 {: .notice--success}
 
-Ein Merge-Konflikt ist kein Fehler und kein Zeichen, dass jemand etwas falsch gemacht hat. Er ist Gits Art zu sagen: „Zwei Leute haben dieselbe Stelle unterschiedlich geändert, und ich weiß nicht, welche Version stimmt – entscheidet ihr.“ Git ist beim Zusammenführen erstaunlich klug, solange Änderungen in verschiedenen Dateien oder verschiedenen Bereichen einer Datei liegen. Bei denselben Zeilen kann es aber keine inhaltliche Entscheidung treffen – ob ein Zug gegen eine Wand eine Runde kosten soll oder nicht, weiß nur, wer die Spielregeln kennt. Deshalb lernen wir hier, Konflikte gelassen zu lesen und aufzulösen.
+Ein Merge-Konflikt ist kein Fehler und kein Zeichen, dass jemand etwas falsch gemacht hat. Er ist Gits Art zu sagen: „Zwei Leute haben dieselbe Stelle unterschiedlich geändert, und ich weiß nicht, welche Version stimmt – entscheidet ihr.“ Git ist beim Zusammenführen erstaunlich klug, solange Änderungen in verschiedenen Dateien oder verschiedenen Bereichen einer Datei liegen. Bei denselben Zeilen kann es aber keine inhaltliche Entscheidung treffen – ob eine Falle mindestens einen Lebenspunkt kosten soll, weiß nur, wer die Spielregeln kennt. Deshalb lernen wir hier, Konflikte gelassen zu lesen und aufzulösen.
 
 ## Wann entsteht ein Konflikt?
 
@@ -22,62 +22,55 @@ Konflikte entstehen also nur, wenn drei Bedingungen zusammenkommen: zwei Branche
 
 ## Ein Konflikt im Adventure
 
-Zwei Personen arbeiten am Herzstück des Spiels, der Methode `Spielfeld.SpielerZieht`, die eine komplette Runde abwickelt. Auf `main` hat jemand eine Regel korrigiert: Ein Zug gegen eine Wand soll keine Runde kosten, die Gegner dürfen dafür also nicht ziehen. Im Branch `feature/falle` baut jemand anderes die neue Objektart aus [Branches und Merges](/modules/git_branching/git_branching.md) ein: Steht der Spieler zu Beginn seines Zuges auf einer Falle, löst sie aus. Beide haben dafür die ersten Zeilen derselben Methode umgestellt. Nebenbei hat der Feature-Branch auch `Gegner.cs` angefasst, damit eine `Wache` nicht in die eigene Falle läuft – diese Datei hat auf `main` niemand berührt. So sehen die ersten Zeilen der Methode auf beiden Seiten aus:
+Zwei Personen haben dieselbe kleine Methode `Spieler.SchadenNehmen` angefasst. Auf `main` hat jemand einen Fehler behoben: Die Lebenspunkte sollen nie unter 0 fallen. Im Branch `feature/falle` soll eine Falle immer mindestens einen Lebenspunkt kosten, auch wenn im Level versehentlich ein Schaden von 0 eingetragen ist. Beide haben dafür **dieselbe Zeile** geändert. Nebenbei hat der Feature-Branch auch `Gegner.cs` angefasst, damit eine `Wache` nicht in die eigene Falle läuft – diese Datei hat auf `main` niemand berührt. Die drei Versionen des Drei-Wege-Merge, oben der gemeinsame Vorfahre, darunter die beiden Seiten:
+
+<div class="editoren mittig" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">base (C3) – Spieler.cs</div>
+
+```csharp
+public void SchadenNehmen(int schaden = 1)
+{
+    Lebenspunkte -= schaden;
+}
+```
+
+</div>
+</div>
 
 <div class="editoren" markdown="1">
 <div class="editor" markdown="1">
-<div class="editor-titel">main (ours) – Spielfeld.cs</div>
+<div class="editor-titel">main (ours) – Spieler.cs</div>
 
 ```csharp
-public void SpielerZieht(Richtung richtung)
+public void SchadenNehmen(int schaden = 1)
 {
-    if (Status != Spielstatus.Laeuft) return;
-
-    Koordinate ziel = Spieler.Position.Verschoben(richtung);
-    StatischesObjekt? davor = StatischesObjektAn(ziel);
-    if (davor is Wand)
-    {
-        LetzteMeldung = "Da ist eine Wand.";
-        return;   // kostet keine Runde
-    }
-
-    Runde++;
-    StringBuilder meldung = new();
-    // ...
+    Lebenspunkte = Math.Max(0, Lebenspunkte - schaden);
+}
 ```
 
 </div>
 <div class="editor" markdown="1">
-<div class="editor-titel">feature/falle (theirs) – Spielfeld.cs</div>
+<div class="editor-titel">feature/falle (theirs) – Spieler.cs</div>
 
 ```csharp
-public void SpielerZieht(Richtung richtung)
+public void SchadenNehmen(int schaden = 1)
 {
-    if (Status != Spielstatus.Laeuft) return;
-
-    Runde++;
-    StringBuilder meldung = new();
-    if (StatischesObjektAn(Spieler.Position) is Falle falle)
-    {
-        meldung.Append(falle.Ausloesen(Spieler));
-    }
-
-    Koordinate ziel = Spieler.Position.Verschoben(richtung);
-    StatischesObjekt? davor = StatischesObjektAn(ziel);
-    // ...
+    Lebenspunkte -= Math.Max(1, schaden);
+}
 ```
 
 </div>
 </div>
 
-Beide Seiten haben dieselben Zeilen umgestellt, nur in unterschiedlicher Reihenfolge und mit unterschiedlichem Inhalt. Beim Merge meldet Git:
+Gegenüber dem Vorfahren haben beide Seiten dieselbe Zeile unterschiedlich geändert. Welche Fassung richtig ist, kann Git nicht wissen. Beim Merge meldet es deshalb:
 
 ```bash
 git switch main
 git merge feature/falle
 # Auto-merging Adventure.Kern/Gegner.cs
-# Auto-merging Adventure.Kern/Spielfeld.cs
-# CONFLICT (content): Merge conflict in Adventure.Kern/Spielfeld.cs
+# Auto-merging Adventure.Kern/Spieler.cs
+# CONFLICT (content): Merge conflict in Adventure.Kern/Spieler.cs
 # Automatic merge failed; fix conflicts and then commit the result.
 git status
 # You have unmerged paths.
@@ -86,44 +79,19 @@ git status
 # Changes to be committed:
 #   modified:   Adventure.Kern/Gegner.cs
 # Unmerged paths:
-#   both modified:   Adventure.Kern/Spielfeld.cs
+#   both modified:   Adventure.Kern/Spieler.cs
 ```
 
-An `Gegner.cs` sieht man, wie viel Git allein schafft: Die Änderung an `Wache.NaechsterZug` ist bereits zusammengeführt und liegt im Staging-Bereich, weil nur eine Seite sie vorgenommen hat. Auch in `Spielfeld.cs` ist alles Unstrittige schon in der Arbeitskopie – nur die umkämpfte Stelle enthält jetzt **Konfliktmarker**:
+An `Gegner.cs` sieht man, wie viel Git allein schafft: Die Änderung an `Wache.NaechsterZug` ist bereits zusammengeführt und liegt im Staging-Bereich, weil nur eine Seite sie vorgenommen hat. Auch in `Spieler.cs` ist alles Unstrittige schon in der Arbeitskopie – nur die umkämpfte Zeile steht jetzt zwischen **Konfliktmarkern**:
 
 ```csharp
-public void SpielerZieht(Richtung richtung)
+public void SchadenNehmen(int schaden = 1)
 {
-    if (Status != Spielstatus.Laeuft) return;
-
 <<<<<<< HEAD
-    Koordinate ziel = Spieler.Position.Verschoben(richtung);
-    StatischesObjekt? davor = StatischesObjektAn(ziel);
-    if (davor is Wand)
-    {
-        LetzteMeldung = "Da ist eine Wand.";
-        return;                       // ein Zug gegen die Wand kostet keine Runde
-    }
-
-    Runde++;
-    StringBuilder meldung = new();
+    Lebenspunkte = Math.Max(0, Lebenspunkte - schaden);
 =======
-    Runde++;
-    StringBuilder meldung = new();
-    if (StatischesObjektAn(Spieler.Position) is Falle falle)
-    {
-        meldung.Append(falle.Ausloesen(Spieler));
-    }
-
-    Koordinate ziel = Spieler.Position.Verschoben(richtung);
-    StatischesObjekt? davor = StatischesObjektAn(ziel);
+    Lebenspunkte -= Math.Max(1, schaden);
 >>>>>>> feature/falle
-
-    if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
-    {
-        meldung.Append(interagierbar.Interagieren(Spieler));
-    }
-    // ... unverändert weiter: bewegen, aufheben, Gegner ziehen lassen
 }
 ```
 
@@ -131,33 +99,12 @@ Zwischen `<<<<<<< HEAD` und `=======` steht unsere Seite (der aktuelle Branch `m
 
 ## Den Konflikt auflösen
 
-Auflösen heißt: die Datei so bearbeiten, dass sie fachlich richtig ist, und alle Marker entfernen. Oft ist die Antwort nicht „ours“ oder „theirs“, sondern **beides in der richtigen Reihenfolge**. Hier muss die Wandprüfung zuerst kommen: Sonst würde ein Zug gegen die Wand die Falle auslösen und einen Lebenspunkt kosten, obwohl der Spieler sich gar nicht bewegt hat. Außerdem dürfen `ziel` und `davor` nur **einmal** deklariert werden – wer beide Seiten unbesehen untereinander klebt, bekommt vom Compiler eine doppelte Variablendeklaration:
+Auflösen heißt: die Datei so bearbeiten, dass sie fachlich richtig ist, und alle Marker entfernen. Oft ist die Antwort nicht „ours“ oder „theirs“, sondern **beides**. Hier wollen wir beide Regeln behalten: Eine Falle kostet mindestens einen Punkt, und die Lebenspunkte fallen trotzdem nie unter 0. Nimmt man nur eine Seite, geht die andere Änderung stillschweigend verloren:
 
 ```csharp
-public void SpielerZieht(Richtung richtung)
+public void SchadenNehmen(int schaden = 1)
 {
-    if (Status != Spielstatus.Laeuft) return;
-
-    Koordinate ziel = Spieler.Position.Verschoben(richtung);
-    StatischesObjekt? davor = StatischesObjektAn(ziel);
-    if (davor is Wand)
-    {
-        LetzteMeldung = "Da ist eine Wand.";
-        return;                       // ein Zug gegen die Wand kostet keine Runde
-    }
-
-    Runde++;
-    StringBuilder meldung = new();
-    if (StatischesObjektAn(Spieler.Position) is Falle falle)
-    {
-        meldung.Append(falle.Ausloesen(Spieler));
-    }
-
-    if (davor is IInteragierbar interagierbar && !davor.IstPassierbar)
-    {
-        meldung.Append(interagierbar.Interagieren(Spieler));
-    }
-    // ... unverändert weiter: bewegen, aufheben, Gegner ziehen lassen
+    Lebenspunkte = Math.Max(0, Lebenspunkte - Math.Max(1, schaden));
 }
 ```
 
@@ -165,8 +112,8 @@ Nach dem Bearbeiten teilst du Git mit `git add` mit, dass der Konflikt in dieser
 
 ```bash
 dotnet build                                    # kompiliert es wieder?
-dotnet run --project Adventure.Konsole          # einmal gegen die Wand und einmal über die Falle laufen
-git add Adventure.Kern/Spielfeld.cs
+dotnet run --project Adventure.Konsole          # mit einem Lebenspunkt über eine Falle laufen
+git add Adventure.Kern/Spieler.cs
 git commit
 # [main 6d0f9a2] Merge branch 'feature/falle'
 ```

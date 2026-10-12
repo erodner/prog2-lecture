@@ -11,7 +11,7 @@ classes: wide
 
 Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking* an der Grenze zwischen C und C#: C-Signaturen systematisch übersetzen, Fehlermeldungen des Laders lesen, eine native Ressource sicher in eine Klasse einpacken und native Aufrufe hinter einem Interface verstecken. Für die meisten Aufgaben brauchst du keinen C-Compiler, nur Papier und die Module dieser Vorlesung. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Mustererkennung
+## Aufgabe 1 — Signaturen übersetzen
 
 Eine Header-Datei einer C-Bibliothek `statistik` enthält diese Deklarationen:
 

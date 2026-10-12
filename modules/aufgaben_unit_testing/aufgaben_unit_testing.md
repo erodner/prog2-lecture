@@ -240,7 +240,7 @@ public class SpielTests
 
 </details>
 
-## Aufgabe 3 — Algorithmenentwurf
+## Aufgabe 3 — Tests entwerfen
 
 `Verfolger.NaechsterZug(Spielfeld)` entscheidet pro Runde, ob und wohin der Verfolger geht. Er jagt nur, wenn der Spieler innerhalb der `Sichtweite` (Standard: 5) liegt **und** `Spielfeld.HatSichtlinie` keine Wand dazwischen findet; sonst liefert die Methode `null`. Entwirf Tests, die dieses Verhalten absichern – mindestens für „außer Sichtweite“, „Sichtlinie durch eine Wand blockiert“ und „direkt neben dem Spieler“.
 

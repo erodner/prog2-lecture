@@ -11,7 +11,7 @@ classes: wide
 
 Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Vererbung kommt eine besondere Fähigkeit dazu: vorherzusagen, was ein Programm tut, das man nicht selbst geschrieben hat. Alle Aufgaben spielen im Adventure, dem durchgehenden Beispiel des Kurses – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Algorithmenentwurf
+## Aufgabe 1 — Ausgabe vorhersagen
 
 Die CLR wählt bei jedem Methodenaufruf nach festen Regeln die Implementierung aus. Spiele diesen Algorithmus von Hand durch und sage die Ausgabe voraus – **ohne** den Code auszuführen. (Im echten Spiel ist `Wand` versiegelt und taugt deshalb nicht für eine dreistufige Hierarchie; wir nehmen den Spieler und einen gedachten `Magier`.)
 

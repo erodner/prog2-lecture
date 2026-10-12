@@ -11,7 +11,7 @@ classes: wide
 
 Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Dateien und Netzwerk kommt eine Zutat hinzu, die in den bisherigen Vorlesungen kaum eine Rolle spielte: Die Außenwelt hält sich nicht an unsere Annahmen. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Mustererkennung
+## Aufgabe 1 — Fehler finden
 
 Die folgende Methode soll ein im Editor gebautes Level in den Level-Ordner sichern. Sie kompiliert – und läuft trotzdem in drei voneinander unabhängige Probleme. Finde sie, ohne den Code auszuführen.
 

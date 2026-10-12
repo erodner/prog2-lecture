@@ -359,7 +359,7 @@ Die Startseite reicht das an den Kern weiter – und der Kern braucht dafür ein
 
 </details>
 
-## Aufgabe 4 — Mustererkennung
+## Aufgabe 4 — Eine Schichtverletzung finden
 
 In einem Projekt sieht das Abhängigkeitsdiagramm des Adventures so aus:
 

@@ -11,7 +11,7 @@ classes: wide
 
 Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Alle vier Aufgaben kommen mit dem Stoff aus Programmierung 1 aus – sie zeigen dir, wie sicher du darin bist. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
-## Aufgabe 1 — Mustererkennung
+## Aufgabe 1 — Ausgabe vorhersagen
 
 Lies die folgende Klasse und sage die Ausgabe des Programms **ohne Ausführen** voraus. Achte besonders auf `static`, auf die Reihenfolge der Anweisungen im Konstruktor und auf Referenzen.
 
@@ -267,7 +267,7 @@ Console.WriteLine(Zweitgroesste(new List<int> { -3, -1 }));      // -3
 
 </details>
 
-## Aufgabe 4 — Abstraktion
+## Aufgabe 4 — Fehler finden
 
 Der folgende Warenkorb kompiliert (mit Warnungen) und stürzt trotzdem ab. Finde **mindestens vier** Fehler: einen, der zu einer `NullReferenceException` führt, eine fehlende Validierung, einen Off-by-one-Fehler und eine Designschwäche, die die anderen Fehler begünstigt.
 
