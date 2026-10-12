@@ -161,7 +161,7 @@ melder?.Invoke("Runde beendet");
 
 Multicast ist vor allem für Delegaten mit Rückgabetyp `void` sinnvoll. Hat der Delegat einen Rückgabewert – wie unser `ZugVerhalten` –, wird beim Aufruf nur das Ergebnis der *zuletzt* angehängten Methode zurückgegeben; die anderen gehen verloren. Steht dieselbe Methode mehrfach in der Liste, entfernt `-=` nur das letzte Vorkommen. Wird die letzte Methode entfernt, ist die Variable wieder `null` – auch deshalb ist `?.Invoke` beim Aufruf die sichere Wahl. Genau dieser Mechanismus steckt hinter dem `+=` bei Ereignissen, mit denen der Spieler im Modul [Ereignisse](/modules/ereignisse/ereignisse.md) meldet, dass er einen Schatz gefunden hat.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Schreibe ein `ZugVerhalten` namens `FlieheVorDemHelden`, das den Gegner in die Richtung schickt, die den Abstand `gegner.Position.Entfernung(feld.Spieler.Position)` vergrößert – und `null` liefert, wenn keine solche Richtung frei ist. Deklariere anschließend einen Delegattyp `PruefHandler`, der ein `Spielobjekt` entgegennimmt und `bool` zurückgibt, und eine Methode `Zaehle(IEnumerable<Spielobjekt> objekte, PruefHandler pruefung)`. Welche Signatur müsste ein Delegat haben, der `int.TryParse` aufnehmen kann?
 {: .notice--info}

@@ -22,8 +22,13 @@ public class Inventar<T>
 
     public override string ToString()
     {
-        return string.Join(", ", inhalt.Select(d => d.Name));   // Compilerfehler CS1061:
-    }                                                           // "T" enthält keine Definition für "Name"
+        List<string> namen = new();
+        foreach (T ding in inhalt)
+        {
+            namen.Add(ding.Name);   // Compilerfehler CS1061: "T" enthält keine Definition für "Name"
+        }
+        return string.Join(", ", namen);
+    }
 }
 ```
 
@@ -53,12 +58,18 @@ public class Inventar<T> : IEnumerable<T> where T : ISammelbar
 
     public override string ToString()
     {
-        return inhalt.Count == 0 ? "leer" : string.Join(", ", inhalt.Select(d => d.Name));
+        if (inhalt.Count == 0) return "leer";
+        List<string> namen = new();
+        foreach (T ding in inhalt)
+        {
+            namen.Add(ding.Name);
+        }
+        return string.Join(", ", namen);
     }
 }
 ```
 
-Innerhalb der Klasse darf `d.Name` jetzt stehen, weil der Compiler weiß: Was auch immer `T` sein wird, es ist `ISammelbar`. Von außen prüft er den Constraint an jeder Stelle, an der `T` mit einem konkreten Typ belegt wird:
+Innerhalb der Klasse darf `ding.Name` jetzt stehen, weil der Compiler weiß: Was auch immer `T` sein wird, es ist `ISammelbar`. Von außen prüft er den Constraint an jeder Stelle, an der `T` mit einem konkreten Typ belegt wird:
 
 ```csharp
 Inventar<Gegenstand> rucksack = new Inventar<Gegenstand>();   // Gegenstand : ISammelbar – in Ordnung
@@ -81,13 +92,20 @@ Die Tür im Kerker will wissen, ob der Held einen Schlüssel dabeihat. Eine Meth
 ```csharp
 public bool Enthaelt<TArt>() where TArt : T
 {
-    return inhalt.Any(d => d is TArt);
+    foreach (T ding in inhalt)
+    {
+        if (ding is TArt) return true;
+    }
+    return false;
 }
 
 public bool Entfernen<TArt>() where TArt : T
 {
-    T? treffer = inhalt.FirstOrDefault(d => d is TArt);
-    return treffer is not null && inhalt.Remove(treffer);
+    foreach (T ding in inhalt)
+    {
+        if (ding is TArt) return inhalt.Remove(ding);
+    }
+    return false;
 }
 ```
 
@@ -212,7 +230,7 @@ Mit eingeschaltetem Nullable-Kontext warnt der Compiler, dass `default(T)` bei R
 
 Damit schließt sich der Kreis: Die `List<Gegner>` im `Spielfeld` ist eine generische Klasse, `foreach` über das Inventar funktioniert, weil `Inventar<Gegenstand>` das Interface `IEnumerable<Gegenstand>` implementiert, und `Koordinate` taugt als Dictionary-Schlüssel, weil es als `record struct` `Equals` und `GetHashCode` mitbringt. Wie Vergleichen, Gleichheit und Sortieren im Detail zusammenspielen, ist Thema der nächsten Vorlesung.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)).
 
 ## Weitere Quellen
 

@@ -15,6 +15,10 @@ In den letzten Modulen haben wir etwas benutzt, ohne es zu hinterfragen: `TasteG
 
 Alles, was eine Komponente anzeigt oder was der Benutzer in ihr ändert, liegt in Feldern des `@code`-Blocks. Die Startseite des Spiels hat genau drei davon:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
+
 ```razor
 @code {
     private Spielfeld feld = null!;
@@ -29,6 +33,9 @@ Alles, was eine Komponente anzeigt oder was der Benutzer in ihr ändert, liegt i
 }
 ```
 
+</div>
+</div>
+
 Bemerkenswert ist, was **nicht** in dieser Liste steht: keine Position des Spielers, keine Lebenspunkte, keine Liste der Gegner, kein Spielstatus. All das steckt im `Spielfeld`, und die Komponente hält nur einen Verweis darauf. Sie hat keine zweite, eigene Kopie des Spielzustands, die sie mit dem Kern synchron halten müsste – und damit kann sie auch nichts falsch synchronisieren. `levelName` ist das einzige, was wirklich der Oberfläche gehört: die Auswahl in einer Liste.
 
 `OnInitialized` ist eine Lebenszyklus-Methode; Blazor ruft sie einmal auf, bevor die Komponente zum ersten Mal gerendert wird. Hier ist der richtige Ort, um das erste Level zu laden – im Feldinitialisierer ginge es nicht, weil dort der eingefügte `LevelQuelle` noch nicht zur Verfügung steht.
@@ -36,6 +43,10 @@ Bemerkenswert ist, was **nicht** in dieser Liste steht: keine Position des Spiel
 ## Einweg-Bindung: vom Zustand ins Markup
 
 Ein `@` vor einem Ausdruck im Markup fügt seinen Wert an dieser Stelle ein. Das ist die **Einweg-Bindung**: Daten fließen vom Feld in die Seite, nie zurück. Das Spiel nutzt sie überall – als Text, als Methodenaufruf, als Attributwert und als CSS-Klasse:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
 
 ```razor
 <div class="spielfeld" style="grid-template-columns: repeat(@feld.Breite, 1fr);">
@@ -46,18 +57,32 @@ Ein `@` vor einem Ausdruck im Markup fügt seinen Wert an dieser Stelle ein. Das
 <Statusleiste Spieler="@feld.Spieler" Runde="@feld.Runde" Meldung="@feld.LetzteMeldung" />
 ```
 
+</div>
+</div>
+
 Auch die Parameter einer Komponente sind eine Einweg-Bindung: `Runde="@feld.Runde"` liest den aktuellen Wert und gibt ihn nach unten weiter. Im Projekt zeigt die `Statusleiste` aus [Razor-Komponenten und Steuerelemente](/modules/razor_komponenten/razor_komponenten.md) die Lebenspunkte als Herzen an, und zwar nicht in einem Handler, sondern in einer berechneten Property:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Statusleiste.razor">Adventure.Web/Components/Statusleiste.razor</a> (im <code>@code</code>-Block)</div>
 
 ```csharp
 private string Herzen => new string('♥', Spieler.Lebenspunkte)
                        + new string('♡', Spieler.MaxLebenspunkte - Spieler.Lebenspunkte);
 ```
 
+</div>
+</div>
+
 Das Markup `<span class="herzen">@Herzen</span>` ruft diese Property bei jedem Rendern neu auf. Es gibt keinen Code, der bei einem Treffer ein Herz „wegnimmt“ – die Property liest schlicht den aktuellen Wert von `Lebenspunkte` und baut die Zeichenkette daraus. Verliert der Spieler einen Punkt, ist beim nächsten Rendern ein `♥` weniger da. Genau das ist der Unterschied zwischen *beschreiben* und *befehlen*.
 
 ## Zweiweg-Bindung mit `@bind`
 
 Bei Eingabeelementen soll die Verbindung in beide Richtungen gehen: Das Feld füllt das Steuerelement, und was der Benutzer wählt oder tippt, landet wieder im Feld. Genau das leistet `@bind`. Im Spiel gibt es dafür nur eine Stelle, die Levelauswahl:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
 
 ```razor
 <select @bind="levelName" @bind:after="NeuStarten">
@@ -67,6 +92,9 @@ Bei Eingabeelementen soll die Verbindung in beide Richtungen gehen: Das Feld fü
     }
 </select>
 ```
+
+</div>
+</div>
 
 Blazor macht daraus zwei Dinge: Es setzt den `value` des `<select>` aus dem Feld `levelName`, und es registriert einen Handler für das Ereignis `change`, der `levelName` aus der Auswahl aktualisiert. Der gewählte `value` einer `<option>` ist ein `string`, und `levelName` ist ein `string` – die Typen passen zusammen. Bei einem `<input type="number">` würde Blazor den Text automatisch in ein `int` oder `double` umwandeln, bei einer Checkbox in ein `bool` und dabei `checked` statt `value` verwenden.
 
@@ -146,11 +174,13 @@ Angenommen, wir wollen eine Spieluhr anzeigen, die unabhängig von den Zügen de
 
     protected override void OnInitialized()
     {
-        uhr = new Timer(_ =>
-        {
-            spielzeit += TimeSpan.FromSeconds(1);
-            InvokeAsync(StateHasChanged);   // Blazor: bitte neu rendern
-        }, null, 1000, 1000);
+        uhr = new Timer(Ticken, null, 1000, 1000);   // jede Sekunde Ticken aufrufen
+    }
+
+    private void Ticken(object? zustand)
+    {
+        spielzeit += TimeSpan.FromSeconds(1);
+        InvokeAsync(StateHasChanged);   // Blazor: bitte neu rendern
     }
 }
 ```
@@ -163,7 +193,7 @@ In gewöhnlichen Handlern brauchst du `StateHasChanged` dagegen **nie**. Wer es 
 Übung: Ergänze die Statusleiste um eine Anzeige „Schlüssel: ja/nein“, die anzeigt, ob der Held bereits einen Schlüssel im Inventar hat (`Spieler.Inventar.Enthaelt<Schluessel>()`). Überlege dabei: Brauchst du ein neues Feld, einen neuen Parameter oder gar nichts von beidem? Und an welcher Stelle im Code müsstest du etwas ändern, damit die Anzeige *nicht* mehr automatisch aktuell bleibt – diese Gegenprobe zeigt dir, worauf das Modell beruht.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 ## Weitere Quellen
 

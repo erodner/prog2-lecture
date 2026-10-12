@@ -29,7 +29,7 @@ git remote -v
 dotnet run --project Adventure.Konsole
 ```
 
-`git clone` hat automatisch ein Remote namens `origin` eingerichtet, das auf die Quelle zeigt. `origin` ist nur ein Name, so wie `main` ein Name für einen Branch ist – man könnte ihn ändern, tut es aber praktisch nie. Mitgekommen ist die **gesamte** Historie: Mit `git log --oneline` siehst du jeden Vorlesungsstand, und mit `git checkout v02-interfaces` springst du auf den Stand, den wir gerade besprochen haben.
+`git clone` hat automatisch ein Remote namens `origin` eingerichtet, das auf die Quelle zeigt. `origin` ist nur ein Name, so wie `main` ein Name für einen Branch ist – man könnte ihn ändern, tut es aber praktisch nie. Mitgekommen ist die **gesamte** Historie: Mit `git log --oneline` siehst du jeden Vorlesungsstand, und mit `git checkout v03-blazor` springst du auf den Stand nach der Blazor-Vorlesung.
 
 Hat man umgekehrt schon ein lokales Repository wie in [Erste Schritte mit Git](/modules/git_erste_schritte/git_erste_schritte.md), legt man auf dem GitLab ein **leeres** Projekt an (ohne README, sonst gibt es gleich zwei unterschiedliche erste Commits) und verbindet beide von Hand:
 

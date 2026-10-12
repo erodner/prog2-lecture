@@ -179,7 +179,7 @@ Level level = quelle.Laden(quelle.LevelNamen[0]);
 Spielfeld feld = LevelParser.Parsen(level);
 ```
 
-In Vorlesung 04 zerlegen wir das Projekt genau an dieser Linie in Schichten: `ILevelQuelle` bleibt im Kern, die Implementierungen wandern in ein eigenes Projekt `Adventure.Daten`, und die Blazor-Oberfläche bekommt die passende Quelle per Dependency Injection hineingereicht. Dass das ohne Umbau funktioniert, liegt allein an diesem Interface. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+In Vorlesung 03 zerlegen wir das Projekt genau an dieser Linie in Schichten: `ILevelQuelle` bleibt im Kern, die Implementierungen wandern in ein eigenes Projekt `Adventure.Daten`, und die Blazor-Oberfläche bekommt die passende Quelle per Dependency Injection hineingereicht. Dass das ohne Umbau funktioniert, liegt allein an diesem Interface. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)).
 
 Übung: Erweitere `ISammelbar` wie oben um ein Interface `ITragbar` mit `double Gewicht { get; }`, implementiere es in `Gegenstand` (Schlüssel 0,5 kg, Trank 0,3 kg, Schatz 2 kg) und schreibe eine Methode `double Traglast(Inventar<Gegenstand> inventar)`, die alle Gewichte summiert. Schreibe danach eine Klasse `ZaehlendeLevelQuelle : ILevelQuelle`, die eine andere `ILevelQuelle` im Konstruktor entgegennimmt, alles an sie weiterreicht und zusätzlich mitzählt, wie oft geladen wurde. Warum funktioniert das ohne jede Änderung am übrigen Programm?
 {: .notice--info}

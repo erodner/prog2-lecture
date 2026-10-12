@@ -88,7 +88,7 @@ Die zweite Vorbereitung war die Schnittstelle `ILevelQuelle`. Der Kern schreibt 
 }
 ```
 
-`EingebauteLevelQuelle` hat ihre beiden Karten fest im Code stehen und ist damit ein **Test-Double**: ein Ersatzobjekt, das die Schnittstelle erfüllt, aber ohne Datei, Netzwerk oder Datenbank auskommt. Der Test bleibt dadurch schnell und deterministisch – er läuft auch im Zug ohne Empfang. Testbarkeit ist damit kein Zufall, sondern ein direktes Ergebnis guter Architektur: Was wir in Vorlesung 04 aus Gründen der Ordnung getrennt haben, zahlt sich heute als Prüfbarkeit aus.
+`EingebauteLevelQuelle` hat ihre beiden Karten fest im Code stehen und ist damit ein **Test-Double**: ein Ersatzobjekt, das die Schnittstelle erfüllt, aber ohne Datei, Netzwerk oder Datenbank auskommt. Der Test bleibt dadurch schnell und deterministisch – er läuft auch im Zug ohne Empfang. Testbarkeit ist damit kein Zufall, sondern ein direktes Ergebnis guter Architektur: Was wir in Vorlesung 03 aus Gründen der Ordnung getrennt haben, zahlt sich heute als Prüfbarkeit aus.
 
 Wenn eine Klasse sich schlecht testen lässt, liegt das selten am Test-Framework. Meist steckt Logik dort, wo sie nicht hingehört: im `@code`-Block einer Razor-Seite, in einer `static`-Methode, die direkt eine Datei liest, oder in einer Klasse, die sich ihre Abhängigkeiten selbst mit `new` erzeugt, statt sie im Konstruktor übergeben zu bekommen.
 {: .notice--warning}
@@ -104,7 +104,7 @@ Manche Teams schreiben den Test sogar *vor* dem Code. Bei **Test-Driven Developm
 Übung: Schau dir den Tastatur-Handler im `@code`-Block von `Components/Pages/Home.razor` in `Adventure.Web` an. Welche Zeilen darin ließen sich ohne Browser testen, welche nicht – und woran liegt das? Formuliere für eine der nicht testbaren Zeilen, in welche Klasse des Kerns ihre Logik gehören würde.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v12-tests`), die Tests aus diesem Modul im Projekt `Adventure.Tests`.
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v11-tests`](https://github.com/erodner/prog2-adventure/tree/v11-tests)), die Tests aus diesem Modul im Projekt `Adventure.Tests`.
 
 ## Weitere Quellen
 

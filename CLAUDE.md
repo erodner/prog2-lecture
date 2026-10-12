@@ -24,7 +24,7 @@ export SDKROOT=$(xcrun --show-sdk-path)
 ## Content Architecture
 
 **Two-level content model:**
-- `lectures/NN/NN.md` — 13 lecture units (00–12), each a navigational hub linking to modules
+- `lectures/NN/NN.md` — 12 lecture units (00–11), each a navigational hub linking to modules
 - `modules/<name>/<name>.md` — standalone learning modules with explanations, C# code examples, and exercises
 
 Lectures are the "table of contents"; modules contain the actual teaching content. Lectures reference modules via relative Markdown links like `[Title](/modules/name/name.md)`.
@@ -33,16 +33,15 @@ Lectures are the "table of contents"; modules contain the actual teaching conten
 - Lecture 00: Einstieg – Rückblick auf Programmierung 1 (links to the Prog-1 site), .NET SDK, IDE, dotnet-CLI
 - Lecture 01: Vererbung (virtual/override, sealed, Laufzeittyp, object, Garbage Collection) – Adventure is born: `Spielobjekt`, `Wand`, `Spieler`
 - Lecture 02: Abstrakte Klassen und Interfaces – abstract `Spielobjekt`/`StatischesObjekt`/`BeweglichesObjekt`, `IInteragierbar`, `ISammelbar`, playable console game
-- Lecture 03: Git (CLI first, IDE integration second, HTW GitLab)
-- Lecture 04: GUI mit Blazor + Schichten-Architekturen (replaces the former Windows-Forms lecture)
+- Lecture 03: GUI mit Blazor + Schichten-Architekturen (replaces the former Windows-Forms lecture)
+- Lecture 04: Git (command line only; branches/merges/conflicts are ➕ erweitertes Wissen), comes after Blazor
 - Lecture 05: Generizität
 - Lecture 06: Hashing, Sortieren, Suchen, Collections, LINQ (query syntax)
 - Lecture 07: Delegaten, Func/Action, Lambdas, LINQ-Methodensyntax, Ereignisse
 - Lecture 08: Entwurfsmuster (Singleton, Adapter, Composite, Iterator, Observer)
 - Lecture 09: Dateien, Streams, IDisposable, JSON/XML-Serialisierung, HttpClient
-- Lecture 10: Native Bibliotheken (P/Invoke, LibraryImport)
-- Lecture 11: NuGet
-- Lecture 12: Unit-Testing mit NUnit
+- Lecture 10: NuGet
+- Lecture 11: Unit-Testing mit NUnit
 
 **Computational Thinking modules:**
 - `modules/aufgaben_<topic>/aufgaben_<topic>.md` — Exercises with collapsible solutions, one per lecture
@@ -56,7 +55,7 @@ Lectures are the "table of contents"; modules contain the actual teaching conten
 
 ## Running example: Adventure (separate repository)
 
-The running example of the course is **Adventure**, a turn-based 2D dungeon game: https://github.com/erodner/prog2-adventure (local clone `../prog2-adventure`). Modules quote its code, and snippets must match the files there. Git tags mark the state after a lecture: `v01-vererbung`, `v02-interfaces`, `v04-blazor`, `v09-daten`, `v12-tests` (= `main`).
+The running example of the course is **Adventure**, a turn-based 2D dungeon game: https://github.com/erodner/prog2-adventure (local clone `../prog2-adventure`). Modules quote its code, and snippets must match the files there. Git tags mark the state after a lecture: `v01-vererbung`, `v02-interfaces`, `v03-blazor`, `v09-daten`, `v11-tests` (= `main`).
 
 - `Adventure.Kern` (classlib, namespace `Adventure.Kern`): `Koordinate` (record struct, `Verschoben`, `Entfernung`; Lecture 01 starts with a plain class `Koordinate`, `object_basisklasse` motivates the switch to record struct), `Richtung` enum, abstract `Spielobjekt` (`Name`, `Position` of type `Koordinate`, abstract `Symbol`, virtual `IstPassierbar`, virtual `Beschreibung()`), abstract `StatischesObjekt` → `Wand` (sealed), `Ausgang`, `Tuer : IInteragierbar`, `Truhe : IInteragierbar`, abstract `Gegenstand : ISammelbar` → `Schluessel`, `Trank`, `Schatz`; abstract `BeweglichesObjekt` (`Bewegen(Richtung, Spielfeld)`) → `Spieler` (`Lebenspunkte`, `Punkte`, `Inventar<Gegenstand>`, `event SchatzGefunden`) and abstract `Gegner` (`abstract Richtung? NaechsterZug(Spielfeld)`) → `Wache` (patrols, turns around), `Verfolger` (chases when in `Sichtweite` with `HatSichtlinie`); `Inventar<T> where T : ISammelbar`; `Spielfeld` (`Dictionary<Koordinate, StatischesObjekt>`, `List<Gegner>`, `IstFrei`, `SpielerZieht(Richtung)` = one round, `Status`, `event RundeBeendet`, `AlleObjekte` via `yield`, `AlsText()`, `Erfassen`/`Wiederherstellen` for save games); `Level` record, `ILevelQuelle`, `LevelParser` (ASCII map: `# D T k ! $ E @ W V .`), `Spielstand`, `ISpielstandSpeicher`.
 - `Adventure.Daten`: `EingebauteLevelQuelle`, `TextdateiLevelQuelle` (StreamReader), `JsonSpielstandSpeicher` (System.Text.Json), `HttpLevelQuelle` (HttpClient, `index.json` + `<name>.txt`).
@@ -66,7 +65,7 @@ The running example of the course is **Adventure**, a turn-based 2D dungeon game
 - `levels/*.txt` + `levels/index.json`; the same files are served by this site under `assets/data/levels/` for the HttpClient example.
 - Dependency direction: Web/Konsole → Kern ← Daten (Daten implements the interfaces Kern defines).
 
-`examples/` in this repo keeps only the small standalone demos `10_pinvoke/PInvokeDemo`, `11_nuget/NLogDemo`, `12_unittests/Bruch`; `examples/Directory.Build.props` sets `net10.0`.
+`examples/` in this repo keeps only the small standalone demos `10_nuget/NLogDemo`, `11_unittests/Bruch`; `examples/Directory.Build.props` sets `net10.0`.
 
 ## Content Conventions
 
@@ -76,11 +75,11 @@ The running example of the course is **Adventure**, a turn-based 2D dungeon game
 - Important notes use `{: .notice--primary}`, warnings use `{: .notice--warning}`
 - External references (Microsoft Learn de-de, docs.avaloniaui.net, git-scm.com/book/de, nunit.org) go in a `## Weitere Quellen` section at the bottom
 - Code examples are C# with German variable/method names (PascalCase methods, camelCase parameters), umlauts transliterated in identifiers (`Flaeche`, `Groesse`)
-- Modern .NET only: `System.Text.Json` (not Newtonsoft), `HttpClient` (not WebClient), NUnit 4 `Assert.That`, `PackageReference`, `[LibraryImport]` alongside `[DllImport]`, git CLI (not Sourcetree)
+- Modern .NET only: `System.Text.Json` (not Newtonsoft), `HttpClient` (not WebClient), NUnit 4 `Assert.That`, `PackageReference`, git CLI (not Sourcetree)
 - Blazor: Razor components with markup + `@code`, `@onclick`/`@bind`, dialogs as components with `EventCallback<T>`, no JavaScript, no Bootstrap (plain CSS flexbox/grid in `wwwroot/app.css`)
 - Cross-module references should mention previously learned concepts by name
 - Connecting prose between code blocks is expected — no "code dump" style
-- Lectures with an Adventure tag (01, 02, 04, 09, 12) end with `## Außerdem im Code`: one sentence per code change in that tag that the modules don't cover, each linked to the file at the tag (`https://github.com/erodner/prog2-adventure/blob/<tag>/<path>`) and pointing to the lecture that explains the concept later
+- Lectures with an Adventure tag (01, 02, 03, 09, 11) end with `## Außerdem im Code`: one sentence per code change in that tag that the modules don't cover, each linked to the file at the tag (`https://github.com/erodner/prog2-adventure/blob/<tag>/<path>`) and pointing to the lecture that explains the concept later
 - Never include organisational content (dates, team, exam rules), credentials, internal server addresses, or verbatim textbook prose from the slides
 
 ## Writing Style Preferences
@@ -99,5 +98,5 @@ The running example of the course is **Adventure**, a turn-based 2D dungeon game
 - `modules/` and `lectures/` are explicitly included in the build
 - `slides/` (symlink to the PowerPoint decks), `examples/` and `CLAUDE.md` are excluded from the build
 - Collapsible boxes require `<details markdown="1">` (not plain `<details>`)
-- Side-by-side code versions ("two read-only editors", e.g. ours/theirs in a merge): `<div class="editoren" markdown="1">` containing one `<div class="editor" markdown="1">` per version, each starting with `<div class="editor-titel">main (ours) – Spielfeld.cs</div>`, a blank line and a fenced code block. Styles live in `assets/css/main.scss` (theme override); the editors stack on narrow screens. `class="editoren mittig"` centers a single half-width editor (e.g. the base version above ours/theirs).
+- Side-by-side code versions ("two read-only editors", e.g. ours/theirs in a merge): `<div class="editoren" markdown="1">` containing one `<div class="editor" markdown="1">` per version, each starting with `<div class="editor-titel">main (ours) – Spielfeld.cs</div>`, a blank line and a fenced code block. Styles live in `assets/css/main.scss` (theme override); the editors stack on narrow screens. Use editors (with the file path as title, e.g. `Adventure.Web/wwwroot/app.css`) whenever it isn't obvious where a snippet belongs; pair related files side by side (markup left, CSS right). `class="editoren mittig"` centers a single half-width editor (e.g. the base version above ours/theirs).
 - UML diagrams: `{% plantuml Alternativtext %} … {% endplantuml %}` (plugin `_plugins/plantuml.rb`), rendered at build time to inline SVG with `vendor/plantuml.jar` (gitignored; download once: `mkdir -p vendor && curl -sL -o vendor/plantuml.jar https://github.com/plantuml/plantuml/releases/download/v1.2025.4/plantuml-1.2025.4.jar`, needs Java). The plugin adds a shared monochrome style and the `smetana` layout (no Graphviz); abstract classes as `abstract class X <<abstrakt>>`. The Pages workflow downloads the jar itself.

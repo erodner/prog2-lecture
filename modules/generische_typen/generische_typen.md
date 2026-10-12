@@ -129,12 +129,18 @@ public class Inventar<T> : IEnumerable<T> where T : ISammelbar
 
     public override string ToString()
     {
-        return inhalt.Count == 0 ? "leer" : string.Join(", ", inhalt.Select(d => d.Name));
+        if (inhalt.Count == 0) return "leer";
+        List<string> namen = new();
+        foreach (T ding in inhalt)
+        {
+            namen.Add(ding.Name);
+        }
+        return string.Join(", ", namen);
     }
 }
 ```
 
-Zwei Dinge stechen heraus. Der Zusatz `where T : ISammelbar` ist ein **Constraint**: Er verlangt, dass für `T` nur Typen eingesetzt werden, die `ISammelbar` implementieren – nur deshalb darf `ToString` auf `d.Name` zugreifen. Warum das nötig ist und welche Constraints es sonst noch gibt, klärt das Modul [Generische Constraints](/modules/generische_constraints/generische_constraints.md). Und `Inventar<T>` implementiert selbst ein generisches Interface, `IEnumerable<T>`, indem es das Aufzählen an die interne Liste weiterreicht. Das kostet zwei Zeilen und bringt sehr viel: Jedes Inventar lässt sich mit `foreach` durchlaufen.
+Zwei Dinge stechen heraus. Der Zusatz `where T : ISammelbar` ist ein **Constraint**: Er verlangt, dass für `T` nur Typen eingesetzt werden, die `ISammelbar` implementieren – nur deshalb darf `ToString` auf `ding.Name` zugreifen. Warum das nötig ist und welche Constraints es sonst noch gibt, klärt das Modul [Generische Constraints](/modules/generische_constraints/generische_constraints.md). Und `Inventar<T>` implementiert selbst ein generisches Interface, `IEnumerable<T>`, indem es das Aufzählen an die interne Liste weiterreicht. Das kostet zwei Zeilen und bringt sehr viel: Jedes Inventar lässt sich mit `foreach` durchlaufen.
 
 Der `Spieler` legt sein Inventar direkt bei der Deklaration an und belegt `T` mit `Gegenstand`:
 
@@ -215,7 +221,7 @@ Generische Typen sind keine Laufzeit-Magie, sondern **Typsicherheit zur Kompilie
 Im Zweifel: Wann immer du eine Klasse mit `object`-Feldern schreibst oder dieselbe Klasse für mehrere Elementtypen kopierst, ist ein Typparameter die bessere Lösung.
 {: .notice--primary}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)).
 
 ## Weitere Quellen
 

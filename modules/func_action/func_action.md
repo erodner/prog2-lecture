@@ -118,7 +118,7 @@ Im Zweifel `Func` oder `Action` statt eines eigenen Delegattyps. Jeder zusätzli
 Achtung bei der Reihenfolge der Typparameter: Bei `Func<Spielfeld, Richtung>` ist `Spielfeld` der Parameter und `Richtung` der Rückgabetyp – nicht umgekehrt. `Func<Richtung, Spielfeld>` ist ein völlig anderer Typ, und der Compiler meldet beim Zuweisen einer unpassenden Methode wieder den bekannten Fehler CS0123.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Schreibe eine Methode `Zaehle(IEnumerable<Spielobjekt> objekte, Func<Spielobjekt, bool> bedingung)`, die zählt, wie viele Objekte die Bedingung erfüllen, und rufe sie für `feld.AlleObjekte` zweimal auf – einmal für Wände, einmal für passierbare Felder. Ersetze anschließend in `Adventure.Kern` die Klassen `Wache` und `Verfolger` durch zwei `Func<Spielfeld, Gegner, Richtung?>`-Werte. Welches der beiden Verhalten lässt sich so *nicht* vollständig nachbauen – und warum?
 {: .notice--info}

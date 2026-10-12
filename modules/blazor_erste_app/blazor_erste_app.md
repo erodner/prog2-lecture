@@ -42,6 +42,10 @@ Die Vorlage erzeugt mehr Dateien als eine Konsolen-App, aber nur eine Handvoll i
 
 Der Reihe nach: `Program.cs` ist eine Top-Level-Statements-Datei wie bei einer Konsolen-App, nur dass sie keinen Ablauf beschreibt, sondern einen Server aufsetzt:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">HalloBlazor/Program.cs</div>
+
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
@@ -55,14 +59,24 @@ app.MapRazorComponents<App>()
 app.Run();
 ```
 
+</div>
+</div>
+
 `WebApplication.CreateBuilder` bereitet die Anwendung vor, `AddRazorComponents().AddInteractiveServerComponents()` schaltet Razor-Komponenten und den Server-Render-Modus ein, und `MapRazorComponents<App>()` sagt: Die Wurzel der Oberfläche ist die Komponente `App`. Die letzte Zeile `app.Run()` kehrt erst zurück, wenn der Server beendet wird – das ist die **Ereignisschleife** aus den GUI-Grundbegriffen. Der Server wartet auf Anfragen und Ereignisse aus dem Browser und ruft unsere Handler auf.
 
 `App.razor` liefert das HTML-Grundgerüst, das der Browser beim ersten Aufruf bekommt. Zwei Zeilen darin sind entscheidend:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">HalloBlazor/Components/App.razor</div>
 
 ```razor
 <Routes @rendermode="InteractiveServer" />
 <script src="@Assets["_framework/blazor.web.js"]"></script>
 ```
+
+</div>
+</div>
 
 Das Skript `blazor.web.js` ist das einzige JavaScript, das wir je brauchen – es baut die SignalR-Verbindung zum Server auf und tauscht geänderte Seitenteile aus. `@rendermode="InteractiveServer"` legt fest, dass alles innerhalb von `<Routes>` interaktiv auf dem Server läuft. `Routes.razor` enthält den `<Router>`, der anhand der Adresse die passende Seite auswählt und sie in das Layout `MainLayout` einbettet. Dieses ist in der leeren Vorlage fast leer – die Zeile `@Body` markiert die Stelle, an der die jeweilige Seite eingesetzt wird. Was man aus dem Layout machen kann, sehen wir in [Layout mit HTML und CSS](/modules/blazor_layout/blazor_layout.md).
 
@@ -71,6 +85,10 @@ Das Skript `blazor.web.js` ist das einzige JavaScript, das wir je brauchen – e
 Damit sind wir bei `Home.razor`, der einzigen Datei, die wir in diesem Modul selbst verändern. Eine `.razor`-Datei besteht aus zwei Teilen: oben **Markup** (HTML mit eingestreuten `@`-Ausdrücken), unten ein `@code`-Block mit gewöhnlichem C#. Beim Kompilieren wird aus jeder Razor-Datei **eine C#-Klasse** – bei `Home.razor` die Klasse `Home`. Das Markup wird zu einer Methode, die das HTML erzeugt, der `@code`-Block liefert Felder und Methoden dieser Klasse.
 
 Ältere Frameworks haben Aussehen und Verhalten auf zwei Dateien verteilt: eine vom Designer erzeugte Datei mit den Steuerelementen und eine Code-Behind-Datei mit den Handlern. Razor legt beides in eine Datei, hält es aber genauso sauber getrennt: Das Markup beschreibt, *was* zu sehen ist, der `@code`-Block, *was passiert*. Lösche den erzeugten Inhalt von `Home.razor` und tippe diese Seite ab – sie ist absichtlich winzig und hat nichts mit dem Spiel zu tun:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">HalloBlazor/Components/Pages/Home.razor</div>
 
 ```razor
 @page "/"
@@ -99,6 +117,9 @@ Damit sind wir bei `Home.razor`, der einzigen Datei, die wir in diesem Modul sel
 }
 ```
 
+</div>
+</div>
+
 Gehen wir die Datei von oben nach unten durch. `@page "/"` macht aus der Komponente eine **Seite**, die unter der Wurzeladresse erreichbar ist – ohne diese Zeile wäre `Home` nur ein Baustein, den andere Seiten einbetten könnten. `<PageTitle>` setzt den Text in der Browser-Registerkarte. `<h1>` und `<p>` sind gewöhnliches HTML; das kann der Browser ohne unser Zutun anzeigen.
 
 Interessant wird es bei `<input @bind="name" />`. Das Attribut `@bind` verbindet das Eingabefeld mit dem Feld `name` aus dem `@code`-Block in beide Richtungen: Der Anfangswert des Feldes erscheint im Textfeld, und sobald der Benutzer das Feld verlässt, landet der eingegebene Text in `name`. `<button @onclick="Begruessen">` registriert die Methode `Begruessen` als [Ereignishandler](/modules/gui_grundbegriffe/gui_grundbegriffe.md) für den Klick – wir schreiben die Methode, aufgerufen wird sie von Blazor. Und `@ausgabe` in der letzten Markup-Zeile fügt den aktuellen Wert des Feldes `ausgabe` als Text in den Absatz ein.
@@ -117,6 +138,10 @@ Hot Reload hat Grenzen: Änderungen am Markup und an Methodenrümpfen übernimmt
 ## Vom Wegwerf-Projekt zum Spiel
 
 Das Wegwerf-Projekt hat seinen Zweck erfüllt; ab jetzt arbeiten wir im Projekt `Adventure.Web`, das mit genau demselben Befehl entstanden ist. Zwei Unterschiede gibt es. Erstens verweist es auf den Spielkern und auf die Datenschicht, und zweitens registriert seine `Program.cs` eine Zeile mehr:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Program.cs">Adventure.Web/Program.cs</a></div>
 
 ```csharp
 using Adventure.Daten;
@@ -139,12 +164,15 @@ app.MapRazorComponents<App>()
 app.Run();
 ```
 
+</div>
+</div>
+
 Diese eine Zeile ist der Ort, an dem später die Schichten zusammenkommen: Die Seite fragt nur nach einem `ILevelQuelle`, und `Program.cs` entscheidet, welche Klasse das liefert. Wie dieser Mechanismus heißt und warum er so wichtig ist, behandelt [Schichten mit Blazor umsetzen](/modules/schichten_mit_blazor/schichten_mit_blazor.md). Auch das `MainLayout` ist gewachsen: Es bekommt eine Kopfzeile mit dem Titel `Adventure`, damit jede Seite denselben Rahmen hat.
 
 Übung: Erweitere deine `Home.razor` um ein zweites Eingabefeld für die Anzahl der Lebenspunkte und lasse `Begruessen` zusätzlich so viele Herzsymbole `♥` ausgeben, wie eingegeben wurden (`new string('♥', anzahl)`). Ändere anschließend den Methodennamen im `@onclick`-Attribut absichtlich falsch und beobachte, wo und wann der Fehler auftaucht – zur Laufzeit oder beim Kompilieren?
 {: .notice--info}
 
-Das vollständige Spielprojekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Spielprojekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 ## Weitere Quellen
 

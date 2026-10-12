@@ -163,7 +163,7 @@ Was Delegaten genau sind und wie man sie mit Lambda-Ausdrücken in einer Zeile s
 Übung: Der `Schatz` hat eine Property `Wert`, der `Trank` eine Property `Heilung`. Implementiere `IComparable<Schatz>` in `Schatz`, sodass Schätze nach ihrem Wert sortiert werden, und sortiere damit eine Liste von Schätzen mit `Sort()`. Schreibe anschließend einen `IComparer<Gegenstand>`, der alle Gegenstände alphabetisch nach `Name` ordnet, und überlege: Welche der beiden Ordnungen gehört in die Klasse, welche daneben – und warum kann der Comparer etwas, was `CompareTo` nicht kann?
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 ## Weitere Quellen
 

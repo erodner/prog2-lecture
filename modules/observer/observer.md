@@ -75,6 +75,10 @@ In `Spieler` kommt weder `Piepser` noch `Erfolgsliste` vor. Ein Protokoll morgen
 
 Genau dieses Gerüst ist in C# in die Sprache eingebaut. Ein `event` *ist* das Observer-Muster: Der Multicast-Delegat ist die Liste der Beobachter, `+=` ist `Registrieren`, `-=` ist `Abmelden`, und `?.Invoke` ist der Rundruf. Das Interface `IBeobachter` wird durch die Delegat-Signatur ersetzt – ein Beobachter muss keine Klasse mehr sein, eine passende Methode genügt. So sieht `Spieler` im Adventure tatsächlich aus:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Kern/Spieler.cs">Adventure.Kern/Spieler.cs</a></div>
+
 ```csharp
 public class Spieler : BeweglichesObjekt
 {
@@ -90,6 +94,9 @@ public class Spieler : BeweglichesObjekt
     }
 }
 ```
+
+</div>
+</div>
 
 | Rolle im Muster | Klassische Variante | C# mit `event` |
 | :--- | :--- | :--- |
@@ -108,13 +115,24 @@ Was das Muster *nicht* regelt: In welcher Reihenfolge die Beobachter aufgerufen 
 
 Der eigentliche Gewinn zeigt sich, wenn zwei völlig verschiedene Oberflächen an demselben Ereignis hängen. `Adventure.Konsole` registriert sich in einer einzigen Zeile, direkt nachdem das Spielfeld gebaut wurde:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Konsole/Program.cs">Adventure.Konsole/Program.cs</a></div>
+
 ```csharp
 Spielfeld feld = LevelParser.Parsen(level);
 
 feld.Spieler.SchatzGefunden += (sender, e) => Console.Beep();
 ```
 
+</div>
+</div>
+
 In `Adventure.Web` hängen wir uns als zweiten Beobachter an dasselbe Ereignis – und tun etwas ganz anderes: Die Seite merkt sich eine Jubelmeldung und lässt sich neu zeichnen. Bisher braucht `Home.razor` das nicht, weil Blazor eine Komponente nach jedem Tastendruck ohnehin neu rendert – aber eben nur, weil die Komponente den Tastendruck selbst behandelt hat. Kommt die Änderung aus dem Modell (später etwa durch einen Timer oder einen zweiten Spieler), muss die Komponente selbst zuhören und `StateHasChanged()` aufrufen. Diese Ergänzung zu `Home.razor` sieht so aus:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">Home.razor (Ergänzung)</div>
 
 ```razor
 @implements IDisposable
@@ -142,9 +160,16 @@ In `Adventure.Web` hängen wir uns als zweiten Beobachter an dasselbe Ereignis �
 }
 ```
 
+</div>
+</div>
+
 Zwei Beobachter, ein Subjekt, und `Spieler` kennt weder `Console` noch `StateHasChanged`. Der Unterschied zur Konsole ist nur die Registrierungsform: Hier ist der Beobachter eine *benannte* Methode, und deshalb funktioniert `-=` in `Dispose` und beim Neustart. Ein Lambda wie in `Program.cs` lässt sich nicht mehr abmelden – man hat keine Referenz darauf.
 
 Nicht nur der Spieler ist ein Subjekt. Auch `Spielfeld` meldet sich, wenn eine komplette Runde vorbei ist – also nachdem der Held gezogen ist und alle Gegner nachgezogen sind:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Kern/Spielfeld.cs">Adventure.Kern/Spielfeld.cs</a></div>
 
 ```csharp
 public event EventHandler<RundeEventArgs>? RundeBeendet;
@@ -156,6 +181,9 @@ public void SpielerZieht(Richtung richtung)
     RundeBeendet?.Invoke(this, new RundeEventArgs(Runde, LetzteMeldung));
 }
 ```
+
+</div>
+</div>
 
 Ein Subjekt kann also mehrere Ereignisse anbieten, und ein Beobachter darf sich für mehrere registrieren. Ein Rundenprotokoll hört bei beiden zu, ohne dass Kern, Konsole oder Web davon etwas erfahren:
 
@@ -197,7 +225,7 @@ Die Nachteile folgen aus derselben Unsichtbarkeit. Wer `spieler.SchatzEinsammeln
 Das Subjekt hält Referenzen auf alle registrierten Beobachter. Ein Beobachter, der sich nie mit `-=` abmeldet, wird vom [Garbage Collector](/modules/garbage_collection/garbage_collection.md) nicht freigegeben, solange das Subjekt lebt – bei einem langlebigen Subjekt und vielen kurzlebigen Beobachtern (Dialoge, Anzeigen, Browsersitzungen) ist das ein klassisches Speicherleck. Im Adventure sieht man das ab [Vorlesung 09](/lectures/09/09.md): `Program.cs` registriert nach `F9` einen zweiten Lambda-Beobachter am neuen Spieler, weil sich der alte weder abmelden lässt noch abgemeldet werden muss; würde dabei versehentlich derselbe Spieler zweimal abonniert, piepste die Konsole doppelt. Deshalb: Wer sich mit einer benannten Methode registriert, kann sich abmelden. Wer sich mit einem Lambda registriert, kann es nicht.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Schreibe eine Klasse `Rundenprotokoll`, die sich bei `Spielfeld.RundeBeendet` *und* bei `Spieler.SchatzGefunden` registriert und beide Meldungen in einer gemeinsamen Liste sammelt. Baue sie zuerst in der klassischen Variante mit einem Interface `IBeobachter` und dann mit `event` – welche Variante braucht mehr Code, und welche kommt ohne Änderung an `Spielfeld` aus? Ergänze anschließend eine Methode `Abmelden()`, die beide Registrierungen wieder löst, und überlege, warum sie mit Lambdas nicht funktioniert.
 {: .notice--info}

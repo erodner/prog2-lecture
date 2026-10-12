@@ -40,6 +40,10 @@ Beide URLs kannst du direkt im Browser öffnen; der Browser ist nur ein besonder
 
 Die Klasse `HttpClient` aus `System.Net.Http` übernimmt in .NET die Rolle des Clients. Sie implementiert zwar `IDisposable`, ist aber die berühmte Ausnahme von der Faustregel aus dem Modul [`IDisposable` und `using`](/modules/idisposable_using/idisposable_using.md): Jede Instanz verwaltet einen Pool von Netzwerkverbindungen, und wer für jede Anfrage einen neuen Client erzeugt und wieder wegwirft, lässt halboffene Verbindungen zurück, bis das System keine mehr hergibt. Deshalb hält man **eine** Instanz für das ganze Programm – in `HttpLevelQuelle` ist das ein `private static readonly`-Feld:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Daten/HttpLevelQuelle.cs">Adventure.Daten/HttpLevelQuelle.cs</a></div>
+
 ```csharp
 public class HttpLevelQuelle : ILevelQuelle
 {
@@ -48,12 +52,19 @@ public class HttpLevelQuelle : ILevelQuelle
     private readonly List<string> namen;
 ```
 
+</div>
+</div>
+
 Netzwerkzugriffe dauern lange – Millisekunden bis Sekunden, in denen das Programm sonst nur warten würde. Methoden, die auf `Async` enden, blockieren deshalb nicht, sondern geben sofort ein `Task<T>` zurück: ein Versprechen auf ein späteres Ergebnis. Das Schlüsselwort `await` löst dieses Versprechen ein: Es wartet, ohne den Thread zu blockieren, und liefert danach das eigentliche Ergebnis. In Top-Level-Statements darf man `await` direkt verwenden; in einer eigenen Methode muss diese `async Task` (oder `async Task<T>`) als Rückgabetyp haben. Bei einer GUI ist das entscheidend: Ohne `await` würde die Oberfläche während des Downloads einfrieren. Mehr über `async`/`await` erfährst du in weiterführenden Veranstaltungen – für dieses Modul genügt: `await` vor jeden `Async`-Aufruf.
 {: .notice--primary}
 
 ## JSON direkt in Objekte: `GetFromJsonAsync<T>`
 
 Den Text einer Antwort könnte man mit `JsonSerializer.Deserialize<T>(text)` in Objekte verwandeln. Weil das so häufig gebraucht wird, gibt es im Namensraum `System.Net.Http.Json` eine Abkürzung, die Herunterladen und Deserialisieren in einem Schritt erledigt. Für unsere `index.json` ist der Zieltyp schlicht `List<string>`:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Daten/HttpLevelQuelle.cs">Adventure.Daten/HttpLevelQuelle.cs</a></div>
 
 ```csharp
 /// <summary>Holt zuerst die Liste der Level – deshalb asynchron und über eine Fabrikmethode.</summary>
@@ -65,6 +76,9 @@ public static async Task<HttpLevelQuelle> ErzeugenAsync(string basisUrl)
     return new HttpLevelQuelle(basisUrl, namen);
 }
 ```
+
+</div>
+</div>
 
 Hier steckt ein Entwurfsproblem und seine Lösung. Ein Konstruktor kann nicht `async` sein – er muss sein Objekt sofort zurückgeben, nicht erst einen `Task`. Die Klasse braucht aber die Levelnamen, bevor sie benutzbar ist. Deshalb ist der Konstruktor `private`, und eine statische **Fabrikmethode** übernimmt: Sie darf `async` sein, holt die Liste und reicht sie dem Konstruktor. Aufgerufen wird sie mit `await`:
 
@@ -82,6 +96,10 @@ Ab dieser Zeile merkt das Spiel keinen Unterschied mehr: `quelle` ist eine `ILev
 
 Ein Level ist keine JSON-Datei, sondern eine schlichte Textkarte. Dafür gibt es `GetStringAsync` – das Gegenstück zu `File.ReadAllText`, nur für URLs:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Daten/HttpLevelQuelle.cs">Adventure.Daten/HttpLevelQuelle.cs</a></div>
+
 ```csharp
 public Level Laden(string name)
 {
@@ -94,6 +112,9 @@ public Level Laden(string name)
     return new Level(name, zeilen);
 }
 ```
+
+</div>
+</div>
 
 Die Zeilen werden hier von Hand getrennt, statt sie wie in `TextdateiLevelQuelle` mit `ReadLine` zu lesen – der ganze Text liegt ja bereits als `string` vor. Das `TrimEnd('\r')` fängt Server ab, die die Datei mit Windows-Zeilenenden ausliefern. Auffällig ist `GetAwaiter().GetResult()`: Damit wartet der Aufruf *blockierend* auf das Ergebnis, weil `ILevelQuelle.Laden` eine synchrone Signatur hat, die wir wegen einer einzigen Implementierung nicht ändern wollen. Der Kommentar im Quelltext sagt ehrlich, warum das hier vertretbar ist. In einer GUI-Anwendung mit größeren Datenmengen wäre es das nicht – dort würde man das Interface auf `Task<Level> LadenAsync(string name)` umstellen.
 {: .notice--warning}
@@ -163,7 +184,7 @@ Console.WriteLine($"Berlin, {wetter?.Current?.Time}: {wetter?.Current?.Temperatu
 
 Was der Server auf der anderen Seite tut, ist kein Geheimnis: Er nimmt eine URL entgegen, ruft eine Methode auf und serialisiert deren Rückgabewert als JSON – also genau die Techniken dieser Vorlesung, nur in Gegenrichtung. Mit ASP.NET Core lässt sich ein solcher Dienst in wenigen Zeilen schreiben; ein `app.MapGet("/levels", () => quelle.LevelNamen)` genügt bereits, um unsere Levelliste anzubieten. Ein `app.MapPost("/spielstaende", ...)` daneben, und mehrere Geräte könnten sich denselben Spielstand teilen – der `ISpielstandSpeicher` bekäme eine dritte Umsetzung, die statt einer Datei einen Server befragt.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v09-daten`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v09-daten`](https://github.com/erodner/prog2-adventure/tree/v09-daten)).
 
 Übung: Erweitere `Program.cs` so, dass das Spiel mit dem Argument `--online` die Level per `HttpLevelQuelle.ErzeugenAsync` holt und sonst wie bisher aus dem Ordner. Fange den Fall ohne Netz ab und falle auf die `EingebauteLevelQuelle` zurück. Miss anschließend mit einer `Stopwatch`, wie lange das erste `Laden` dauert – und überlege, wo ein Zwischenspeicher (*Cache*) sinnvoll wäre.
 {: .notice--info}

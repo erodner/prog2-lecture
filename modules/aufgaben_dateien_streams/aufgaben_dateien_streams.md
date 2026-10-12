@@ -126,7 +126,7 @@ public static void Anhaengen(string pfad, Highscore h)
 
 **Zentrale Designentscheidungen:**
 
-- **`TextReader` als Parameter:** Die Auswertung weiß nichts von Dateien. `new StringReader("#kommentar\nAda;kerker;300;20")` genügt für einen Unit-Test – genau der Trick, den wir in [Vorlesung 12](/lectures/12/12.md) brauchen werden.
+- **`TextReader` als Parameter:** Die Auswertung weiß nichts von Dateien. `new StringReader("#kommentar\nAda;kerker;300;20")` genügt für einen Unit-Test – genau der Trick, den wir in [Vorlesung 11](/lectures/11/11.md) brauchen werden.
 - **Überspringen statt abbrechen:** Anders als beim Spielstand (Aufgabe 4) ist ein verlorener Eintrag kein Schaden. Wer die Warnung sehen will, gibt ein `Action<string>` mit; wer nicht, lässt es weg.
 - **`yield return` statt Liste:** Die Methode liefert die Einträge verzögert, sodass `Take(5)` nach fünf Treffern nicht mehr weiterlesen müsste, wenn die Datei bereits sortiert wäre.
 - **Anhängen statt neu schreiben:** Ein Absturz mitten im Schreiben kann so höchstens die letzte Zeile beschädigen, nicht die ganze Bestenliste.

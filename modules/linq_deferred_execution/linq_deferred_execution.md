@@ -157,7 +157,7 @@ Die Query-Syntax ist nur die Oberfläche. Intern übersetzt der Compiler `where 
 Übung: Definiere eine Abfrage, die alle Gegenstände liefert, die noch auf dem Boden liegen (`from o in feld.AlleObjekte where o is Gegenstand select o`). Gib das Ergebnis aus, lass den Helden dann über einen Schlüssel laufen und gib dasselbe Ergebnis erneut aus. Sage beide Ausgaben voraus – und erkläre, warum sich die zweite unterscheidet, obwohl du die Abfrage nicht verändert hast. Wiederhole das Experiment mit `ToList()` hinter der Abfrage. Was ändert sich, und warum bleibt die Anzahl der Lebenspunkte des Helden trotzdem in beiden Varianten aktuell?
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 ## Weitere Quellen
 

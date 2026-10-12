@@ -29,7 +29,7 @@ git config --global user.email "vorname.nachname@student.htw-berlin.de"
 
 ## Ein Repository anlegen
 
-Wir wechseln in den Ordner `Adventure`, der die Klassenbibliothek `Adventure.Kern` aus der letzten Vorlesung und das Konsolenprojekt `Adventure.Konsole` zum Spielen enthält, und machen daraus ein Repository. Die Weboberfläche, die Datenhaltung und die Tests kommen in späteren Vorlesungen als weitere Projekte daneben – für Git ändert das nichts. `git init` legt dabei nur den versteckten Ordner `.git/` an – die Dateien selbst bleiben unberührt und sind Git noch unbekannt:
+Wir wechseln in den Ordner `Adventure` mit den Projekten aus den bisherigen Vorlesungen (Kern, Daten, Konsole und Web) und machen daraus ein Repository. Weitere Projekte wie die Tests kommen später daneben, für Git ändert das nichts. `git init` legt dabei nur den versteckten Ordner `.git/` an – die Dateien selbst bleiben unberührt und sind Git noch unbekannt:
 
 ```bash
 cd Adventure
@@ -39,8 +39,11 @@ git status
 # On branch main
 # No commits yet
 # Untracked files:
+#   Adventure.Daten/
 #   Adventure.Kern/
 #   Adventure.Konsole/
+#   Adventure.Web/
+#   Adventure.slnx
 ```
 
 `git status` ist der Befehl, den du am häufigsten tippen wirst. Er zeigt, in welchem Branch du bist, welche Dateien Git nicht kennt (*untracked*), welche geändert sind und welche im Staging-Bereich liegen. Bevor wir etwas hinzufügen, müssen wir aber eine Falle entschärfen.
@@ -82,14 +85,14 @@ git status
 # On branch main
 # Changes to be committed:
 #   new file:   .gitignore
-#   new file:   Adventure.Kern/Position.cs
+#   new file:   Adventure.Daten/EingebauteLevelQuelle.cs
+#   new file:   Adventure.Kern/Koordinate.cs
 #   new file:   Adventure.Kern/Spielfeld.cs
-#   new file:   Adventure.Kern/Spielobjekt.cs
 #   ...
-#   new file:   Adventure.Konsole/Program.cs
-git commit -m "Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen"
-# [main (root-commit) 7d2b0e4] Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen
-#  13 files changed, 743 insertions(+)
+#   new file:   Adventure.Web/Components/Pages/Home.razor
+git commit -m "Adventure mit Kern, Daten, Konsole und Web anlegen"
+# [main (root-commit) 7d2b0e4] Adventure mit Kern, Daten, Konsole und Web anlegen
+#  44 files changed, 1548 insertions(+)
 ```
 
 Die Ausgabe nennt den Branch, die ersten sieben Zeichen des Commit-Hashs und die Anzahl geänderter Dateien. Ab jetzt ist dieser Stand unveränderlich gespeichert. Zwei Dateien gehören in praktisch jedes Repository und sollten früh committet werden: eine `README.md`, die erklärt, was das Projekt ist und wie man es baut (`dotnet build`), und eine `LICENSE`, die festlegt, was andere mit dem Code tun dürfen – ohne Lizenz ist Code trotz Veröffentlichung nicht frei nutzbar. GitLab und GitHub bieten beim Anlegen eines Projekts Vorlagen für beides an.
@@ -127,7 +130,7 @@ git commit -m "Spielfeld: Objekte wieder vom Feld entfernen können"
 ```bash
 git log --oneline
 # a1f9c3e Spielfeld: Objekte wieder vom Feld entfernen können
-# 7d2b0e4 Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen
+# 7d2b0e4 Adventure mit Kern, Daten, Konsole und Web anlegen
 ```
 
 Manchmal will man eine Änderung nicht behalten. `git restore Datei` setzt die Arbeitskopie auf den Stand des Staging-Bereichs bzw. des letzten Commits zurück; `git restore --staged Datei` nimmt eine Datei nur aus dem Staging-Bereich heraus, lässt die Änderung in der Arbeitskopie aber stehen:
@@ -145,7 +148,7 @@ git restore Adventure.Kern/Gegner.cs            # Änderung komplett verwerfen
 **➕ Erweitertes Wissen.** Die folgenden Module setzen diesen Abschnitt nicht voraus.
 {: .notice--success}
 
-Ein Hash wie `a1f9c3e` ist eindeutig, aber nichts, was man sich merkt. Mit einem **Tag** gibt man einem Commit einen festen Namen, typischerweise für eine veröffentlichte Version. Anders als ein Branch wandert ein Tag nicht mit. Im Adventure-Repository markieren Tags wie `v01-vererbung` den Stand nach jeder Vorlesung.
+Ein Hash wie `a1f9c3e` ist eindeutig, aber nichts, was man sich merkt. Mit einem **Tag** gibt man einem Commit einen festen Namen, typischerweise für eine veröffentlichte Version. Anders als ein Branch wandert ein Tag nicht mit. Im Adventure-Repository markieren Tags wie [`v01-vererbung`](https://github.com/erodner/prog2-adventure/tree/v01-vererbung) den Stand nach jeder Vorlesung.
 
 ```bash
 git tag -a v1.0 -m "Erste spielbare Version"   # Tag setzen

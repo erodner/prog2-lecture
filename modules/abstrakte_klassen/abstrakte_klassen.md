@@ -71,7 +71,7 @@ public abstract class Spielobjekt
 
 Zwei Dinge fallen auf. Erstens steht hinter `Symbol` keine Berechnung mehr, nur ein `{ get; }` – die Basisklasse verspricht, dass es dieses Property gibt, überlässt die Antwort aber den Unterklassen. Zweitens ist der Konstruktor `protected`: Er wird nur noch von abgeleiteten Klassen über `base(...)` aufgerufen, denn von außen kann ohnehin niemand ein `Spielobjekt` erzeugen. `IstPassierbar` und `Beschreibung()` bleiben dagegen `virtual`, weil „Wände blockieren, alles andere überschreibt bei Bedarf“ eine brauchbare Standardantwort ist – mehr dazu im [nächsten Modul](/modules/abstrakte_mitglieder/abstrakte_mitglieder.md).
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)).
 {: .notice--primary}
 
 ## Keine Objekte aus abstrakten Klassen

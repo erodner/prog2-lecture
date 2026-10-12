@@ -30,7 +30,7 @@ Jeder Push auf `main` baut und veröffentlicht die Seite automatisch über GitHu
 ## Struktur
 
 ```
-lectures/       # Eine Datei pro Vorlesungseinheit (00–12)
+lectures/       # Eine Datei pro Vorlesungseinheit (00–11)
 modules/        # Einzelne Lehrmodule mit Inhalt und Codebeispielen
 examples/       # Kleine .NET-Beispielprojekte (nicht Teil der Webseite); das Spiel liegt in prog2-adventure
 assets/         # Bilder, Daten und statische Dateien
@@ -39,7 +39,7 @@ _data/          # Navigation und Autorenprofile
 
 ## Beispielspiel „Adventure“
 
-Das durchgehende Beispiel der Vorlesung ist ein 2D-Dungeon-Spiel im eigenen Repository [erodner/prog2-adventure](https://github.com/erodner/prog2-adventure). Git-Tags markieren dort den Stand nach den Vorlesungen 01, 02, 04, 09 und 12. Die kleinen Zusatzbeispiele unter `examples/` (P/Invoke, NuGet, Unit-Tests) baut man mit `dotnet build`; Details in [`examples/README.md`](examples/README.md).
+Das durchgehende Beispiel der Vorlesung ist ein 2D-Dungeon-Spiel im eigenen Repository [erodner/prog2-adventure](https://github.com/erodner/prog2-adventure). Git-Tags markieren dort den Stand nach den Vorlesungen 01, 02, 03, 09 und 11. Die kleinen Zusatzbeispiele unter `examples/` (NuGet, Unit-Tests) baut man mit `dotnet build`; Details in [`examples/README.md`](examples/README.md).
 
 ## Lizenz
 

@@ -31,6 +31,10 @@ Was wir brauchen, ist eine Möglichkeit, Fähigkeiten zu beschreiben, die keinen
 
 Ein Interface wird mit dem Schlüsselwort `interface` statt `class` definiert. Es enthält nur die Signaturen der Mitglieder, die eine Klasse anbieten muss, wenn sie das Interface implementiert:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/IInteragierbar.cs">Adventure.Kern/IInteragierbar.cs</a></div>
+
 ```csharp
 /// <summary>
 /// Etwas, mit dem der Spieler etwas tun kann, wenn er davor steht:
@@ -52,6 +56,9 @@ public interface ISammelbar
 }
 ```
 
+</div>
+</div>
+
 Drei Dinge sind hier anders als bei Klassen. Erstens steht bei den Mitgliedern **keine Sichtbarkeit** – sie sind automatisch `public`, denn ein Interface beschreibt ja gerade, was von außen nutzbar ist. Zweitens haben die Methoden keinen Rumpf, ähnlich wie abstrakte Methoden. Drittens beginnt der Name mit einem großen `I`: Das ist keine Sprachregel, aber eine Konvention, an die sich die gesamte .NET-Welt hält – man erkennt Interfaces im Code sofort.
 
 Ein Interface hat keine Felder und keine Konstruktoren. Es beschreibt ausschließlich, *was* ein Objekt kann – nicht, welche Daten es dafür intern speichert. Das `string Name { get; }` in `ISammelbar` ist deshalb kein Auto-Property, sondern nur die Forderung, dass die Klasse ein lesbares `Name`-Property bereitstellt.
@@ -60,6 +67,10 @@ Ein Interface hat keine Felder und keine Konstruktoren. Es beschreibt ausschlie�
 ## Ein Interface implementieren
 
 Die Syntax sieht aus wie Vererbung – nach dem Doppelpunkt steht das Interface, hinter der Basisklasse und durch Komma getrennt. Die Bedeutung ist aber eine andere: Die Klasse erbt nichts, sondern **verpflichtet sich**, alle Mitglieder des Interfaces öffentlich bereitzustellen.
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/Tuer.cs">Adventure.Kern/Tuer.cs</a></div>
 
 ```csharp
 public sealed class Tuer : StatischesObjekt, IInteragierbar
@@ -85,9 +96,16 @@ public sealed class Tuer : StatischesObjekt, IInteragierbar
 }
 ```
 
+</div>
+</div>
+
 Die Tür ist jetzt beides: **ein** statisches Objekt (Vererbung, mit `Name`, `Position` und dem geerbten Vertrag `Symbol`) und sie **kann** Interaktion (Interface). `public` ist bei `Interagieren` Pflicht – das Interface verspricht öffentliche Mitglieder, also muss die Klasse sie auch öffentlich anbieten. Lässt man die Methode weg oder macht sie privat, meldet der Compiler, dass `Tuer` das Interface nicht vollständig implementiert.
 
 Nach demselben Muster wird die `Truhe` interagierbar, und die Gegenstände erfüllen den zweiten Vertrag. Interessant ist dabei, dass nicht die einzelnen Gegenstände `ISammelbar` implementieren, sondern ihre gemeinsame abstrakte Basisklasse:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/Gegenstand.cs">Adventure.Kern/Gegenstand.cs</a></div>
 
 ```csharp
 public abstract class Gegenstand : StatischesObjekt, ISammelbar
@@ -119,6 +137,9 @@ public sealed class Trank : Gegenstand
     }
 }
 ```
+
+</div>
+</div>
 
 `Schluessel` und `Trank` erfüllen `ISammelbar`, ohne es je zu erwähnen: `Name` kommt aus `Spielobjekt`, `Aufheben` aus `Gegenstand`. Ein Interface wird mitvererbt – wer von einer Klasse erbt, die es implementiert, implementiert es ebenfalls.
 
@@ -190,6 +211,10 @@ Die durchgezogenen Linien sind derselbe Baum wie im Modul über [abstrakte Klass
 
 Ein Interface kann überall dort als Typ stehen, wo auch eine Klasse stehen könnte: bei Variablen, Parametern, Rückgabewerten und in Sammlungen. Genau das nutzt die Zugregel des Spielfelds. Wenn der Spieler in eine Richtung zieht, schaut sie zuerst nach, was dort steht:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/Spielfeld.cs">Adventure.Kern/Spielfeld.cs</a> (aus <code>SpielerZieht</code>)</div>
+
 ```csharp
 Koordinate ziel = Spieler.Position.Verschoben(richtung);
 StatischesObjekt? davor = StatischesObjektAn(ziel);
@@ -209,9 +234,16 @@ else if (Spieler.Bewegen(richtung, this))
 }
 ```
 
+</div>
+</div>
+
 Das `is`-Muster prüft zur Laufzeit, ob das Objekt die Fähigkeit hat, und liefert gleich eine passend typisierte Variable. Über `interagierbar` ist ausschließlich `Interagieren` erreichbar – `interagierbar.Symbol` würde nicht kompilieren, obwohl dahinter sicher ein `Spielobjekt` steckt. Das kennen wir vom [Kompilierzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md): Der deklarierte Typ bestimmt, was man sehen darf, der Laufzeittyp bestimmt, was passiert.
 
 Der große Gewinn ist die Offenheit dieser Regel. Sie nennt weder `Tuer` noch `Truhe`. Jede neue Objektart, die `IInteragierbar` implementiert – ein Hebel, ein Brunnen, ein Schalter – funktioniert sofort, ohne dass `SpielerZieht` angefasst werden muss. Dasselbe gilt für das Inventar, das mit beliebigen sammelbaren Dingen arbeitet:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/Inventar.cs">Adventure.Kern/Inventar.cs</a></div>
 
 ```csharp
 public class Inventar<T> : IEnumerable<T> where T : ISammelbar
@@ -219,6 +251,9 @@ public class Inventar<T> : IEnumerable<T> where T : ISammelbar
     // ...
 }
 ```
+
+</div>
+</div>
 
 Diese Schreibweise mit dem `T` schauen wir uns in Vorlesung 05 genauer an; hier zählt nur die Aussage: Was ins Inventar darf, wird über ein Interface festgelegt, nicht über eine Basisklasse.
 

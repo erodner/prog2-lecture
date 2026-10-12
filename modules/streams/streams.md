@@ -136,9 +136,9 @@ using StreamReader r = new StreamReader(speicher);
 Console.WriteLine(r.ReadLine()); // #@.E#
 ```
 
-Ohne `leaveOpen: true` würde der `StreamWriter` beim Schließen auch den darunterliegenden `MemoryStream` schließen. Für Tests ist das ein praktisches Muster: Eine Methode, die einen `Stream` oder `TextReader` entgegennimmt statt eines Pfads, lässt sich mit einem `MemoryStream` oder `StringReader` füttern – ganz ohne Dateisystem. Diesen Gedanken greifen wir in [Vorlesung 12](/lectures/12/12.md) wieder auf.
+Ohne `leaveOpen: true` würde der `StreamWriter` beim Schließen auch den darunterliegenden `MemoryStream` schließen. Für Tests ist das ein praktisches Muster: Eine Methode, die einen `Stream` oder `TextReader` entgegennimmt statt eines Pfads, lässt sich mit einem `MemoryStream` oder `StringReader` füttern – ganz ohne Dateisystem. Diesen Gedanken greifen wir in [Vorlesung 11](/lectures/11/11.md) wieder auf.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v09-daten`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v09-daten`](https://github.com/erodner/prog2-adventure/tree/v09-daten)).
 
 Übung: Schreibe eine Methode `Level LevelLesen(TextReader quelle, string name)`, die die Schleife aus `Laden` enthält, aber keinen Pfad mehr kennt. Rufe sie einmal mit `File.OpenText("kerker.txt")` und einmal mit `new StringReader("#####\n#@.E#\n#####")` auf. Welchen Vorteil hat diese Signatur, wenn das Level später per HTTP kommt?
 {: .notice--info}

@@ -28,6 +28,10 @@ Der naheliegende Gedanke wäre, einfach das ganze `Spielfeld` in eine Datei zu s
 
 Deshalb speichern wir nicht das Spiel, sondern **das, was man braucht, um es fortzusetzen**: das Level, in dem gespielt wird, plus alle Abweichungen vom Ausgangszustand. Die Klasse `Spielstand` in `Adventure.Kern` ist genau diese Liste:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Kern/Spielstand.cs">Adventure.Kern/Spielstand.cs</a></div>
+
 ```csharp
 /// <summary>
 /// Alles, was man braucht, um ein laufendes Spiel später fortzusetzen.
@@ -47,6 +51,9 @@ public class Spielstand
     public List<Koordinate> GegnerPositionen { get; set; } = new();
 }
 ```
+
+</div>
+</div>
 
 Drei Entwurfsentscheidungen stecken darin. Erstens: **keine Logik**. Die Klasse hat keine Methode, keine Prüfung, keinen Konstruktor – sie ist eine Transportkiste, deren einziger Zweck der Weg durch die Datei ist. Zweitens: **öffentliche `get`- und `set`-Zugriffe** an jeder Property. `System.Text.Json` schreibt nur öffentliche Properties und braucht beim Laden eine Möglichkeit, sie zu setzen; ein `private set` wie bei `Spieler.Lebenspunkte` bliebe beim Deserialisieren leer. Drittens: **Positionen statt Objektverweise**. Statt „diese Tür ist offen“ steht in der Datei „die Tür auf Feld (7, 4) ist offen“ – das überlebt jede Umbenennung im Kern und ist beim Lesen sofort verständlich.
 
@@ -149,7 +156,11 @@ Unser Spiel braucht das nicht, und das ist eine bewusste Entscheidung: Ein Spiel
 
 ## `JsonSpielstandSpeicher`: Datenhaltung für das Spiel
 
-Damit haben wir alles für einen Speicher, der das Spiel über das Programmende hinaus rettet. `Adventure.Kern` legt mit dem Interface fest, *was* ein Speicher können muss, ohne sich für das *Wie* zu interessieren:
+Damit haben wir alles für einen Speicher, der das Spiel über das Programmende hinaus rettet. `Adventure.Kern` legt mit dem Interface fest, *was* ein Speicher können muss, ohne sich für das *Wie* zu interessieren (links). Die Umsetzung in `Adventure.Daten` besteht dann aus je einem Serialisierer- und einem Dateiaufruf (rechts):
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Kern/Spielstand.cs">Adventure.Kern/Spielstand.cs</a></div>
 
 ```csharp
 /// <summary>Wo Spielstände landen (Datei, Browser, Datenbank), ist dem Spiel egal.</summary>
@@ -160,7 +171,9 @@ public interface ISpielstandSpeicher
 }
 ```
 
-Die Umsetzung in `Adventure.Daten` besteht dann aus je einem Serialisierer- und einem Dateiaufruf:
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Daten/JsonSpielstandSpeicher.cs">Adventure.Daten/JsonSpielstandSpeicher.cs</a></div>
 
 ```csharp
 public class JsonSpielstandSpeicher : ISpielstandSpeicher
@@ -186,9 +199,16 @@ public class JsonSpielstandSpeicher : ISpielstandSpeicher
 }
 ```
 
+</div>
+</div>
+
 `Laden` liefert `null`, wenn es noch keine Datei gibt – „kein Spielstand vorhanden“ ist kein Fehler, sondern der Normalfall beim ersten Start. Die Optionen liegen in einem `static readonly`-Feld, weil `JsonSerializerOptions` intern Metadaten über die Typen aufbaut und deren Wiederverwendung deutlich schneller ist als ein neues Objekt pro Aufruf.
 
 In `Adventure.Konsole/Program.cs` hängen daran nur noch zwei Tasten – hier ohne die Hinweismeldungen, die der Spieler danach zu sehen bekommt:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Konsole/Program.cs">Adventure.Konsole/Program.cs</a></div>
 
 ```csharp
 ISpielstandSpeicher speicher = new JsonSpielstandSpeicher("spielstand.json");
@@ -203,9 +223,12 @@ if (taste == ConsoleKey.F9 && speicher.Laden() is Spielstand stand)
 }
 ```
 
+</div>
+</div>
+
 Weil die Spielschleife nur `ISpielstandSpeicher` kennt, ließe sich die JSON-Datei jederzeit gegen eine Datenbank oder den `localStorage` des Browsers austauschen, ohne eine Zeile im Kern zu ändern – derselbe Lohn der Schichtenarchitektur, den wir schon bei `ILevelQuelle` gesehen haben.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v09-daten`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v09-daten`](https://github.com/erodner/prog2-adventure/tree/v09-daten)).
 
 Übung: Speichere ein Spiel mit F5, öffne `spielstand.json` im Editor und setze `Lebenspunkte` auf `99`. Lade mit F9 – wie viele Lebenspunkte hat der Held, und in welcher Methode wird das begrenzt? Entferne anschließend eine Position aus `OffeneTueren` und überlege, warum das Spiel danach trotzdem läuft, während ein `"Runde": "viele"` eine `JsonException` auslöst.
 {: .notice--info}

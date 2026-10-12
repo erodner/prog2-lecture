@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Entwurfsmustern ist die Mustererkennung wörtlich gemeint: Die Kunst besteht weniger darin, ein Muster zu implementieren, als darin, es in fremdem Code wiederzuerkennen, das passende auszuwählen – und zu merken, wenn eines fehl am Platz ist. Alle vier Aufgaben spielen im Adventure – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`). Nimm dir für jede Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Dazu gehören Abstraktion, Zerlegung, Mustererkennung und Algorithmenentwurf. Bei Entwurfsmustern ist die Mustererkennung wörtlich gemeint: Die Kunst besteht weniger darin, ein Muster zu implementieren, als darin, es in fremdem Code wiederzuerkennen, das passende auszuwählen – und zu merken, wenn eines fehl am Platz ist. Alle vier Aufgaben spielen im Adventure – das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)). Nimm dir für jede Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Mustererkennung
 
@@ -386,7 +386,7 @@ public sealed class Wache : Gegner
 }
 ```
 
-Kurzfristig ist das bequem: `Gegner.NaechsterZug` braucht keinen Parameter mehr, und die Konsole kommt ohne Variable aus. Dann sollen die Tests aus Vorlesung 12 geschrieben werden – und nichts davon funktioniert mehr.
+Kurzfristig ist das bequem: `Gegner.NaechsterZug` braucht keinen Parameter mehr, und die Konsole kommt ohne Variable aus. Dann sollen die Tests aus Vorlesung 11 geschrieben werden – und nichts davon funktioniert mehr.
 
 - Welche konkreten Tests lassen sich mit dieser Version nicht mehr schreiben? Sieh dir an, wie `SpielfeldTests` seine Spielfelder baut.
 - Was passiert, wenn zwei Browser gleichzeitig `Adventure.Web` öffnen?

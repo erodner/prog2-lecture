@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Im Modul [NuGet-Grundlagen](/modules/nuget_grundlagen/nuget_grundlagen.md) haben wir gelernt, ein Paket zu bewerten. Jetzt holen wir es ins Projekt – und schauen dabei genau hin, was auf der Festplatte passiert. Wie bei Git in der [Vorlesung 03](/lectures/03/03.md) fangen wir mit der Kommandozeile an, weil man dort jeden Schritt sieht, und ordnen die Schaltflächen der IDEs danach ein. Als Beispiel dient das Logging-Paket NLog, mit dem wir im nächsten Modul arbeiten.
+Im Modul [NuGet-Grundlagen](/modules/nuget_grundlagen/nuget_grundlagen.md) haben wir gelernt, ein Paket zu bewerten. Jetzt holen wir es ins Projekt – und schauen dabei genau hin, was auf der Festplatte passiert. Wie bei Git in der [Vorlesung 04](/lectures/04/04.md) fangen wir mit der Kommandozeile an, weil man dort jeden Schritt sieht, und ordnen die Schaltflächen der IDEs danach ein. Als Beispiel dient das Logging-Paket NLog, mit dem wir im nächsten Modul arbeiten.
 
 ## Ein Paket hinzufügen
 
@@ -32,6 +32,10 @@ dotnet add package NLog --version 6.2.0
 
 Das Ergebnis ist eine neue Zeile in der Projektdatei. Mehr als diese Zeile ist ein Paket aus Sicht des Projekts nicht:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-lecture/blob/main/examples/10_nuget/NLogDemo/NLogDemo.csproj">NLogDemo/NLogDemo.csproj</a></div>
+
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -45,6 +49,9 @@ Das Ergebnis ist eine neue Zeile in der Projektdatei. Mehr als diese Zeile ist e
 
 </Project>
 ```
+
+</div>
+</div>
 
 `PackageReference` ist das Gegenstück zur `ProjectReference` aus dem Modul [Projekte mit der dotnet-CLI](/modules/dotnet_cli_projekte/dotnet_cli_projekte.md): Statt auf ein Projekt im selben Ordner zeigt es auf ein Paket in einem Feed. Man kann die Zeile auch von Hand in die `.csproj` schreiben – das Ergebnis ist dasselbe.
 

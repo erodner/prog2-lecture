@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Beim Testen heißt das vor allem: systematisch überlegen, welche Fälle es gibt, Fehlermuster in fremdem Code erkennen und Klassen so entwerfen, dass sie sich überhaupt testen lassen. Alle Aufgaben arbeiten am Adventure aus dem Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v12-tests`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Beim Testen heißt das vor allem: systematisch überlegen, welche Fälle es gibt, Fehlermuster in fremdem Code erkennen und Klassen so entwerfen, dass sie sich überhaupt testen lassen. Alle Aufgaben arbeiten am Adventure aus dem Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v11-tests`](https://github.com/erodner/prog2-adventure/tree/v11-tests)). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Zerlegung
 

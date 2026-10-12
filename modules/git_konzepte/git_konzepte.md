@@ -71,8 +71,8 @@ Daraus folgen zwei praktische Regeln. In `.git/` arbeitet man nie von Hand, das 
 Jeder Commit bekommt als Namen einen **Hash**, eine 40-stellige Hexadezimalzahl, die Git aus dem Inhalt des Commits berechnet. Im Alltag sieht man meist nur die ersten sieben Zeichen. Außerdem merkt sich jeder Commit seinen Vorgänger:
 
 ```
-commit d55a25e  "Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen"
-  Vorgänger ──► commit 804f9e8  "Vorlesung 01: Spielobjekt, Wand und Spieler"
+commit eabce72  "Vorlesung 02: abstrakte Klassen, Interfaces, Gegner, Türen, Truhen"
+  Vorgänger ──► commit 6441a70  "Vorlesung 01: Spielobjekt, Wand und Spieler"
 ```
 
 Weil der Hash aus dem Inhalt berechnet wird, ist er zugleich eine Prüfsumme: Ändert sich auch nur ein Byte, entsteht ein anderer Hash. Nichts in der Historie lässt sich deshalb unbemerkt manipulieren.

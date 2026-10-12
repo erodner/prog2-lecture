@@ -66,6 +66,10 @@ Backslashes in Pfad-Literalen wie `"C:\\spiele\\levels.txt"` sind gleich doppelt
 
 Damit können wir die erste Einschränkung des Spiels beseitigen. Im Repository liegt neben den Projekten ein Ordner `levels/` mit den Dateien `kerker.txt`, `katakomben.txt` und `schatzkammer.txt`. Die Klasse `TextdateiLevelQuelle` in `Adventure.Daten` liest ihn aus – und weil sie dasselbe Interface `ILevelQuelle` erfüllt wie die eingebaute Variante, merkt der Rest des Spiels nichts von der Umstellung:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Daten/TextdateiLevelQuelle.cs">Adventure.Daten/TextdateiLevelQuelle.cs</a></div>
+
 ```csharp
 public class TextdateiLevelQuelle : ILevelQuelle
 {
@@ -87,6 +91,9 @@ public class TextdateiLevelQuelle : ILevelQuelle
             .ToList()!;
 ```
 
+</div>
+</div>
+
 `GetFiles` liefert alle passenden **vollständigen Pfade** als `string[]`; das Muster `"*.txt"` filtert nach Dateiendung. Aus `/…/levels/kerker.txt` macht `Path.GetFileNameWithoutExtension` den Levelnamen `kerker` – die Methode ist hier als [Methodengruppe](/modules/func_action/func_action.md) an `Select` übergeben. Das anschließende `OrderBy` sorgt dafür, dass die Reihenfolge nicht vom Dateisystem abhängt: Ohne es liefert derselbe Ordner unter Windows und Linux womöglich eine andere Liste, und das Spiel startet mit einem anderen Level.
 
 Bei sehr großen Verzeichnissen ist `Directory.EnumerateFiles` die bessere Wahl: Es gibt ein `IEnumerable<string>` zurück, das die Einträge erst liefert, wenn man darüber iteriert – genau das Prinzip der [verzögerten Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md). Schreibt man umgekehrt in ein Verzeichnis, das es noch nicht gibt, legt man es vorher mit `Directory.CreateDirectory(ordner)` an; die Methode tut nichts, wenn der Ordner schon existiert, und erzeugt bei Bedarf auch alle Zwischenverzeichnisse.
@@ -94,6 +101,10 @@ Bei sehr großen Verzeichnissen ist `Directory.EnumerateFiles` die bessere Wahl:
 ## Existiert die Datei? `File.Exists` und `FileInfo`
 
 Bevor man eine Datei liest, sollte man wissen, ob es sie gibt. Genau damit beginnt die Lade-Methode derselben Klasse:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Daten/TextdateiLevelQuelle.cs">Adventure.Daten/TextdateiLevelQuelle.cs</a></div>
 
 ```csharp
     public Level Laden(string name)
@@ -106,6 +117,9 @@ Bevor man eine Datei liest, sollte man wissen, ob es sie gibt. Genau damit begin
         // ... zeilenweise lesen, siehe Modul "Streams"
     }
 ```
+
+</div>
+</div>
 
 Die Methode prüft nicht nur, sondern wirft eine **sprechende** Ausnahme: Der Text nennt den Levelnamen, den der Benutzer eingegeben hat, und der zweite Konstruktorparameter hält den Pfad fest, an dem gesucht wurde. Das ist deutlich hilfreicher als die Standardmeldung, die .NET beim Öffnen einer fehlenden Datei erzeugt.
 
@@ -124,11 +138,18 @@ Console.WriteLine($"Zuletzt geändert: {info.LastWriteTime}");
 
 Ein `.txt` im Projektordner landet nicht von allein im Ausgabeverzeichnis, in dem die gebaute `.dll` liegt. Deshalb steht in `Adventure.Konsole.csproj` eine Zeile, die die Level-Dateien beim Bauen mitkopiert:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Konsole/Adventure.Konsole.csproj">Adventure.Konsole/Adventure.Konsole.csproj</a></div>
+
 ```xml
 <ItemGroup>
   <None Include="..\levels\*.txt" Link="levels\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
 </ItemGroup>
 ```
+
+</div>
+</div>
 
 `None` heißt „keine Quelldatei, die übersetzt wird“, `CopyToOutputDirectory="PreserveNewest"` kopiert nur, wenn sich die Datei geändert hat, und `Link` bestimmt, wo sie im Ausgabeordner landet. Damit findet `Path.Combine(AppContext.BaseDirectory, "levels")` zur Laufzeit genau die Dateien, die im Repository neben den Projekten liegen. Wer ein neues Level `arena.txt` in `levels/` anlegt, muss keine einzige Zeile C# ändern – es taucht beim nächsten `dotnet run` in `LevelNamen` auf.
 
@@ -165,7 +186,7 @@ Die Reihenfolge der `catch`-Blöcke ist wichtig: `FileNotFoundException` und `Di
 Ein `File.Exists`-Aufruf vor dem Lesen ersetzt die Ausnahmebehandlung nicht: Zwischen Prüfung und Zugriff kann ein anderes Programm die Datei löschen. Prüfen ist gut für die Benutzerführung, `try`/`catch` bleibt trotzdem nötig.
 {: .notice--primary}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v09-daten`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v09-daten`](https://github.com/erodner/prog2-adventure/tree/v09-daten)).
 
 Übung: Erweitere `TextdateiLevelQuelle` um eine Methode `void Speichern(Level level)`, die die Zeilen eines Levels als `<name>.txt` in den Ordner schreibt. Lege den Ordner bei Bedarf mit `Directory.CreateDirectory` an, verweigere Namen, die `Path.GetInvalidFileNameChars()` enthalten, und prüfe anschließend mit `LevelNamen`, dass das neue Level auftaucht.
 {: .notice--info}

@@ -118,7 +118,7 @@ git commit
 # [main 6d0f9a2] Merge branch 'feature/falle'
 ```
 
-Bauen und Ausprobieren **vor** dem Commit ist kein optionaler Schritt. Ein Merge kann auch ohne Konfliktmarker fachlich falsch sein: Wenn eine Seite eine Methode umbenennt und die andere an einer ganz anderen Stelle den alten Namen aufruft, fügt Git beides klaglos zusammen – und erst der Compiler meckert. Sobald es Unit-Tests gibt (dazu mehr in [Vorlesung 12](/lectures/12/12.md)), läuft an dieser Stelle zusätzlich `dotnet test`.
+Bauen und Ausprobieren **vor** dem Commit ist kein optionaler Schritt. Ein Merge kann auch ohne Konfliktmarker fachlich falsch sein: Wenn eine Seite eine Methode umbenennt und die andere an einer ganz anderen Stelle den alten Namen aufruft, fügt Git beides klaglos zusammen – und erst der Compiler meckert. Sobald es Unit-Tests gibt (dazu mehr in [Vorlesung 11](/lectures/11/11.md)), läuft an dieser Stelle zusätzlich `dotnet test`.
 {: .notice--warning}
 
 Bist du mitten im Merge und merkst, dass du erst mit der anderen Person reden willst, bricht `git merge --abort` alles ab und stellt den Zustand vor dem `git merge` wieder her. Nichts geht verloren, beide Branches bleiben unverändert.
@@ -133,7 +133,7 @@ Konflikte lassen sich nicht ganz verhindern, aber selten und klein halten:
 
 - **Klein committen, oft pushen:** Ein Branch, der drei Tage alt ist, kollidiert eher als einer, der drei Stunden alt ist.
 - **Oft pullen bzw. `main` in den Feature-Branch mergen:** Wer regelmäßig `git merge main` im Feature-Branch ausführt, löst kleine Konflikte sofort statt eines großen am Ende.
-- **Absprachen im Team:** Wenn zwei Personen gleichzeitig `Spielfeld.cs` umbauen wollen, hilft ein kurzes Gespräch mehr als jedes Werkzeug. Eine saubere Aufteilung in Klassen und Dateien hilft ebenfalls: Wer an `Tuer.cs` arbeitet, kommt niemandem in `Gegner.cs` in die Quere – und sobald Oberfläche und Spiellogik ab [Vorlesung 04](/lectures/04/04.md) in getrennten Projekten liegen, gilt das erst recht.
+- **Absprachen im Team:** Wenn zwei Personen gleichzeitig `Spielfeld.cs` umbauen wollen, hilft ein kurzes Gespräch mehr als jedes Werkzeug. Eine saubere Aufteilung in Klassen und Dateien hilft ebenfalls: Wer an `Tuer.cs` arbeitet, kommt niemandem in `Gegner.cs` in die Quere – und weil Oberfläche und Spiellogik seit [Vorlesung 03](/lectures/03/03.md) in getrennten Projekten liegen, gilt das erst recht.
 - **Keine kosmetischen Massenänderungen:** Ein Commit, der alle Dateien neu formatiert, kollidiert mit jedem offenen Branch. Formatierung nur in abgesprochenen, eigenen Commits ändern.
 
 Übung: Erzeuge in deinem Repository absichtlich einen Konflikt: Ändere in `main` die Meldung „Da geht es nicht weiter.“ in `Spielfeld.SpielerZieht`, lege dann einen Branch vom vorigen Commit an (`git switch -c test HEAD~1`) und ändere dort dieselbe Zeile anders. Merge den Branch in `main`, sieh dir die Marker an, löse den Konflikt auf und prüfe mit `git log --oneline --graph`, dass ein Merge-Commit mit zwei Eltern entstanden ist.

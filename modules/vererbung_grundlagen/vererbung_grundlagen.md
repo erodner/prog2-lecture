@@ -211,7 +211,7 @@ held.Bewegen(Richtung.Rechts, feld);     // so herum: geprüfter Schritt auf (2,
 
 C# kennt nur **Einfachvererbung**: Eine Klasse hat genau eine direkte Basisklasse. Hierarchien können aber beliebig tief werden – in der nächsten Vorlesung schieben wir zwischen `Spielobjekt` und die konkreten Klassen noch eine Ebene ein (`StatischesObjekt` für alles, was liegen bleibt, `BeweglichesObjekt` für Spieler und Gegner), und alles, was dort steht, gilt automatisch auch weiter unten. Wer Verhalten aus mehreren Quellen kombinieren möchte, greift zu Interfaces; die lernen wir in [Vorlesung 02](/lectures/02/02.md) kennen.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v01-vererbung`](https://github.com/erodner/prog2-adventure/tree/v01-vererbung)).
 
 Übung: Lege eine Klasse `Tuer : Spielobjekt` an, die im Konstruktor nur eine `Koordinate` bekommt, dort `: base("Tür", position)` aufruft und zusätzlich eine Property `bool IstOffen { get; private set; }` sowie eine Methode `Oeffnen()` erhält. Füge eine Tür zum Spielfeld hinzu und gib `tuer.Beschreibung()` aus – woher kommt diese Methode? Versuche anschließend, in `Oeffnen()` die Zeile `Position = new Koordinate(0, 0);` zu schreiben: Warum ist das erlaubt, obwohl der Setter `protected` ist?
 {: .notice--info}

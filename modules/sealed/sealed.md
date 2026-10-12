@@ -40,7 +40,7 @@ class Geheimwand : Wand                 // Fehler CS0509
 }
 ```
 
-Der Compiler meldet CS0509: „kann nicht von dem versiegelten Typ `Wand` abgeleitet werden.“ Wer eine `Wand` in der Hand hält, weiß damit garantiert, womit er es zu tun hat – und wenn jemand später doch eine durchlässige Mauer braucht, muss er eine bewusste Entscheidung treffen und eine eigene Klasse neben `Wand` stellen, statt heimlich deren Bedeutung zu verbiegen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`).
+Der Compiler meldet CS0509: „kann nicht von dem versiegelten Typ `Wand` abgeleitet werden.“ Wer eine `Wand` in der Hand hält, weiß damit garantiert, womit er es zu tun hat – und wenn jemand später doch eine durchlässige Mauer braucht, muss er eine bewusste Entscheidung treffen und eine eigene Klasse neben `Wand` stellen, statt heimlich deren Bedeutung zu verbiegen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v01-vererbung`](https://github.com/erodner/prog2-adventure/tree/v01-vererbung)).
 
 ## Versiegeln, damit Prüfungen halten
 

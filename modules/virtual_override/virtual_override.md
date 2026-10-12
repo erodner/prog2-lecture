@@ -167,7 +167,7 @@ public bool IstFrei(Koordinate p)
 
 `IstInnerhalb` prüft nur, ob die Koordinate auf dem Raster liegt: `X` zwischen `0` und `Breite - 1`, `Y` zwischen `0` und `Hoehe - 1`. Ohne diese Prüfung könnte der Held aus einem Raum ohne geschlossene Wand einfach hinauslaufen. `IstFrei` nutzt sie als ersten Schritt. Liegt das Feld auf dem Raster, fragt die Methode `ObjektAn`: Ein leeres Feld ist frei, ein belegtes nur, wenn das Objekt passierbar ist. `o.IstPassierbar` ist wieder eine polymorphe Frage, deren Antwort das tatsächliche Objekt gibt.
 
-`AlsText` und `IstFrei` hängen nur von `Spielobjekt` ab. Kommt später eine `Tuer` dazu, die passierbar ist, sobald sie offen ist, oder ein `Verfolger` mit dem Symbol `V`, funktionieren beide Methoden **ohne Änderung** weiter. Das ist der eigentliche Gewinn der Polymorphie: Bestehender Code bleibt stabil, während neue Objektarten hinzukommen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v01-vererbung`).
+`AlsText` und `IstFrei` hängen nur von `Spielobjekt` ab. Kommt später eine `Tuer` dazu, die passierbar ist, sobald sie offen ist, oder ein `Verfolger` mit dem Symbol `V`, funktionieren beide Methoden **ohne Änderung** weiter. Das ist der eigentliche Gewinn der Polymorphie: Bestehender Code bleibt stabil, während neue Objektarten hinzukommen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v01-vererbung`](https://github.com/erodner/prog2-adventure/tree/v01-vererbung)).
 
 ## Erweitern statt ersetzen: `base`
 

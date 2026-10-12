@@ -201,7 +201,7 @@ class Notenverwaltung
 
 - **Der Durchschnitt gehört zu `Student`:** Er hängt nur von den Daten eines einzelnen Studierenden ab. `Notenverwaltung` nutzt ihn, berechnet ihn aber nicht selbst.
 - **`Noten` als `IReadOnlyList<double>`:** Von außen kann man Noten lesen, aber nur über `NoteEintragen` – mit Validierung – hinzufügen.
-- **Keine `Console`-Aufrufe in den Klassen:** Die Fachlogik weiß nichts von der Konsole. Genau diese Trennung ermöglicht in [Vorlesung 04](/lectures/04/04.md), dieselben Klassen hinter einer GUI zu verwenden.
+- **Keine `Console`-Aufrufe in den Klassen:** Die Fachlogik weiß nichts von der Konsole. Genau diese Trennung ermöglicht in [Vorlesung 03](/lectures/03/03.md), dieselben Klassen hinter einer GUI zu verwenden.
 
 </details>
 

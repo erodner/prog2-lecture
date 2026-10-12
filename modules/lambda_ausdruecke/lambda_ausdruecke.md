@@ -97,22 +97,38 @@ Console.WriteLine(jaeger.Count);                // 1
 Console.WriteLine(nah.Count);                   // 2
 ```
 
-`Filtern` ist ein einziges Mal geschrieben und funktioniert mit jeder denkbaren Bedingung. Genau so arbeitet auch die Klasse `Inventar<T>` aus [Vorlesung 05](/lectures/05/05.md) – nur dass sie die Schleife nicht selbst schreibt, sondern an fertige LINQ-Methoden übergibt:
+`Filtern` ist ein einziges Mal geschrieben und funktioniert mit jeder denkbaren Bedingung. Dasselbe Prinzip steckt in fertigen LINQ-Methoden wie `Any` und `FirstOrDefault`. In `Inventar<T>` aus [Vorlesung 05](/lectures/05/05.md) schreiben wir die Schleifen noch selbst. Mit Lambdas schrumpfen sie auf je eine Zeile:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">bisher: Schleife</div>
+
+```csharp
+public bool Enthaelt<TArt>() where TArt : T
+{
+    foreach (T ding in inhalt)
+    {
+        if (ding is TArt) return true;
+    }
+    return false;
+}
+```
+
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel">mit LINQ und Lambda</div>
 
 ```csharp
 public bool Enthaelt<TArt>() where TArt : T
 {
     return inhalt.Any(d => d is TArt);
 }
-
-public bool Entfernen<TArt>() where TArt : T
-{
-    T? treffer = inhalt.FirstOrDefault(d => d is TArt);
-    return treffer is not null && inhalt.Remove(treffer);
-}
 ```
 
-`Any` und `FirstOrDefault` sind fremder Code, der nicht weiß, wonach gesucht wird; `d => d is TArt` ist unser Beitrag. Wer die LINQ-Query-Syntax aus dem Modul [LINQ-Abfragen](/modules/linq_query_syntax/linq_query_syntax.md) kennt, ahnt schon: `where d is TArt` ist am Ende nichts anderes als so ein Lambda, das an eine Methode namens `Where` übergeben wird. Wie das genau aussieht, zeigt das Modul [LINQ-Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md).
+</div>
+</div>
+
+`Any` ist fremder Code, der nicht weiß, wonach gesucht wird; `d => d is TArt` ist unser Beitrag. Ebenso wird `Entfernen` mit `FirstOrDefault(d => d is TArt)` zu einer Zeile. Wer die LINQ-Query-Syntax aus dem Modul [LINQ-Abfragen](/modules/linq_query_syntax/linq_query_syntax.md) kennt, ahnt schon: `where d is TArt` ist am Ende nichts anderes als so ein Lambda, das an eine Methode namens `Where` übergeben wird. Wie das genau aussieht, zeigt das Modul [LINQ-Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md).
 
 ## Closures: Zugriff auf äußere Variablen
 
@@ -149,7 +165,7 @@ Alle drei Lambdas teilen sich *dieselbe* Variable `i`. Wenn sie ausgeführt werd
 
 Beides ergibt denselben Delegaten, die Wahl ist eine Frage der Lesbarkeit. Ein Lambda ist die richtige Wahl, wenn das Verhalten kurz ist, nur an dieser einen Stelle gebraucht wird und ohne Namen verständlich bleibt – `g => g is Verfolger` sagt alles. Eine benannte Methode lohnt sich, wenn die Logik mehrere Zeilen umfasst, an mehreren Stellen wiederverwendet wird, getestet werden soll oder wenn der Name eine Fachbedeutung transportiert: `HatSichtlinie` liest sich besser als ein zwanzigzeiliges Lambda mit dem Bresenham-Algorithmus. Und wer eine Methode später wieder mit `-=` von einem Delegaten abmelden will, braucht eine Referenz darauf – ein anonym hingeschriebenes Lambda lässt sich nicht wiederfinden. Darauf kommen wir im Modul [Ereignisse](/modules/ereignisse/ereignisse.md) zurück.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Schreibe mit `Filtern` und passenden Lambdas drei Abfragen über `feld.Gegner`: alle Wachen, alle Gegner mit gerader X-Koordinate, alle Gegner, die zwischen zwei lokalen Grenzen `nah` und `fern` vom Helden entfernt stehen. Sage anschließend voraus, was die Schleifenfalle ausgibt, wenn du `for` durch `foreach (int i in new[] { 0, 1, 2 })` ersetzt – und prüfe es.
 {: .notice--info}

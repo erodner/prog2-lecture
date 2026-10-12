@@ -41,6 +41,10 @@ Der Name im Markup wird beim Kompilieren aufgelöst: `@onclick="NeuStarten"` ist
 
 Manchmal reicht die Information „es ist etwas passiert“ nicht aus. Blazor übergibt dann ein **Ereignisargument**, dessen Typ zum Ereignis passt: `MouseEventArgs` bei Mausereignissen, `ChangeEventArgs` bei Eingaben, `FocusEventArgs` beim Fokuswechsel – und `KeyboardEventArgs` bei Tastendrücken. Dessen Property `Key` enthält den Namen der gedrückten Taste als Text, genau wie ihn der Browser meldet:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
+
 ```razor
 <div class="spielfeld" tabindex="0" @onkeydown="TasteGedrueckt" @onkeydown:preventDefault>
     @* ... die Zellen ... *@
@@ -65,6 +69,9 @@ Manchmal reicht die Information „es ist etwas passiert“ nicht aus. Blazor ü
 }
 ```
 
+</div>
+</div>
+
 Das ist die zentrale Methode der Oberfläche – und sie ist bemerkenswert dumm. Sie übersetzt einen Tastennamen in eine `Richtung` und ruft `feld.SpielerZieht(r)` auf. Was ein Zug bedeutet, ob eine Tür aufgeht, ob ein Verfolger zuschlägt, ob das Spiel endet: Davon steht hier kein Wort. Vergleiche das mit der Konsolenversion, die dieselbe Übersetzung von `ConsoleKey.UpArrow` nach `Richtung.Oben` macht – zwei Oberflächen, dieselbe eine Zeile Spiellogik. Warum das kein Zufall sein darf, vertieft [Schichten mit Blazor umsetzen](/modules/schichten_mit_blazor/schichten_mit_blazor.md).
 
 Der `switch`-Ausdruck liefert ein `Richtung?`, also `null` für jede Taste, die uns nicht interessiert – drückt jemand die Leertaste, passiert schlicht nichts. Das Muster `if (richtung is Richtung r)` packt den Wert gleichzeitig aus und prüft auf `null`; das ist kürzer und sicherer als `richtung.Value`.
@@ -80,6 +87,10 @@ Die Methode oben allein reicht nicht. Ein `<div>` ist im Browser kein Bedienelem
 **`@onkeydown:preventDefault`** unterdrückt die Standardreaktion des Browsers. Ohne diesen Zusatz würde jeder Druck auf die Pfeiltasten die Seite scrollen – der Spieler zieht, und die Ansicht springt weg. Der Zusatz hinter dem Doppelpunkt ist eine Blazor-Direktive und braucht keinen Wert; es gibt daneben `@onkeydown:stopPropagation`, das verhindert, dass das Ereignis an umgebende Elemente weitergereicht wird.
 
 **Fokus setzen beim ersten Rendern.** Fokussierbar heißt noch nicht fokussiert: Beim Laden der Seite liegt der Fokus nirgends, und der Spieler müsste erst einmal auf das Feld klicken. Das nimmt die Komponente ihm ab, und zwar in einer Lebenszyklus-Methode:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
 
 ```razor
 <div class="spielfeld" tabindex="0" @ref="feldElement" ...>
@@ -97,37 +108,28 @@ Die Methode oben allein reicht nicht. Ein `<div>` ist im Browser kein Bedienelem
 }
 ```
 
+</div>
+</div>
+
 `@ref="feldElement"` verschafft der Komponente einen Griff auf das erzeugte HTML-Element, gespeichert in einer `ElementReference`. Blazor ruft `OnAfterRenderAsync` nach jedem Rendern auf und setzt `firstRender` nur beim allerersten Mal auf `true` – genau dort gehört der Fokus hin, denn später soll er dem Benutzer nicht mehr weggenommen werden. Früher geht es nicht: In `OnInitialized` existiert das `<div>` im Browser noch gar nicht.
 
 `ElementReference` ist die einzige Stelle, an der wir ein konkretes HTML-Element anfassen – und sie ist bewusst mager: Man kann den Fokus setzen, mehr nicht. Wer versucht, darüber Texte oder Farben zu ändern, ist auf dem falschen Weg; dafür gibt es Felder und Markup.
 {: .notice--warning}
 
-## Lambdas als Handler
-
-Nicht jeder Handler verdient eine eigene Methode. Wenn ein Klick nur ein Feld setzt oder einen Wert weiterreicht, ist ein **Lambda-Ausdruck** direkt im Markup kürzer. Der Spielende-Dialog nutzt das, um seinen Rückkanal auszulösen:
-
-```razor
-<button @onclick="() => OnNeustart.InvokeAsync()">Neu starten</button>
-```
-
-Besonders wertvoll ist diese Form innerhalb einer Schleife, wenn jeder Eintrag „seinen“ Wert übergeben soll:
-
-```razor
-@foreach (string name in LevelQuelle.LevelNamen)
-{
-    <button @onclick="() => LevelWechseln(name)">@name</button>
-}
-```
-
-Mit einer benannten Methode `LevelWechseln()` ohne Parameter ginge das nicht, weil sie beim Aufruf nicht wüsste, welcher Button geklickt wurde. Weil `foreach` in C# für jeden Durchlauf eine neue Variable anlegt, merkt sich jeder Button zuverlässig seinen eigenen Namen. Die genaue Funktionsweise von Lambdas ist Thema von [Lambda-Ausdrücke](/modules/lambda_ausdruecke/lambda_ausdruecke.md); für den Moment reicht: Alles nach `=>` ist der Rumpf, und Variablen aus der Umgebung dürfen darin verwendet werden.
-
 ## Nach der Eingabe etwas tun: `@bind:after`
 
 Die Levelauswahl ist ein Sonderfall. `@bind` belegt das `change`-Ereignis des `<select>` bereits selbst – ein zusätzliches `@onchange` am selben Element lehnt der Compiler ab. Soll nach der Eingabe noch etwas passieren, hängt man die Methode mit `@bind:after` an:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
+
 ```razor
 <select @bind="levelName" @bind:after="NeuStarten">
 ```
+
+</div>
+</div>
 
 Die Reihenfolge ist garantiert: Erst schreibt Blazor den gewählten Wert in `levelName`, dann läuft `NeuStarten` – und lädt damit bereits das *neue* Level. Stünde die Zuweisung hinterher, würde das Spiel jedes Mal ein Level zu spät wechseln.
 
@@ -135,26 +137,10 @@ Die Reihenfolge ist garantiert: Erst schreibt Blazor den gewählten Wert in `lev
 
 Wenn ein Handler länger dauert – eine Datei laden, einen Webdienst befragen –, darf er die Ereignisschleife nicht blockieren. Blazor akzeptiert deshalb auch Handler mit der Signatur `async Task`; `OnAfterRenderAsync` oben war bereits ein Beispiel. `await` gibt die Kontrolle ab, während die Arbeit läuft, und der Handler wird fortgesetzt, sobald sie fertig ist. Blazor rendert nach dem Abschluss des gesamten `Task` erneut – und zusätzlich beim ersten `await`, damit die Seite währenddessen nicht eingefroren wirkt. Was `async` und `await` im Detail bewirken, behandeln wir bei den Streams und Dateien; für Handler gilt die einfache Regel: Ruft der Handler etwas mit `Async` im Namen auf, wird er selbst `async Task`.
 
-## Vergleich mit klassischen Ereignissen
-
-Wer ältere C#-GUI-Programme gesehen hat, kennt Ereignishandler in dieser Form:
-
-```csharp
-// Klassische Form, wie sie Desktop-Frameworks verwenden
-button.Click += Button_Click;
-
-private void Button_Click(object? sender, EventArgs e)
-{
-    // sender: das Steuerelement, das das Ereignis ausgelöst hat
-}
-```
-
-Die Idee ist dieselbe: Eine Methode wird bei einem Steuerelement für ein Ereignis **registriert** – hier mit `+=` im Code statt mit `@onclick` im Markup. Die feste Signatur mit `sender` und `EventArgs` gibt es bei Blazor nicht; die Methode nimmt nur, was sie braucht. Genau diese klassische Form verwendet übrigens unser Spielkern selbst: `Spielfeld.RundeBeendet` und `Spieler.SchatzGefunden` sind C#-Ereignisse, an die sich jede Oberfläche mit `+=` hängen darf. Die Konsolenversion macht von `SchatzGefunden` Gebrauch und lässt bei jedem Fund einen Ton erklingen. Dass dahinter ein Sprachmittel steckt, mit dem wir eigene Ereignisse in eigenen Klassen definieren können, lernen wir in [Ereignisse](/modules/ereignisse/ereignisse.md).
-
 Übung: Ergänze die Steuerung um eine Wartetaste: Drückt der Spieler die Leertaste, soll eine Runde vergehen, in der er stehen bleibt, die Gegner sich aber bewegen. Überlege zuerst, wo diese Regel hingehört – in `TasteGedrueckt` oder in den Spielkern – und begründe deine Antwort damit, was die Konsolenversion davon mitbekommen soll. Ergänze anschließend `@onkeydown` um die Taste `r` für „neu starten“.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 ## Weitere Quellen
 

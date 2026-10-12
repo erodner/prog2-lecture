@@ -64,7 +64,11 @@ public bool IstFrei(Koordinate p)
     StatischesObjekt? s = StatischesObjektAn(p);
     if (s is not null && !s.IstPassierbar) return false;
     if (p == Spieler.Position) return false;
-    return gegner.All(g => g.Position != p);
+    foreach (Gegner g in gegner)
+    {
+        if (g.Position == p) return false;
+    }
+    return true;
 }
 ```
 

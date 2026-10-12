@@ -59,20 +59,27 @@ dotnet add Adventure.Konsole reference Adventure.Kern
 
 In `Adventure.Konsole.csproj` erscheint daraufhin:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v01-vererbung/Adventure.Konsole/Adventure.Konsole.csproj">Adventure.Konsole/Adventure.Konsole.csproj</a></div>
+
 ```xml
 <ItemGroup>
   <ProjectReference Include="..\Adventure.Kern\Adventure.Kern.csproj" />
 </ItemGroup>
 ```
 
-Die Richtung ist wichtig: Die Konsole kennt den Kern, aber nicht umgekehrt. Im Lauf des Semesters kommen `Adventure.Daten`, `Adventure.Web` und `Adventure.Tests` auf demselben Weg dazu. Alle Referenzen zeigen nach innen, und `Adventure.Kern` selbst verweist auf nichts. Dieses Muster ist die Grundlage der Schichten-Architektur aus [Vorlesung 04](/lectures/04/04.md).
+</div>
+</div>
+
+Die Richtung ist wichtig: Die Konsole kennt den Kern, aber nicht umgekehrt. Im Lauf des Semesters kommen `Adventure.Daten`, `Adventure.Web` und `Adventure.Tests` auf demselben Weg dazu. Alle Referenzen zeigen nach innen, und `Adventure.Kern` selbst verweist auf nichts. Dieses Muster ist die Grundlage der Schichten-Architektur aus [Vorlesung 03](/lectures/03/03.md).
 
 Referenzieren sich zwei Projekte gegenseitig, meldet `dotnet build` einen Zirkelbezug. Das ist ein Designproblem: Entweder gehören die beiden Projekte zusammen, oder eines hängt an der falschen Stelle.
 {: .notice--warning}
 
 ## Weitere Vorlagen
 
-Neben `console`, `classlib` und `sln` zeigt `dotnet new list` alle Vorlagen des SDK. Für uns wichtig sind noch zwei: aus `blazor` entsteht in [Vorlesung 04](/lectures/04/04.md) das Projekt `Adventure.Web`, aus `nunit` in [Vorlesung 12](/lectures/12/12.md) das Projekt `Adventure.Tests`. Alles, was du per CLI anlegst, kannst du anschließend normal in deiner IDE öffnen.
+Neben `console`, `classlib` und `sln` zeigt `dotnet new list` alle Vorlagen des SDK. Für uns wichtig sind noch zwei: aus `blazor` entsteht in [Vorlesung 03](/lectures/03/03.md) das Projekt `Adventure.Web`, aus `nunit` in [Vorlesung 11](/lectures/11/11.md) das Projekt `Adventure.Tests`. Alles, was du per CLI anlegst, kannst du anschließend normal in deiner IDE öffnen.
 
 Übung: Lege die Solution `Adventure` mit `Adventure.Kern` und `Adventure.Konsole` wie oben an. Schreibe im Kern eine Klasse `Koordinate` mit den Properties `X` und `Y` und einer Methode `Entfernung(Koordinate andere)`, die den Abstand in Feldern liefert. Gib im Konsolenprojekt die Entfernung zwischen zwei Positionen aus und baue alles mit einem einzigen `dotnet build` im Solution-Ordner. Was passiert, wenn du die Projektreferenz wieder aus der `.csproj` löschst? Und was meldet der Compiler, wenn du aus `Adventure.Kern` heraus eine Klasse aus `Adventure.Konsole` benutzen willst?
 {: .notice--info}

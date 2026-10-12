@@ -25,6 +25,10 @@ Sobald Operatoren vorkommen, braucht der Ausdruck runde Klammern wie in der letz
 
 Auch `@if`, `@foreach` und `@for` funktionieren wie in C#, nur dass im Rumpf Markup steht. Die Levelauswahl erzeugt so für jeden Levelnamen einen Eintrag:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
+
 ```razor
 <select @bind="levelName">
     @foreach (string name in LevelQuelle.LevelNamen)
@@ -34,11 +38,18 @@ Auch `@if`, `@foreach` und `@for` funktionieren wie in C#, nur dass im Rumpf Mar
 </select>
 ```
 
+</div>
+</div>
+
 Das Markup beschreibt, wie die Seite aussehen soll. Kommen neue Level dazu, hat die Liste automatisch mehr Einträge.
 
 ## Das Spielfeld: zwei Schleifen über das Raster
 
 Für die Karte gehen zwei Schleifen über alle Felder und fragen das `Spielfeld` mit `ObjektAn`, was dort liegt (vereinfacht gegenüber dem Projekt):
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
 
 ```razor
 <div class="spielfeld" style="grid-template-columns: repeat(@feld.Breite, 1fr);">
@@ -53,9 +64,16 @@ Für die Karte gehen zwei Schleifen über alle Felder und fragen das `Spielfeld`
 </div>
 ```
 
+</div>
+</div>
+
 Das `@` steht nur vor der äußeren Schleife: Danach sind wir schon in C#, und erst die Zeile mit `<div` ist wieder Markup. Dass aus den vielen `<div>`-Elementen ein Raster wird, regelt das CSS, siehe [Layout mit HTML und CSS](/modules/blazor_layout/blazor_layout.md).
 
 Was in einer Zelle steht, entscheidet die Hilfsmethode `SymbolFuer` im `@code`-Block. Sie ist das Gegenstück zu `Spielobjekt.Symbol` aus dem Kern: Dort steht ein `char` für die Konsole, hier ein Emoji für den Browser.
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a> (im <code>@code</code>-Block)</div>
 
 ```csharp
 private static string SymbolFuer(Spielobjekt? objekt) => objekt switch
@@ -75,6 +93,9 @@ private static string SymbolFuer(Spielobjekt? objekt) => objekt switch
 };
 ```
 
+</div>
+</div>
+
 Der `switch` prüft den **Laufzeittyp** des Objekts ([Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md)): Ist es eine `Wand`, kommt `🧱` heraus. `Tuer t` benennt das Objekt zusätzlich, damit man abfragen kann, ob die Tür offen ist. Der letzte Zweig `_` fängt alles ab, woran niemand gedacht hat, und zeigt dann das Konsolenzeichen.
 
 ## HTML-Elemente sind die Steuerelemente
@@ -93,7 +114,11 @@ Auch Attributwerte dürfen aus C# kommen, etwa die Spaltenzahl im `style` des Sp
 
 ## Eigene Komponenten
 
-Jede `.razor`-Datei ist eine **Komponente**, die andere Seiten wie ein Tag einbinden können. Die Anzeige neben dem Spielfeld liegt deshalb in einer eigenen Datei `Components/Statusleiste.razor` (vereinfacht):
+Jede `.razor`-Datei ist eine **Komponente**, die andere Seiten wie ein Tag einbinden können. Die Anzeige neben dem Spielfeld liegt deshalb in einer eigenen Datei (links, vereinfacht). Rechts bindet die Startseite sie ein und übergibt die Werte wie HTML-Attribute:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Statusleiste.razor">Adventure.Web/Components/Statusleiste.razor</a></div>
 
 ```razor
 @using Adventure.Kern
@@ -113,11 +138,16 @@ Jede `.razor`-Datei ist eine **Komponente**, die andere Seiten wie ein Tag einbi
 }
 ```
 
-Die Startseite bindet sie ein und übergibt die Werte wie HTML-Attribute:
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
 
 ```razor
 <Statusleiste Spieler="@feld.Spieler" Runde="@feld.Runde" Meldung="@feld.LetzteMeldung" />
 ```
+
+</div>
+</div>
 
 Der Tag-Name ist der Dateiname. Die Attribute heißen **Parameter**: öffentliche Properties, die mit `[Parameter]` markiert sind. Über sie fließen Daten von der Seite in die Komponente. `= null!` sagt dem Compiler, dass der Spieler garantiert von außen gesetzt wird.
 

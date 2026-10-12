@@ -41,16 +41,17 @@ Die Vorlesung besteht aus:
 1. [Vererbung](/lectures/01/01.md) – `virtual`/`override`, `sealed`, Laufzeittyp, `object`, Garbage Collection
 2. [Abstrakte Klassen und Interfaces](/lectures/02/02.md) – `abstract`, `interface`, Schnittstellen- vs. Implementierungsvererbung
 
+
+### Teil 2: Anwendungen bauen
+
+3. [GUI mit Blazor und Schichten-Architekturen](/lectures/03/03.md) – Razor-Komponenten, Layout, Ereignisse, Datenbindung, Dialoge, Drei-Schichten-Architektur
+
+
+### Teil 3: Zusammenarbeit
+
+4. [Git – Versionsverwaltung](/lectures/04/04.md) – Konzepte, Kommandozeile, Remote-Repositorys, Branches, Merge-Konflikte
+
 {% comment %}
-### Teil 2: Zusammenarbeit
-
-3. [Git – Versionsverwaltung](/lectures/03/03.md) – Konzepte, Kommandozeile, Remote-Repositorys, Branches, Merge-Konflikte, IDE-Integration
-
-
-### Teil 3: Anwendungen bauen
-
-4. [GUI mit Blazor und Schichten-Architekturen](/lectures/04/04.md) – Razor-Komponenten, Layout, Ereignisse, Datenbindung, Dialoge, Drei-Schichten-Architektur
-
 ### Teil 4: Generisch und funktional
 
 5. [Generizität](/lectures/05/05.md) – Generische Methoden und Typen, Constraints
@@ -67,9 +68,8 @@ Die Vorlesung besteht aus:
 
 ### Teil 7: Werkzeuge der Softwareentwicklung
 
-10. [Native Bibliotheken – P/Invoke](/lectures/10/10.md) – `DllImport`, `LibraryImport`, Marshalling
-11. [NuGet – Paketverwaltung](/lectures/11/11.md) – Pakete finden, einbinden, bewerten, Logging mit NLog
-12. [Unit-Testing](/lectures/12/12.md) – NUnit, Assertions, `dotnet test`
+10. [NuGet – Paketverwaltung](/lectures/10/10.md) – Pakete finden, einbinden, bewerten, Logging mit NLog
+11. [Unit-Testing](/lectures/11/11.md) – NUnit, Assertions, `dotnet test`
 {% endcomment %}
 
 ---

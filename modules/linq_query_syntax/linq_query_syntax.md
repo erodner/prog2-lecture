@@ -152,7 +152,7 @@ LINQ hat neben der hier gezeigten **Query-Syntax** noch eine zweite Schreibweise
 Übung: Formuliere für das Spielfeld oben drei Abfragen: (a) die Namen aller Gegner, absteigend nach Entfernung zum Helden; (b) alle statischen Objekte, über die der Held laufen darf (`IstPassierbar`), alphabetisch nach `Name`; (c) eine Gruppierung aller Objekte nach `Symbol` mit Ausgabe der Anzahl je Symbol – wie viele Gruppen entstehen, und welchen Typ hat `gruppe.Key`? Sage die Ausgabe jeweils voraus, bevor du das Programm startest.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 ## Weitere Quellen
 

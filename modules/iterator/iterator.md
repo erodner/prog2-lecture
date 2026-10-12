@@ -210,7 +210,7 @@ Der Code zum Durchlaufen ist von der Datenstruktur getrennt: Der Client braucht 
 
 Die Kehrseite: Ein Iterator ist ein Zeiger *in* eine Struktur, und wenn sich die Struktur während des Durchlaufs ändert, zeigt er ins Leere. `List<T>` und `Dictionary<K, V>` erkennen das und werfen eine `InvalidOperationException` – ein `foreach (Spielobjekt o in feld.AlleObjekte) feld.Entfernen(o);` stürzt deshalb ab, und die Lösung ist ein `ToList()` vor der Schleife. Das ist die zweite Falle aus dem Modul zur verzögerten Ausführung. Und weil Iteratoren faul sind, wird derselbe Rumpf bei jedem `foreach` erneut ausgeführt; wer ein Ergebnis mehrfach braucht, holt es ebenfalls einmal mit `ToList()` ab.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Ergänze `Spielfeld` um eine Iterator-Methode `IEnumerable<Gegner> GegnerInSichtweite(int maxEntfernung)`, die nur Gegner liefert, deren Manhattan-Entfernung (`Position.Entfernung`) zum Spieler höchstens `maxEntfernung` beträgt und für die `HatSichtlinie` gilt. Vergleiche sie danach mit der LINQ-Variante `Gegner.Where(...)` – wo steckt dort das `yield return`? Baue anschließend `NachbarFelder` so um, dass es die vier Richtungen im Uhrzeigersinn liefert, und überlege, welcher aufrufende Code sich dadurch ändert.
 {: .notice--info}

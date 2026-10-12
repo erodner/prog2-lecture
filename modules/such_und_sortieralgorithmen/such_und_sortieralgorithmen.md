@@ -48,8 +48,11 @@ public StatischesObjekt? StatischesObjektAn(Koordinate p)
 public Spielobjekt? ObjektAn(Koordinate p)
 {
     if (p == Spieler.Position) return Spieler;
-    Gegner? g = gegner.FirstOrDefault(x => x.Position == p);
-    return g ?? (Spielobjekt?)StatischesObjektAn(p);
+    foreach (Gegner g in gegner)
+    {
+        if (g.Position == p) return g;
+    }
+    return StatischesObjektAn(p);
 }
 ```
 
@@ -172,7 +175,7 @@ Das ist eine grobe Faustregel, keine Stoppuhr – für zehn Elemente ist ein O(n
 Übung: Baue die alte Fassung von `ObjektAn` mit einer `List<Spielobjekt>` nach und zähle mit einem Zähler mit, wie viele Positionsvergleiche ein einziger Aufruf von `AlsText()` für das Level „Kerker“ auslöst. Vergleiche mit der heutigen Dictionary-Fassung. Ergänze anschließend `BinaereSuche` um einen Zähler und vergleiche die Anzahl der Vergleiche mit einer linearen Suche in einer Bestenliste aus 1.000 Werten. Was passiert mit beiden Zahlen, wenn der gesuchte Punktestand gar nicht vorkommt?
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure); die erste Fassung des Spielfelds steckt im Tag `v01-vererbung`, die Dictionary-Fassung in `v02-interfaces`.
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure); die erste Fassung des Spielfelds steckt im Tag [`v01-vererbung`](https://github.com/erodner/prog2-adventure/tree/v01-vererbung), die Dictionary-Fassung in `v02-interfaces`.
 
 ## Weitere Quellen
 

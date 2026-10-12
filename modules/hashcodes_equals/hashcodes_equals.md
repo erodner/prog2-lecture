@@ -152,7 +152,7 @@ Deshalb bewegt sich im `Spielfeld` auch nie ein Schlüssel. Wenn ein Gegenstand 
 Übung: Baue das Beispiel mit `Punkt` nach und lege drei Wände in ein `Dictionary<Punkt, StatischesObjekt>`. Prüfe zunächst ohne Überschreibungen, wie viele davon du wiederfindest, wenn du mit frisch erzeugten Koordinaten suchst. Ergänze dann `Equals` und `GetHashCode` und wiederhole den Test. Lass anschließend `GetHashCode` konstant `0` zurückgeben: Funktioniert das Spiel noch – und was hat sich verändert? Schreibe zum Schluss die Klasse als `public readonly record struct Punkt(int X, int Y);` und vergleiche den Aufwand.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)).
 
 ## Weitere Quellen
 

@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Ein Programm, das nur `Console.WriteLine` kennt, ist wie ein Flugzeug ohne Flugschreiber: Solange jemand zuschaut, sieht man, was passiert – aber wenn es nachts auf dem Server eines Kunden abstürzt, ist die Ausgabe weg. **Logging** löst dieses Problem: Das Programm schreibt fortlaufend Meldungen mit Zeitstempel und Wichtigkeit in ein Protokoll, das man auch Tage später noch lesen kann. Statt sich das selbst zu bauen, greifen wir zum Paket **NLog** – ein Paradebeispiel dafür, wie man in wenigen Minuten eine ausgereifte Bibliothek ins Projekt holt. Das vollständige Projekt findest du im Repository unter `examples/11_nuget/NLogDemo`.
+Ein Programm, das nur `Console.WriteLine` kennt, ist wie ein Flugzeug ohne Flugschreiber: Solange jemand zuschaut, sieht man, was passiert – aber wenn es nachts auf dem Server eines Kunden abstürzt, ist die Ausgabe weg. **Logging** löst dieses Problem: Das Programm schreibt fortlaufend Meldungen mit Zeitstempel und Wichtigkeit in ein Protokoll, das man auch Tage später noch lesen kann. Statt sich das selbst zu bauen, greifen wir zum Paket **NLog** – ein Paradebeispiel dafür, wie man in wenigen Minuten eine ausgereifte Bibliothek ins Projekt holt. Das vollständige Projekt findest du im Repository unter `examples/10_nuget/NLogDemo`.
 
 ## Warum nicht einfach `Console.WriteLine`?
 
@@ -25,6 +25,10 @@ dotnet add package NLog
 
 Damit ist die Bibliothek da, aber NLog weiß noch nicht, wohin es schreiben soll. Das legt eine Datei `nlog.config` fest, die neben der `.csproj` liegt und beim Bauen in den Ausgabeordner kopiert werden muss. Dafür braucht die `.csproj` einen zweiten Eintrag:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-lecture/blob/main/examples/10_nuget/NLogDemo/NLogDemo.csproj">NLogDemo/NLogDemo.csproj</a></div>
+
 ```xml
 <ItemGroup>
   <PackageReference Include="NLog" Version="6.2.0" />
@@ -36,12 +40,19 @@ Damit ist die Bibliothek da, aber NLog weiß noch nicht, wohin es schreiben soll
 </ItemGroup>
 ```
 
+</div>
+</div>
+
 Fehlt diese Zeile, liegt die `nlog.config` zwar im Projektordner, aber nicht neben der gebauten `NLogDemo.dll` in `bin/Debug/net10.0/`. NLog findet dann keine Konfiguration und verwirft **stillschweigend jede Meldung** – das Programm läuft, nur das Log bleibt leer. Wer sich fragt, warum nichts geloggt wird, sollte als Erstes prüfen, ob die Datei im Ausgabeordner angekommen ist.
 {: .notice--warning}
 
 ## Die Konfiguration: Ziele und Regeln
 
 Die `nlog.config` ist eine XML-Datei mit zwei Abschnitten. **Targets** beschreiben, *wohin* Meldungen gehen, **Rules** legen fest, *welche* Meldungen welches Ziel erreichen:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-lecture/blob/main/examples/10_nuget/NLogDemo/nlog.config">NLogDemo/nlog.config</a></div>
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -67,11 +78,18 @@ Die `nlog.config` ist eine XML-Datei mit zwei Abschnitten. **Targets** beschreib
 </nlog>
 ```
 
+</div>
+</div>
+
 Wir definieren zwei Ziele: eine farbige Konsole und eine Datei `logs/app.log`, die NLog samt Ordner selbst anlegt. Das `layout` ist eine Schablone mit Platzhaltern wie `${longdate}`, `${level}`, `${logger}` und `${message}` – die Datei bekommt mehr Details als die Konsole, weil dort niemand auf Übersichtlichkeit angewiesen ist. Die beiden Regeln sagen: Auf die Konsole kommt alles ab `Info`, in die Datei alles ab `Debug`. `name="*"` heißt „für alle Logger“; mit `name="Adventure.Daten.*"` ließe sich eine Regel auf eine einzelne Schicht unseres Spiels beschränken.
 
 ## Meldungen schreiben
 
 Im Code holt man sich pro Klasse einen Logger. `GetCurrentClassLogger()` gibt ihm automatisch den Namen der umgebenden Klasse – so steht später im Log, woher jede Zeile stammt:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-lecture/blob/main/examples/10_nuget/NLogDemo/Program.cs">NLogDemo/Program.cs</a></div>
 
 ```csharp
 using NLog;
@@ -81,6 +99,9 @@ Logger logger = LogManager.GetCurrentClassLogger();
 logger.Info("Programm gestartet.");
 logger.Warn("Konfigurationsdatei 'einstellungen.json' nicht gefunden, nutze Standardwerte.");
 ```
+
+</div>
+</div>
 
 Statt Zeichenketten zusammenzusetzen, übergibt man Werte als Platzhalter – NLog fügt sie ein und kann sie bei Bedarf sogar strukturiert speichern:
 

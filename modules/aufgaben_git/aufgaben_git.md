@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben üben den Umgang mit Versionsverwaltung: einen Commit-Graphen lesen, einen Konflikt systematisch auflösen und ein verkorkstes Repository aufräumen. Als Material dient durchgehend unser Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`). Für die meisten Aufgaben brauchst du kein Terminal, nur Papier und die Module dieser Vorlesung. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben üben den Umgang mit Versionsverwaltung: einen Commit-Graphen lesen, einen Konflikt systematisch auflösen und ein verkorkstes Repository aufräumen. Als Material dient durchgehend unser Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)). Für die meisten Aufgaben brauchst du kein Terminal, nur Papier und die Module dieser Vorlesung. Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## ➕ Aufgabe 1 — Einen Commit-Graphen lesen
 
@@ -25,7 +25,7 @@ Gegeben ist der folgende Ausschnitt aus `git log --oneline --graph --all` im Rep
 | * 71b2d9e Wache: beim Anstoßen umdrehen statt stehen bleiben
 |/
 * a1f9c3e Spielfeld: Objekte wieder vom Feld entfernen können
-* 7d2b0e4 Adventure mit Kern-Bibliothek und Konsolenprogramm anlegen
+* 7d2b0e4 Adventure mit Kern, Daten, Konsole und Web anlegen
 ```
 
 Beantworte ohne Terminal:
@@ -148,7 +148,7 @@ git commit                                       # vorgeschlagene Nachricht "Mer
 git log --oneline --graph -5                     # Merge-Commit mit zwei Eltern sichtbar
 ```
 
-Der beste Nachweis, dass die Auflösung den Bugfix bewahrt hat, ist ein kurzer Versuch im Spiel: Mit 3 von 3 Lebenspunkten über einen Trank laufen – die Meldung darf kein Plus versprechen, das der Spieler nie bekommen hat. Sobald das Adventure Unit-Tests hat ([Vorlesung 12](/lectures/12/12.md)), wird aus diesem Versuch ein Test, der bei jedem Merge automatisch läuft.
+Der beste Nachweis, dass die Auflösung den Bugfix bewahrt hat, ist ein kurzer Versuch im Spiel: Mit 3 von 3 Lebenspunkten über einen Trank laufen – die Meldung darf kein Plus versprechen, das der Spieler nie bekommen hat. Sobald das Adventure Unit-Tests hat ([Vorlesung 11](/lectures/11/11.md)), wird aus diesem Versuch ein Test, der bei jedem Merge automatisch läuft.
 
 **Schritt 4 — Rückzug:**
 

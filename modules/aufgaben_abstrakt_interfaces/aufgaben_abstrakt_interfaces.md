@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Bei abstrakten Klassen und Interfaces geht es vor allem um Abstraktion: Welche Gemeinsamkeit ist eine „Ist-ein“-Beziehung, welche nur eine Fähigkeit? Alle Aufgaben spielen im Dungeon aus der Vorlesung – du findest den Code im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v02-interfaces`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Bei abstrakten Klassen und Interfaces geht es vor allem um Abstraktion: Welche Gemeinsamkeit ist eine „Ist-ein“-Beziehung, welche nur eine Fähigkeit? Alle Aufgaben spielen im Dungeon aus der Vorlesung – du findest den Code im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Abstraktion
 

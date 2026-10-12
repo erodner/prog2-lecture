@@ -173,7 +173,7 @@ Die Nachteile sind die Kehrseite derselben Einheitlichkeit. Sobald man Knoten do
 Eine `Objektgruppe`, die sich selbst enthält (`kerker.Hinzufuegen(kerker)`), lässt sich mit dem Interface nicht verhindern. `kerker.AufFeldSetzen(feld)` ruft sich dann endlos selbst auf, bis eine `StackOverflowException` das Programm beendet. Wer Zyklen ausschließen will, braucht eine Prüfung in `Hinzufuegen`.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`); `IBauteil`, `Baustein` und `Objektgruppe` bauen wir im Workshop darauf auf.
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)); `IBauteil`, `Baustein` und `Objektgruppe` bauen wir im Workshop darauf auf.
 
 Übung: Erweitere `IBauteil` um `int AnzahlObjekte()`. Wie berechnet die `Objektgruppe` ihre Anzahl, ohne zu wissen, wie tief der Baum ist, und was liefert eine leere Gruppe? Ergänze anschließend eine Methode `Spiegeln(int achseX)`, die jedes Bauteil an einer senkrechten Achse spiegelt – warum genügt es, sie in `Baustein` und `Objektgruppe` zu implementieren, obwohl ein Kerker aus Räumen aus Wänden besteht?
 {: .notice--info}

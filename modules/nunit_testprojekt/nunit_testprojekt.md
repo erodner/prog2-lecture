@@ -40,11 +40,15 @@ dotnet add Adventure.Tests reference Adventure.Daten
 dotnet sln Adventure.slnx add Adventure.Tests
 ```
 
-Das Template legt eine Beispieldatei `UnitTest1.cs` an, die du gleich löschen oder umbenennen kannst. Ab jetzt baut `dotnet build` auf der Solution auch das Testprojekt, und `dotnet test` findet die Tests automatisch. Für eine einzelne Klassenbibliothek – etwa das kleine Beispiel `Bruch` in `examples/12_unittests/Bruch` – sind es dieselben Kommandos mit einer Referenz weniger.
+Das Template legt eine Beispieldatei `UnitTest1.cs` an, die du gleich löschen oder umbenennen kannst. Ab jetzt baut `dotnet build` auf der Solution auch das Testprojekt, und `dotnet test` findet die Tests automatisch. Für eine einzelne Klassenbibliothek – etwa das kleine Beispiel `Bruch` in `examples/11_unittests/Bruch` – sind es dieselben Kommandos mit einer Referenz weniger.
 
 ## Die Projektdatei
 
 Ein Blick in die erzeugte `Adventure.Tests.csproj` zeigt, was das Template mitbringt – und knüpft direkt an das an, was wir über [NuGet-Pakete](/modules/nuget_pakete_hinzufuegen/nuget_pakete_hinzufuegen.md) gelernt haben:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v11-tests/Adventure.Tests/Adventure.Tests.csproj">Adventure.Tests/Adventure.Tests.csproj</a></div>
 
 ```xml
 <ItemGroup>
@@ -65,11 +69,18 @@ Ein Blick in die erzeugte `Adventure.Tests.csproj` zeigt, was das Template mitbr
 </ItemGroup>
 ```
 
+</div>
+</div>
+
 Jedes Paket hat eine Aufgabe: `NUnit` ist das Framework selbst mit den Attributen und `Assert.That`; `NUnit3TestAdapter` (der Name ist historisch, er funktioniert mit NUnit 4) und `Microsoft.NET.Test.Sdk` sorgen dafür, dass `dotnet test` und die IDE die Tests finden und ausführen können; `NUnit.Analyzers` warnt schon beim Kompilieren vor typischen Fehlern, etwa vor einem Test ohne Assertion; `coverlet.collector` misst auf Wunsch, welche Zeilen von Tests durchlaufen werden. Das `<Using Include="NUnit.Framework" />` ist ein globales `using` – deshalb steht in den Testdateien nur `using Adventure.Kern;` und `using Adventure.Daten;`, aber kein `using NUnit.Framework;`.
 
 ## `[TestFixture]` und `[Test]`
 
 Eine Testklasse ist eine ganz normale Klasse mit dem Attribut `[TestFixture]`; jede Methode mit `[Test]` ist ein einzelner Testfall. NUnit sucht beim Ausführen alle so markierten Methoden, erzeugt pro Test eine frische Instanz der Klasse und ruft die Methoden nacheinander auf:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v11-tests/Adventure.Tests/SpielfeldTests.cs">Adventure.Tests/SpielfeldTests.cs</a></div>
 
 ```csharp
 using Adventure.Daten;
@@ -91,6 +102,9 @@ public class SpielfeldTests
     }
 }
 ```
+
+</div>
+</div>
 
 Testmethoden sind `public`, geben `void` (oder `Task` bei asynchronem Code) zurück und haben keine Parameter – außer bei `[TestCase]`, dazu mehr im Modul [Assertions](/modules/assertions/assertions.md). Der Klassenname folgt dem Muster `<Klasse>Tests`, damit man Tests und getestete Klasse sofort zuordnen kann.
 
@@ -138,6 +152,10 @@ Fast jeder Test hat dieselben drei Abschnitte, die sich als Kommentare oder zumi
 
 Die Spielfeld-Tests brauchen keinen gemeinsamen Aufbau, weil `Feld(...)` das in einer Zeile erledigt. Sobald ein Test aber Spuren außerhalb des Arbeitsspeichers hinterlässt, sieht das anders aus. `DatenTests` prüft `TextdateiLevelQuelle` und `JsonSpielstandSpeicher` – beide arbeiten mit echten Dateien. Also bekommt jeder Test einen eigenen Ordner, der danach wieder verschwindet:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v11-tests/Adventure.Tests/DatenTests.cs">Adventure.Tests/DatenTests.cs</a></div>
+
 ```csharp
 [TestFixture]
 public class DatenTests
@@ -170,6 +188,9 @@ public class DatenTests
 }
 ```
 
+</div>
+</div>
+
 NUnit ruft `[SetUp]` **vor jedem einzelnen Test** auf und `[TearDown]` **danach** – auch dann, wenn der Test fehlgeschlagen ist. Jeder Test bekommt damit ein frisches Verzeichnis und kann die anderen nicht beeinflussen. Die `Guid` im Namen sorgt zusätzlich dafür, dass sich parallel laufende Tests nicht in die Quere kommen. Wer stattdessen einen festen Pfad wie `levels/` benutzt, bekommt Tests, die mal grün und mal rot sind – je nachdem, welcher zuerst dran war und was vom letzten Lauf übrig blieb.
 {: .notice--warning}
 
@@ -180,7 +201,7 @@ Alle Tests im Adventure folgen einem dreiteiligen Namensschema aus geprüftem Di
 Übung: Lege in `SpielfeldTests` einen Test `Schatz_Erhoeht_Punkte` an. Baue mit `Feld("@$")` ein Mini-Level, ziehe einmal nach rechts und prüfe, dass `f.Spieler.Punkte` danach 25 beträgt und der Schatz im Inventar liegt (`f.Spieler.Inventar.Anzahl`). Schau vorher im `LevelParser` nach, mit welchem Wert ein `Schatz` erzeugt wird.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v12-tests`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v11-tests`](https://github.com/erodner/prog2-adventure/tree/v11-tests)).
 
 ## Weitere Quellen
 

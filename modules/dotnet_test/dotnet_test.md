@@ -95,6 +95,10 @@ Wenn ein Test nach einer Änderung rot wird, gibt es genau zwei Möglichkeiten: 
 
 Weil `dotnet test` ohne IDE läuft, kann es auch ein Server ausführen – und zwar automatisch nach jedem Push, wie wir es beim [Arbeiten mit Remotes](/modules/git_remote/git_remote.md) kennengelernt haben. Das nennt man **Continuous Integration (CI)**. Bei GitHub Actions genügt dafür eine kleine YAML-Datei im Ordner `.github/workflows/`. Genau diese Datei liegt im Adventure-Repository unter `.github/workflows/dotnet.yml`:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v11-tests/.github/workflows/dotnet.yml">.github/workflows/dotnet.yml</a></div>
+
 ```yaml
 name: Build und Test
 
@@ -115,6 +119,9 @@ jobs:
       - run: dotnet test --configuration Release --no-build
 ```
 
+</div>
+</div>
+
 Von oben nach unten gelesen: `on` legt fest, *wann* der Ablauf startet – bei einem Push auf `main` und bei jedem Pull Request. `runs-on: ubuntu-latest` fordert einen frischen Linux-Rechner an, den GitHub für diesen Lauf startet und danach wieder wegwirft. Die vier `steps` laufen darauf der Reihe nach: `actions/checkout@v4` holt den Code, `actions/setup-dotnet@v4` installiert das .NET-SDK in der Version `10.0.x`, dann wird gebaut und getestet. Das `--no-build` im letzten Schritt sagt `dotnet test`, dass es das Ergebnis des vorherigen Schritts benutzen soll, statt alles ein zweites Mal zu übersetzen – deshalb muss dort dieselbe Konfiguration `Release` stehen wie beim Bauen.
 
 Nach jedem Push führt dieser Rechner also die dreizehn Tests aus. Schlägt einer fehl, liefert `dotnet test` einen Exit-Code ungleich 0, der Schritt gilt als fehlgeschlagen, und der Commit bekommt auf GitHub einen roten Haken – ein Pull Request lässt sich dann nicht mehr guten Gewissens mergen. Dass das Adventure eine Konsolen- *und* eine Web-Oberfläche hat, spielt dabei keine Rolle: Getestet wird der Kern, und der braucht weder Bildschirm noch Tastatur. In GitLab CI (etwa im HTW-GitLab) sieht die Datei `.gitlab-ci.yml` sehr ähnlich aus: ein Job mit dem Image `mcr.microsoft.com/dotnet/sdk:10.0` und dem Skript `dotnet test`. So wird aus „bei mir läuft es“ ein „es läuft überall, und wir sehen es sofort“.
@@ -132,7 +139,7 @@ Das Ergebnis landet als XML-Datei im Ordner `TestResults` und lässt sich mit We
 Übung: Ändere in `Verfolger` die Sichtweite von 5 auf 1 und führe `dotnet test --filter "FullyQualifiedName~Spielfeld"` aus. Welche Tests werden rot, und reichen ihre Namen, um den Fehler zu finden? Mache die Änderung rückgängig, drehe stattdessen in `Tuer.Interagieren` die Bedingung `!spieler.Inventar.Enthaelt<Schluessel>()` um und wiederhole den Lauf. Starte anschließend einen der roten Tests im Debugger deiner IDE mit einem Breakpoint in `Interagieren`.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v12-tests`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v11-tests`](https://github.com/erodner/prog2-adventure/tree/v11-tests)).
 
 ## Weitere Quellen
 

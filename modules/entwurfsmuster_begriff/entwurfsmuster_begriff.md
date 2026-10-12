@@ -21,7 +21,7 @@ Ein **Entwurfsmuster** (*Design Pattern*) ist eine wiederverwendbare, bewährte 
 
 Ein Muster ist also keine Bibliothek und kein Codeschnipsel. Es ist eine *Idee*, die man kennen und im richtigen Moment anwenden muss. Genau deshalb enthält die Beschreibung eines Musters immer mehr als nur Code: einen Namen, das Problem, die Lösung mit den beteiligten Klassen, Beispiele und – ganz wichtig – die Vor- und Nachteile. Nach diesem Schema sind auch die fünf Module dieser Vorlesung aufgebaut.
 
-Entwurfsmuster wirken **im Kleinen**: Sie lösen ein Problem innerhalb eines Bausteins und betreffen typischerweise zwei bis fünf zusammenarbeitende Klassen. Die Gesamtstruktur eines Systems – etwa die [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md) aus Vorlesung 04, die `Adventure.Web` und `Adventure.Konsole` von `Adventure.Kern` trennt – bezeichnet man dagegen als *Architekturmuster*. Beide Ebenen ergänzen sich: Innerhalb einer Schicht setzt man Entwurfsmuster ein.
+Entwurfsmuster wirken **im Kleinen**: Sie lösen ein Problem innerhalb eines Bausteins und betreffen typischerweise zwei bis fünf zusammenarbeitende Klassen. Die Gesamtstruktur eines Systems – etwa die [Schichtenarchitektur](/modules/schichten_architektur/schichten_architektur.md) aus Vorlesung 03, die `Adventure.Web` und `Adventure.Konsole` von `Adventure.Kern` trennt – bezeichnet man dagegen als *Architekturmuster*. Beide Ebenen ergänzen sich: Innerhalb einer Schicht setzt man Entwurfsmuster ein.
 {: .notice--primary}
 
 ## Warum Muster? Ein gemeinsames Vokabular
@@ -87,7 +87,7 @@ Wer Entwurfsmuster gerade erst gelernt hat, neigt dazu, sie überall einzubauen 
 Die richtige Reihenfolge ist deshalb immer: Erst das Problem verstehen, dann prüfen, ob es *wirklich* dem Problem eines Musters entspricht, und erst dann das Muster einsetzen. Ein Muster ist nur dann eine gute Lösung, wenn man das Problem auch tatsächlich hat. Im Zweifel: Die einfachste Lösung, die funktioniert – und ein Muster erst, wenn der Code danach verlangt.
 {: .notice--warning}
 
-Übung: Öffne das Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`) und suche nach Stellen, an denen bereits Entwurfsmuster stecken – auch solche aus der Tabelle, die wir nicht behandeln. Tipp: Schau dir an, wie `Adventure.Web/Program.cs` die `ILevelQuelle` registriert und wie `Home.razor` sie über `@inject` bekommt. Welches Problem löst das, und welches Muster ist das nicht ganz?
+Übung: Öffne das Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)) und suche nach Stellen, an denen bereits Entwurfsmuster stecken – auch solche aus der Tabelle, die wir nicht behandeln. Tipp: Schau dir an, wie `Adventure.Web/Program.cs` die `ILevelQuelle` registriert und wie `Home.razor` sie über `@inject` bekommt. Welches Problem löst das, und welches Muster ist das nicht ganz?
 {: .notice--info}
 
 ## Weitere Quellen

@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Bei Oberflächen und Architekturen heißt das vor allem: eine Seite in Komponenten zerlegen, Spielregeln von Anzeige trennen und Abhängigkeiten erkennen, bevor sie zum Problem werden. Alle vier Aufgaben spielen im Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
+Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch **Nachdenken**. Die folgenden Aufgaben trainieren *Computational Thinking*: die Fähigkeit, Probleme so zu strukturieren, dass ein Computer sie lösen kann. Bei Oberflächen und Architekturen heißt das vor allem: eine Seite in Komponenten zerlegen, Spielregeln von Anzeige trennen und Abhängigkeiten erkennen, bevor sie zum Problem werden. Alle vier Aufgaben spielen im Adventure; das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)). Nimm dir für jede Aufgabe Zeit, bevor du die Lösung aufklappst.
 
 ## Aufgabe 1 — Zerlegung
 
@@ -292,20 +292,20 @@ Der Kern wäre der falsche Ort: Er hat mit `Spielobjekt.Symbol` bereits eine Dar
 
 <div class="inventar">
     <h3>Inventar</h3>
-    @if (!Inhalt.Any())
+    @if (Gruppen().Count == 0)
     {
         <p class="leer">Noch nichts gefunden.</p>
     }
     else
     {
-        @foreach (var gruppe in Inhalt.GroupBy(g => g.Name))
+        @foreach (KeyValuePair<string, List<Gegenstand>> gruppe in Gruppen())
         {
             <div class="kachel" title="@gruppe.Key">
-                <span class="symbol">@Symbole.Fuer(gruppe.First())</span>
+                <span class="symbol">@Symbole.Fuer(gruppe.Value[0])</span>
                 <span class="name">@gruppe.Key</span>
-                @if (gruppe.Count() > 1)
+                @if (gruppe.Value.Count > 1)
                 {
-                    <span class="anzahl">×@gruppe.Count()</span>
+                    <span class="anzahl">×@gruppe.Value.Count</span>
                 }
             </div>
         }
@@ -315,6 +315,21 @@ Der Kern wäre der falsche Ort: Er hat mit `Spielobjekt.Symbol` bereits eine Dar
 @code {
     [Parameter, EditorRequired]
     public IEnumerable<Gegenstand> Inhalt { get; set; } = [];
+
+    /// <summary>Fasst gleichnamige Gegenstände zusammen, z. B. zwei Schlüssel.</summary>
+    private Dictionary<string, List<Gegenstand>> Gruppen()
+    {
+        Dictionary<string, List<Gegenstand>> gruppen = new();
+        foreach (Gegenstand g in Inhalt)
+        {
+            if (!gruppen.ContainsKey(g.Name))
+            {
+                gruppen[g.Name] = new List<Gegenstand>();
+            }
+            gruppen[g.Name].Add(g);
+        }
+        return gruppen;
+    }
 }
 ```
 
@@ -338,22 +353,22 @@ Das funktioniert ohne Umweg, weil `Inventar<T>` das Interface `IEnumerable<T>` i
 
 **Schritt 3 — Der Klick auf eine Kachel:**
 
-Die Komponente meldet nur, *dass* geklickt wurde, und *was* geklickt wurde:
+Die Komponente meldet nur, *dass* geklickt wurde, und *was* geklickt wurde, über einen Rückkanal mit Wert:
 
 ```razor
-<div class="kachel" @onclick="() => OnBenutzen.InvokeAsync(gruppe.First())">
-
 @code {
     [Parameter] public EventCallback<Gegenstand> OnBenutzen { get; set; }
 }
 ```
+
+Wie jede Kachel beim Klick *ihren* Gegenstand übergibt, lässt sich mit einem Lambda-Ausdruck in einer Zeile schreiben; die lernst du in [Vorlesung 07](/lectures/07/07.md) kennen. Entscheidend ist hier die Aufteilung:
 
 Die Startseite reicht das an den Kern weiter – und der Kern braucht dafür eine neue Fachoperation, etwa `Spielfeld.Benutzen(Gegenstand)`. Was ein Trank bewirkt, ob ein Schlüssel verbraucht wird und ob das Benutzen eine Runde kostet (die Gegner also ziehen), sind allesamt Spielregeln. Die Komponente darf davon nur wissen, dass sie hinterher neu rendern muss – und das tut Blazor von allein.
 
 **Zentrale Designentscheidungen:**
 
 - **`IEnumerable<Gegenstand>` als Parametertyp:** Der engste Typ, der reicht. `Inventar<Gegenstand>` würde die Komponente an eine konkrete Klasse binden; `List<string>` würde die Objekte plattdrücken und die Symbolwahl unmöglich machen. So kann man das Panel auch mit dem Inhalt einer Truhe oder einer Testliste füttern.
-- **Gruppieren in der Anzeige, nicht im Kern:** `GroupBy` ist eine Darstellungsentscheidung – das Inventar *hat* zwei Schlüssel, es *zeigt* sie nur zusammengefasst. Würde man den Kern umbauen, verlöre man die Möglichkeit, zwei Schlüssel getrennt zu verbrauchen.
+- **Gruppieren in der Anzeige, nicht im Kern:** Das Zusammenfassen ist eine Darstellungsentscheidung – das Inventar *hat* zwei Schlüssel, es *zeigt* sie nur zusammengefasst. Würde man den Kern umbauen, verlöre man die Möglichkeit, zwei Schlüssel getrennt zu verbrauchen.
 - **Symbole ins Web-Projekt:** Das Fachkonzept kennt `char`-Symbole, die GUI-Schicht kennt Emojis. Jede Schicht darf ihre eigene Darstellung haben – aber nur einmal.
 - **Leerer Zustand ist ein Zustand:** „Noch nichts gefunden.“ ist kein Schmuck. Eine Anzeige, die bei leerer Liste einfach verschwindet, wirkt wie ein Fehler.
 

@@ -179,7 +179,7 @@ Das Muster hat klare Vorteile gegenüber einer globalen Variable: Die Instanz en
 Im Zweifel: Wert übergeben statt Singleton. Genau das macht das Adventure: Ein `Verfolger` bekommt seine Sichtweite im Konstruktor (`public Verfolger(Koordinate position, int sichtweite = 5)`), und `Spieler.MaxLebenspunkte` ist eine `const`, die sich zur Laufzeit niemand umbiegen kann. Beides ist sichtbar, testbar und pro Objekt einstellbar – ein Level mit einem besonders wachsamen Verfolger ist damit eine Zeile, mit dem Singleton ein Umbau. Ein Singleton ist nur dann angebracht, wenn eine zweite Instanz *technisch* falsch wäre, nicht bloß unnötig.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Schreibe eine Klasse `Bestenliste` als Singleton mit `Lazy<T>`, die Einträge aus Name und Punktzahl in einer `List<(string, int)>` sammelt und die besten drei liefert. Registriere sie als Empfänger von `Spieler.SchatzGefunden`. Starte anschließend drei Threads, die je zehn Einträge schreiben, und prüfe, ob am Ende alle 30 in der Liste stehen. Falls nicht: Das Singleton ist zwar threadsicher *erzeugt* – aber ist auch `List<T>.Add` threadsicher?
 {: .notice--info}

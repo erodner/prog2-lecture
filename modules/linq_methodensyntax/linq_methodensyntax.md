@@ -109,13 +109,13 @@ Console.WriteLine(string.Join("", feld.Gegner.Select(g => g.Symbol)));  // WV
 
 Beim Lesen hilft es, jede Zeile als Frage zu formulieren: „Welche Objekte sind Gegner? Welche davon stehen höchstens fünfzehn Schritte entfernt? Sortiere sie nach Entfernung. Mache aus jedem einen Text. Nimm die ersten drei. Packe sie in eine Liste.“ `OfType<Gegner>()` erledigt dabei zwei Dinge auf einmal: Es filtert *und* liefert ein `IEnumerable<Gegner>` statt `IEnumerable<Spielobjekt>` – erst dadurch darf das nächste Lambda auf gegnerspezifische Mitglieder zugreifen. Ein `Where(o => o is Gegner)` allein würde den statischen Typ nicht ändern.
 
-Auch im Spielcode selbst steckt die Methodensyntax längst. `Spielfeld.IstFrei` fragt mit `All`, ob wirklich kein Gegner auf dem Zielfeld steht, und `Inventar<T>` beantwortet die Frage nach einem Schlüssel mit `Any`:
+Auch im Spielcode ließen sich einige Schleifen so verkürzen. `Spielfeld.IstFrei` prüft mit einer Schleife, ob kein Gegner auf dem Zielfeld steht, und `Inventar<T>` sucht mit einer Schleife nach einem Schlüssel. Mit `All` und `Any` wird daraus je eine Zeile:
 
 ```csharp
-// aus Spielfeld.IstFrei
+// Spielfeld.IstFrei, kürzer
 return gegner.All(g => g.Position != p);
 
-// aus Inventar<T>
+// Inventar<T>, kürzer
 public bool Enthaelt<TArt>() where TArt : T => inhalt.Any(d => d is TArt);
 ```
 
@@ -128,7 +128,7 @@ Beide Schreibweisen sind gleichwertig: Der Compiler übersetzt die Query-Syntax 
 Auch in Methodensyntax gilt die **verzögerte Ausführung** aus dem Modul [Deferred Execution](/modules/linq_deferred_execution/linq_deferred_execution.md): `Where`, `Select` und `OrderBy` bauen nur eine Abfrage zusammen, ausgeführt wird sie erst beim Durchlaufen – durch `foreach`, `ToList`, `Count`, `First` und ähnliche Methoden. Wer die Abfrage vor der Runde baut und nach der Runde durchläuft, sieht die neuen Gegnerpositionen. Und wer eine teure Abfrage zweimal durchläuft, rechnet zweimal.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Schreibe in Methodensyntax: (a) die Namen aller Truhen auf dem Feld, alphabetisch; (b) die durchschnittliche Entfernung aller Gegner zum Helden; (c) ein `Dictionary<Koordinate, char>` von Position auf Symbol für alle nicht passierbaren Objekte; (d) die drei Objekte, die dem Helden am nächsten liegen, ihn selbst ausgenommen. Welche der vier Abfragen ließen sich auch in Query-Syntax schreiben?
 {: .notice--info}

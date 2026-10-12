@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Was SDK, CLR und BCL sind, kennst du aus dem Modul [Die .NET-Plattform](https://www.erodner.de/prog-lecture/modules/dotnet/dotnet/) in Programmierung 1. Wie in Programmierung 1 arbeiten wir mit **Visual Studio** unter Windows und mit **.NET 10**. Neu ist ab Vorlesung 04 **Blazor**, dafür braucht Visual Studio eine zusätzliche Workload.
+Was SDK, CLR und BCL sind, kennst du aus dem Modul [Die .NET-Plattform](https://www.erodner.de/prog-lecture/modules/dotnet/dotnet/) in Programmierung 1. Wie in Programmierung 1 arbeiten wir mit **Visual Studio** unter Windows und mit **.NET 10**. Neu ist ab Vorlesung 03 **Blazor**, dafür braucht Visual Studio eine zusätzliche Workload.
 
 ## .NET 10
 
@@ -39,7 +39,7 @@ Die `.csproj` ist die einzige Wahrheit, nicht die IDE. Läuft ein Projekt bei di
 
 ## Vorbereitung auf Blazor
 
-Ab der [Vorlesung 04](/lectures/04/04.md) bauen wir mit **Blazor** Oberflächen, die im Browser laufen. Blazor gehört zu ASP.NET Core und ist schon im SDK enthalten. Ob die Vorlage da ist, zeigt:
+Ab der [Vorlesung 03](/lectures/03/03.md) bauen wir mit **Blazor** Oberflächen, die im Browser laufen. Blazor gehört zu ASP.NET Core und ist schon im SDK enthalten. Ob die Vorlage da ist, zeigt:
 
 ```bash
 dotnet new list blazor

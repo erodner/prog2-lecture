@@ -237,7 +237,7 @@ Das Spielfeld hat keine Ahnung, wer da zuhört. Es hat nicht einmal eine Liste v
 Wer sich registriert, sollte sich auch wieder abmelden. Solange eine Methode im Delegaten des Spielfelds hängt, hält das Spielfeld eine Referenz auf ihr Objekt – und der [Garbage Collector](/modules/garbage_collection/garbage_collection.md) kann es nicht freigeben, selbst wenn es sonst nirgends mehr gebraucht wird. Bei einem langlebigen Sender und vielen kurzlebigen Empfängern (Dialoge, Anzeigen) ist das ein klassisches Speicherleck. Und Vorsicht bei der Konsolenversion, sobald sie in [Vorlesung 09](/lectures/09/09.md) Spielstände laden kann: Nach `F9` entsteht ein *neues* `Spielfeld` mit einem neuen `Spieler`, weshalb `Program.cs` `SchatzGefunden` dort erneut abonnieren muss. Wer stattdessen dasselbe Objekt zweimal abonniert, hört den Ton doppelt – und Lambdas lassen sich nicht mit `-=` abmelden, weil man keine Referenz darauf hat.
 {: .notice--warning}
 
-## Der Tastendruck aus Vorlesung 04
+## Der Tastendruck aus Vorlesung 03
 
 Damit ist auch klar, was in [Blazor](/modules/blazor_ereignisse/blazor_ereignisse.md) hinter `@onkeydown="TasteGedrueckt"` steckt. Das Spielfeld-`div` löst ein Tastenereignis aus, und das Razor-Attribut ist nur eine Kurzschreibweise für das, was wir eben von Hand gemacht haben: Blazor registriert unsere Methode als Empfänger. Die Details des Tastendrucks kommen als Parameter:
 
@@ -259,7 +259,7 @@ private void TasteGedrueckt(KeyboardEventArgs e)
 
 Das `div` ist der Sender, die Komponente der Empfänger, `KeyboardEventArgs` sind die Ereignisdaten – dieselben drei Rollen wie beim Schatz. Einen `sender`-Parameter gibt es in Blazor nicht, und wer die Ereignisdaten nicht braucht, lässt den Parameter einfach weg. Das Muster dahinter – ein Sender veröffentlicht, viele Empfänger registrieren sich – ist so grundlegend, dass es einen eigenen Namen hat: das [Observer-Muster](/modules/observer/observer.md), das wir in Vorlesung 08 als eines der klassischen Entwurfsmuster genauer anschauen.
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Ergänze `Spielfeld` um ein Ereignis `SpielBeendet` ohne Zusatzdaten (Typ `EventHandler`), das ausgelöst wird, sobald `Status` von `Laeuft` auf `Gewonnen` oder `Verloren` wechselt. Registriere in der Konsolenversion einen Empfänger, der die Endabrechnung ausgibt, und einen zweiten, der den Spielstand automatisch speichert. An welcher Stelle in `SpielerZieht` muss das Ereignis ausgelöst werden, damit `Status` und `LetzteMeldung` beide schon stimmen – und warum darf der Speicher-Empfänger den Sender nicht kennen?
 {: .notice--info}

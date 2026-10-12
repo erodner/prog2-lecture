@@ -15,6 +15,10 @@ Die [Schichten-Architektur](/modules/schichten_architektur/schichten_architektur
 
 Jede Schicht wird ein eigenes Projekt – und weil die GUI-Schicht zwei Bewohner hat, sind es vier. Die Datei `Adventure.slnx` fasst sie zusammen:
 
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.slnx">Adventure.slnx</a></div>
+
 ```xml
 <Solution>
   <Project Path="Adventure.Daten/Adventure.Daten.csproj" />
@@ -23,6 +27,9 @@ Jede Schicht wird ein eigenes Projekt – und weil die GUI-Schicht zwei Bewohner
   <Project Path="Adventure.Web/Adventure.Web.csproj" />
 </Solution>
 ```
+
+</div>
+</div>
 
 Angelegt wird das mit den Befehlen aus [Projekte mit der dotnet-CLI](/modules/dotnet_cli_projekte/dotnet_cli_projekte.md) – zwei Klassenbibliotheken, eine Konsolen-App, eine Blazor Web App, und dann die Projektreferenzen, die die erlaubten Abhängigkeiten festlegen:
 
@@ -37,20 +44,9 @@ dotnet add Adventure.Konsole reference Adventure.Kern Adventure.Daten
 dotnet add Adventure.Web     reference Adventure.Kern Adventure.Daten
 ```
 
-Die Referenzen ergeben folgendes Bild – jeder Pfeil bedeutet „kennt und benutzt“:
+Die Referenzen ergeben folgendes Bild:
 
-```
-   Adventure.Konsole                     Adventure.Web
-   Program.cs: while-Schleife            Home.razor, Statusleiste, SpielEndeDialog
-   ReadKey, AlsText()                    Program.cs wählt die Levelquelle aus
-        │            │                        │            │
-        │            └───────────┐   ┌────────┘            │
-        ▼                        ▼   ▼                     ▼
-   Adventure.Kern                          Adventure.Daten
-   Spielobjekt, Spielfeld, Spieler         EingebauteLevelQuelle
-   LevelParser, Level                             │
-   ILevelQuelle   ◄───────────────────────────────┘ implementiert
-```
+<svg viewBox="0 0 700 320" role="img" aria-labelledby="titel-projekte" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:system-ui,sans-serif"><title id="titel-projekte">Projektabhängigkeiten des Adventure: Adventure.Konsole und Adventure.Web kennen und benutzen Adventure.Kern und Adventure.Daten. Adventure.Daten implementiert das Interface ILevelQuelle aus Adventure.Kern. Auf Konsole und Web zeigt kein Pfeil, Kern zeigt auf nichts.</title><defs><marker id="pfeil-proj" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker><marker id="real-proj" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="none" stroke-linejoin="round"/></marker></defs><g fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.5"><rect x="30" y="20" width="270" height="84" rx="4"/><rect x="400" y="20" width="270" height="84" rx="4"/><rect x="30" y="200" width="270" height="84" rx="4"/><rect x="400" y="200" width="270" height="84" rx="4"/></g><g stroke="currentColor" stroke-width="1.5" fill="none" marker-end="url(#pfeil-proj)"><line x1="165" y1="104" x2="165" y2="198"/><line x1="535" y1="104" x2="535" y2="198"/><line x1="255" y1="104" x2="445" y2="198"/><line x1="445" y1="104" x2="255" y2="198"/></g><line x1="398" y1="262" x2="304" y2="262" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#real-proj)"/><g fill="currentColor" text-anchor="middle"><text x="165" y="46" font-size="14" font-weight="600" font-family="ui-monospace,monospace">Adventure.Konsole</text><text x="165" y="68" font-size="12">Program.cs: Spielschleife</text><text x="165" y="86" font-size="12">ReadKey, AlsText()</text><text x="535" y="46" font-size="14" font-weight="600" font-family="ui-monospace,monospace">Adventure.Web</text><text x="535" y="68" font-size="12">Home.razor, Statusleiste, SpielEndeDialog</text><text x="535" y="86" font-size="12">Program.cs wählt die Levelquelle</text><text x="165" y="226" font-size="14" font-weight="600" font-family="ui-monospace,monospace">Adventure.Kern</text><text x="165" y="248" font-size="12">Spielobjekt, Spielfeld, Spieler</text><text x="165" y="266" font-size="12">LevelParser, Level, ILevelQuelle</text><text x="535" y="226" font-size="14" font-weight="600" font-family="ui-monospace,monospace">Adventure.Daten</text><text x="535" y="248" font-size="12">EingebauteLevelQuelle</text></g><g fill="currentColor" font-size="12"><line x1="30" y1="306" x2="62" y2="306" stroke="currentColor" stroke-width="1.5" marker-end="url(#pfeil-proj)"/><text x="70" y="310">kennt und benutzt (Projektreferenz)</text><line x1="330" y1="306" x2="362" y2="306" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#real-proj)"/><text x="372" y="310">implementiert <tspan font-family="ui-monospace,monospace">ILevelQuelle</tspan></text></g></svg>
 
 Auffällig ist, dass **niemand** auf `Adventure.Web` oder `Adventure.Konsole` zeigt und dass der Kern auf **nichts** zeigt. Damit sind die Schichtregeln 1 und 2 vom Compiler garantiert: Wollte jemand aus der Datenschicht eine Komponente aufrufen, bräuchte er eine Referenz auf das Web-Projekt, und die wäre ein Zirkelbezug. Die Pfeile von den beiden Oberflächen zur Datenschicht sind die eine bewusste Ausnahme; wozu sie nötig sind, sehen wir gleich in `Program.cs`.
 
@@ -104,7 +100,11 @@ Die restlichen Mitglieder des `@code`-Blocks – `SymbolFuer`, `KlasseFuer`, `On
 
 ## `ILevelQuelle`: der Kern bestimmt, die Datenschicht liefert
 
-Schichtregel 4 verlangt, dass eine Schicht die darunterliegende nur über Schnittstellen benutzt. Der Kern legt daher selbst fest, was er von einer Levelquelle braucht – die beiden Typen stehen in `Adventure.Kern/Level.cs`:
+Schichtregel 4 verlangt, dass eine Schicht die darunterliegende nur über Schnittstellen benutzt. Der Kern legt daher selbst fest, was er von einer Levelquelle braucht – die beiden Typen stehen in `Adventure.Kern/Level.cs` (links). Zwei Mitglieder genügen: eine Liste der verfügbaren Namen für die Auswahl und eine Methode, die zu einem Namen die Karte liefert. Rechts implementiert die Datenschicht diesen Vertrag, vorerst mit zwei fest einprogrammierten Karten:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Kern/Level.cs">Adventure.Kern/Level.cs</a></div>
 
 ```csharp
 namespace Adventure.Kern;
@@ -120,7 +120,9 @@ public interface ILevelQuelle
 }
 ```
 
-Zwei Mitglieder, mehr braucht es nicht: eine Liste der verfügbaren Namen für die Auswahl und eine Methode, die zu einem Namen die Karte liefert. Die Datenschicht implementiert diesen Vertrag – vorerst mit zwei fest einprogrammierten Karten:
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Daten/EingebauteLevelQuelle.cs">Adventure.Daten/EingebauteLevelQuelle.cs</a></div>
 
 ```csharp
 using Adventure.Kern;
@@ -155,20 +157,27 @@ public class EingebauteLevelQuelle : ILevelQuelle
 }
 ```
 
+</div>
+</div>
+
 Man beachte die Richtung: Das Interface liegt im Projekt `Adventure.Kern`, und `Adventure.Daten` verweist *auf den Kern*, nicht umgekehrt. Dieses Prinzip heißt **Dependency Inversion**: Die Abhängigkeit zeigt zur Abstraktion im Fachkonzept, und deshalb bleibt die Schichtregel „nur über Schnittstellen“ erfüllt, obwohl die Datenhaltung die tiefere Schicht ist. Der Gewinn zeigt sich in [Vorlesung 09](/lectures/09/09.md): Dort kommen eine `TextdateiLevelQuelle` und eine `HttpLevelQuelle` dazu, und weder der Kern noch eine Komponente ändert sich dafür.
 
 ## Dependency Injection: wer erzeugt die Levelquelle?
 
-Bleibt die Frage, wer `new EingebauteLevelQuelle()` schreibt. Der Kern darf es nicht, sonst würde er die Datenschicht kennen. Die Komponente sollte es nicht, sonst müsste jede Seite wissen, welche Quelle gerade gilt – und ein Wechsel wäre eine Suchen-und-Ersetzen-Aktion. ASP.NET Core sieht dafür genau eine Stelle vor, den **DI-Container** in `Program.cs`:
+Bleibt die Frage, wer `new EingebauteLevelQuelle()` schreibt. Der Kern darf es nicht, sonst würde er die Datenschicht kennen. Die Komponente sollte es nicht, sonst müsste jede Seite wissen, welche Quelle gerade gilt – und ein Wechsel wäre eine Suchen-und-Ersetzen-Aktion. ASP.NET Core sieht dafür genau eine Stelle vor, den **DI-Container** in `Program.cs` (links). Die Komponente holt das fertige Objekt mit `@inject` ab (rechts):
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Program.cs">Adventure.Web/Program.cs</a></div>
 
 ```csharp
 // Die eine Stelle, an der entschieden wird, woher die Level kommen.
 builder.Services.AddSingleton<ILevelQuelle, EingebauteLevelQuelle>();
 ```
 
-Die Zeile registriert: „Wer einen `ILevelQuelle` braucht, bekommt eine `EingebauteLevelQuelle`.“ Das ist **Dependency Injection**: Objekte bekommen ihre Abhängigkeiten von außen geliefert, statt sie selbst zu erzeugen. Deshalb braucht das Web-Projekt überhaupt eine Referenz auf `Adventure.Daten` – nur für diese eine Zeile. Die Konsolenversion kommt ohne Container aus und schreibt die Entscheidung in die erste Zeile ihrer `Program.cs` (`ILevelQuelle levelQuelle = new EingebauteLevelQuelle();`) – auch das ist in Ordnung, denn es ist wieder *eine* Stelle, ganz oben im Programm.
-
-In der Komponente holt eine Anweisung das fertige Objekt ab:
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a></div>
 
 ```razor
 @page "/"
@@ -176,20 +185,29 @@ In der Komponente holt eine Anweisung das fertige Objekt ab:
 @inject ILevelQuelle LevelQuelle
 ```
 
+</div>
+</div>
+
+Die Zeile registriert: „Wer einen `ILevelQuelle` braucht, bekommt eine `EingebauteLevelQuelle`.“ Das ist **Dependency Injection**: Objekte bekommen ihre Abhängigkeiten von außen geliefert, statt sie selbst zu erzeugen. Deshalb braucht das Web-Projekt überhaupt eine Referenz auf `Adventure.Daten` – nur für diese eine Zeile. Die Konsolenversion kommt ohne Container aus und schreibt die Entscheidung in die erste Zeile ihrer `Program.cs` (`ILevelQuelle levelQuelle = new EingebauteLevelQuelle();`) – auch das ist in Ordnung, denn es ist wieder *eine* Stelle, ganz oben im Programm.
+
 Ab da steht `LevelQuelle` in Markup und `@code` als Property zur Verfügung – die `@foreach`-Schleife der Levelauswahl liest `LevelQuelle.LevelNamen`, `NeuStarten` ruft `LevelQuelle.Laden(levelName)`. Entscheidend ist der Typ: `@inject ILevelQuelle` nennt das **Interface**, nicht die Klasse. Die Komponente könnte gar nicht bemerken, wenn morgen eine Datei- oder Webquelle dahinterstünde.
 
-**Singleton, Scoped oder Transient?** `AddSingleton` erzeugt ein Objekt für den ganzen Server, `AddScoped` in Blazor eines pro Browser-Verbindung (Circuit), `AddTransient` bei jedem `@inject` ein neues. Für die Levelquelle ist `Singleton` richtig, weil sie nur liest und keinen benutzerabhängigen Zustand hat – zwei Spieler dürfen sich dieselben Karten teilen. Das `Spielfeld` steht dagegen bewusst **nicht** im Container: Es ist ein Feld der Komponente, und damit hat jede Browser-Sitzung automatisch ihr eigenes Spiel.
+`AddSingleton` heißt: Es gibt **eine** Levelquelle für den ganzen Server. Das passt, weil sie nur Karten liest, alle Spieler dürfen sie teilen. Das `Spielfeld` steht dagegen nicht hier, sondern ist ein Feld der Komponente. Deshalb hat jedes Browserfenster sein eigenes Spiel.
 {: .notice--primary}
 
 ## Was man damit gewinnt
 
-Drei Dinge, die ohne die Trennung nicht gingen. Erstens lässt sich die Levelquelle **austauschen, ohne eine Komponente anzufassen** – eine Zeile in `Program.cs`. Zweitens lässt sich der Kern **ohne Browser testen**: Ein NUnit-Test baut sich ein `Spielfeld` mit dem `LevelParser`, ruft `SpielerZieht` und prüft `Status`, `Lebenspunkte` oder `Punkte`, ohne dass eine Seite gerendert wird. Genau das holen wir in [Vorlesung 12](/lectures/12/12.md) nach; warum das so wertvoll ist, vertieft das Modul [Warum Unit-Tests?](/modules/unit_tests_motivation/unit_tests_motivation.md). Und drittens konnte diese ganze Vorlesung existieren: Eine neue Oberfläche zu bauen war möglich, *ohne* das Spiel neu zu schreiben.
+Drei Dinge, die ohne die Trennung nicht gingen. Erstens lässt sich die Levelquelle **austauschen, ohne eine Komponente anzufassen** – eine Zeile in `Program.cs`. Zweitens lässt sich der Kern **ohne Browser prüfen**: Ein kleines Programm kann ein `Spielfeld` mit dem `LevelParser` bauen, `SpielerZieht` aufrufen und `Status`, `Lebenspunkte` oder `Punkte` kontrollieren, ohne dass eine Seite gerendert wird. Wie man solche Prüfungen automatisiert, zeigt [Vorlesung 11](/lectures/11/11.md). Und drittens konnte diese ganze Vorlesung existieren: Eine neue Oberfläche zu bauen war möglich, *ohne* das Spiel neu zu schreiben.
 
 ## Dieselbe Oberfläche, zweimal ausgeliefert
 
 Wie weit die Trennung trägt, zeigt ein letztes Projekt: `Adventure.Wasm`. Es liefert dasselbe Spiel aus, aber als **WebAssembly** – der C#-Code läuft dann nicht auf einem Server, sondern im Browser des Spielers. Probier es aus: [Adventure im Browser spielen](https://www.erodner.de/prog2-adventure/). Nach dem ersten Laden braucht die Seite keinen Server mehr, sie liegt als reine Dateisammlung auf GitHub Pages.
 
-Bemerkenswert daran ist, was dafür *nicht* nötig war. Weder `Adventure.Kern` noch die Komponenten wurden angefasst. Das neue Projekt verweist auf dieselben `.razor`-Dateien wie `Adventure.Web`:
+Bemerkenswert daran ist, was dafür *nicht* nötig war. Weder `Adventure.Kern` noch die Komponenten wurden angefasst. Das neue Projekt verweist auf dieselben `.razor`-Dateien wie `Adventure.Web` (links). Neu ist nur der Rahmen: eine eigene `Program.cs`, die den Browser statt einen Webserver hochfährt, und eine `index.html`. Und eine Entscheidung, die uns das Interface abnimmt: Im Browser gibt es kein Dateisystem, also kann dort keine `TextdateiLevelQuelle` laufen (rechts):
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v11-tests/Adventure.Wasm/Adventure.Wasm.csproj">Adventure.Wasm/Adventure.Wasm.csproj</a></div>
 
 ```xml
 <ItemGroup>
@@ -199,12 +217,16 @@ Bemerkenswert daran ist, was dafür *nicht* nötig war. Weder `Adventure.Kern` n
 </ItemGroup>
 ```
 
-Neu ist nur der Rahmen: eine eigene `Program.cs`, die den Browser statt einen Webserver hochfährt, und eine `index.html`. Und eine Entscheidung, die uns das Interface abnimmt – im Browser gibt es kein Dateisystem, also kann dort keine `TextdateiLevelQuelle` laufen:
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v11-tests/Adventure.Wasm/Program.cs">Adventure.Wasm/Program.cs</a></div>
 
 ```csharp
-// Adventure.Wasm/Program.cs
 builder.Services.AddSingleton<ILevelQuelle, EingebauteLevelQuelle>();
 ```
+
+</div>
+</div>
 
 Eine Zeile, eine andere Umgebung, dasselbe Spiel. Dass das überhaupt geht, ist kein Verdienst von Blazor, sondern der Schichtung: Weil das Fachkonzept nie eine Datei geöffnet hat, sondern immer nur `ILevelQuelle` kannte, ist der Wechsel von der Festplatte in den Browser eine Konfigurationsfrage geblieben.
 {: .notice--primary}
@@ -212,7 +234,7 @@ Eine Zeile, eine andere Umgebung, dasselbe Spiel. Dass das überhaupt geht, ist 
 Übung: Das Spiel soll einen Spielstand speichern und laden können. Schreibe auf, was in welches Projekt kommt: das Interface für den Speicher, die Klasse, die tatsächlich in eine Datei schreibt, die Buttons „Speichern“ und „Laden“, die Methode, die den Zustand des Spielfelds einsammelt, und die Zeile, die entscheidet, in welche Datei geschrieben wird. Prüfe deine Verteilung mit der Konsolen-Probe – und überlege, welche der fünf Teile die Konsolenversion mitbenutzen könnte.
 {: .notice--info}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 ## Weitere Quellen
 

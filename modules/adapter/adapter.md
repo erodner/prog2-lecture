@@ -13,7 +13,11 @@ Wer mit einem deutschen Ladegerät nach England reist, steht vor einem bekannten
 
 ## Problem: zwei Oberflächen, dieselben vier Richtungen
 
-Das Adventure hat eine einzige Stelle, an der eine Bewegung stattfindet: `feld.SpielerZieht(richtung)`. Der Kern kennt nur den Aufzählungstyp `Richtung` – und das ist gut so, denn er soll weder von der Konsole noch vom Browser etwas wissen. Trotzdem steht in beiden Oberflächen fast derselbe Code. In `Adventure.Konsole` kommt die Eingabe als `ConsoleKey`:
+Das Adventure hat eine einzige Stelle, an der eine Bewegung stattfindet: `feld.SpielerZieht(richtung)`. Der Kern kennt nur den Aufzählungstyp `Richtung` – und das ist gut so, denn er soll weder von der Konsole noch vom Browser etwas wissen. Trotzdem steht in beiden Oberflächen fast derselbe Code. In `Adventure.Konsole` kommt die Eingabe als `ConsoleKey` (links), in `Adventure.Web` liefert der Browser ein `KeyboardEventArgs`, dessen Property `Key` ein `string` ist (rechts):
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Konsole/Program.cs">Adventure.Konsole/Program.cs</a></div>
 
 ```csharp
 ConsoleKey taste = Console.ReadKey(true).Key;
@@ -28,7 +32,9 @@ Richtung? richtung = taste switch
 };
 ```
 
-In `Adventure.Web` liefert der Browser ein `KeyboardEventArgs`, dessen Property `Key` ein `string` ist:
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v09-daten/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a> (im <code>@code</code>-Block)</div>
 
 ```csharp
 private void TasteGedrueckt(KeyboardEventArgs e)
@@ -43,6 +49,9 @@ private void TasteGedrueckt(KeyboardEventArgs e)
     };
 }
 ```
+
+</div>
+</div>
 
 Zwei fremde Schnittstellen – `ConsoleKey` gehört zu .NET, `KeyboardEventArgs` zu ASP.NET Core –, und beide müssen dasselbe liefern. Ändern können wir keine von beiden. Und ein Unit-Test, der eine Folge von Zügen abspielen will, hat gar keine Tastatur zur Verfügung. Was fehlt, ist eine eigene Schnittstelle, auf die sich das Spiel stützen kann.
 
@@ -123,7 +132,7 @@ Spielen(feld, new KonsolenEingabe());
 Spielen(feld, new SkriptEingabe(Richtung.Rechts, Richtung.Rechts, Richtung.Unten));
 ```
 
-Derselbe Aufruf, einmal mit Mensch und einmal ohne. Der zweite reicht für einen Test in [Vorlesung 12](/lectures/12/12.md): drei Züge abspielen, danach `feld.Spieler.Position` prüfen – reproduzierbar, in Millisekunden, ohne Tastendruck.
+Derselbe Aufruf, einmal mit Mensch und einmal ohne. Der zweite reicht für einen Test in [Vorlesung 11](/lectures/11/11.md): drei Züge abspielen, danach `feld.Spieler.Position` prüfen – reproduzierbar, in Millisekunden, ohne Tastendruck.
 
 Das Interface `IEingabe` beschreibt ein *Holen* (*pull*): Der Client fragt nach dem nächsten Zug und wartet. Für die Konsole passt das perfekt, weil `Console.ReadKey` genau das tut. Blazor funktioniert umgekehrt: Der Browser *liefert* ein Tastenereignis, wann immer es ihm passt (*push*), und niemand darf darauf warten. Ein Adapter kann Schnittstellen angleichen, aber nicht die Richtung des Kontrollflusses umdrehen – für Blazor ist die Übersetzung von `e.Key` in `Richtung` daher eine eigene, kleine Adapter-Methode, und ein `IEingabe` würde dort nicht helfen.
 {: .notice--warning}
@@ -195,7 +204,7 @@ Dem stehen zwei Kosten gegenüber. Jeder Aufruf geht durch eine zusätzliche Sch
 Ein Adapter soll Schnittstellen angleichen, nicht Verhalten hinzufügen. Wer in `KonsolenEingabe` anfängt, Züge zu puffern, ungültige Eingaben zu zählen oder Spielregeln zu prüfen, hat eine Klasse geschrieben, die zwei Aufgaben hat – und die zweite versteckt sich hinter dem harmlosen Namen „Eingabe“.
 {: .notice--warning}
 
-Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag `v04-blazor`).
+Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
 Übung: Schreibe einen dritten Adapter `ZufallsEingabe : IEingabe`, der bei jedem Aufruf eine zufällige Richtung liefert, und lass damit hundert Runden laufen – wie oft gewinnt der Held? Erweitere anschließend `IEingabe` um eine Property `bool IstAmEnde`, damit `Spielen` zwischen „kein Zug mehr vorhanden“ und „Zug war keine Bewegungstaste“ unterscheiden kann. Warum wäre für `Adventure.Web` ein Klassenadapter auf `KeyboardEventArgs` keine Lösung?
 {: .notice--info}
