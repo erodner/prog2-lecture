@@ -130,7 +130,7 @@ var nachArtSortiert =
 
 Nach `into` ist `o` nicht mehr sichtbar – die Abfrage arbeitet ab hier mit Gruppen, nicht mehr mit einzelnen Objekten.
 
-Das Ergebnis einer LINQ-Abfrage ist grundsätzlich ein `IEnumerable<T>`, keine `List<T>`. Man kann es mit `foreach` durchlaufen und an Methoden übergeben, die `IEnumerable<T>` annehmen – aber es gibt keinen Indexzugriff `bedrohlich[0]` und kein `Count`-Property. Wer eine Liste braucht, ruft `ToList()` auf. Warum das so ist, klärt das Modul zur [verzögerten Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
+Das Ergebnis einer LINQ-Abfrage ist grundsätzlich ein `IEnumerable<T>`, keine `List<T>`. Man kann es mit `foreach` durchlaufen und an Methoden übergeben, die `IEnumerable<T>` annehmen – aber es gibt keinen Indexzugriff `bedrohlich[0]` und kein `Count`-Property. Wer eine Liste braucht, ruft `ToList()` auf. Warum das so ist, klärt das Modul zur [verzögerten Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md) (erweitertes Wissen).
 {: .notice--primary}
 
 ## Der Compiler prüft mit

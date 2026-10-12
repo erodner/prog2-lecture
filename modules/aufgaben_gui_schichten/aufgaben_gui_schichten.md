@@ -16,7 +16,6 @@ Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch
 In `Home.razor` steht die Levelauswahl direkt im Markup der Seite: ein `<label>`, ein `<select>` mit `@bind` und `@bind:after`, eine `@foreach`-Schleife über `LevelQuelle.LevelNamen`. Zerlege das in eine eigene Komponente `Levelauswahl.razor`, die von außen die Liste der Namen bekommt und die getroffene Auswahl über einen `EventCallback<string>` zurückmeldet.
 
 - Welche Parameter braucht die Komponente – und welche davon dürfen fehlen?
-- Warum ein `EventCallback<string>` und kein gewöhnlicher `Action<string>`-Delegat?
 - Wo lebt danach der aktuell gewählte Levelname: in der Komponente, in der Seite oder in beiden?
 - Die Komponente soll die Liste anzeigen können, ohne `ILevelQuelle` zu kennen. Warum ist das besser, obwohl `@inject ILevelQuelle` auch in ihr funktionieren würde?
 
@@ -46,9 +45,9 @@ Bevor eine Zeile Markup entsteht, klären wir, was hinein- und was herausfließt
     [Parameter] public string Ausgewaehlt { get; set; } = "";
     [Parameter] public EventCallback<string> OnLevelGewaehlt { get; set; }
 
-    private Task Gewechselt(ChangeEventArgs e)
+    private void Gewechselt(ChangeEventArgs e)
     {
-        return OnLevelGewaehlt.InvokeAsync(e.Value?.ToString() ?? "");
+        OnLevelGewaehlt.InvokeAsync(e.Value?.ToString() ?? "");
     }
 }
 ```
@@ -88,7 +87,7 @@ Das ist eleganter, sobald die Komponente wirklich einen Wert *bearbeitet*. Für 
 
 **Zentrale Designentscheidungen:**
 
-- **`EventCallback<string>` statt `Action<string>`:** Nach einem `EventCallback` rendert Blazor die Elternkomponente automatisch neu. Mit einem gewöhnlichen Delegaten müsste `Home` selbst `StateHasChanged` aufrufen – eine Zeile, die man genau einmal vergisst und dann lange sucht.
+- **`EventCallback<string>` als Rückkanal:** Nach einem `EventCallback` rendert Blazor die Elternkomponente automatisch neu. Die Seite muss sich um nichts weiter kümmern.
 - **Der Zustand bleibt oben:** `levelName` gehört weiterhin `Home`, denn `NeuStarten` braucht ihn. Die Komponente hat **kein** eigenes Feld für die Auswahl; sie zeigt an, was sie bekommt. Zwei Kopien desselben Werts sind zwei Gelegenheiten, auseinanderzulaufen.
 - **Keine Abhängigkeit von `ILevelQuelle`:** Eine Komponente, die nur eine `IReadOnlyList<string>` braucht, lässt sich für Spielstände, Schwierigkeitsgrade oder Tastaturlayouts wiederverwenden – und in einem Test mit drei erfundenen Namen ausprobieren. Mit `@inject ILevelQuelle` wäre sie für immer an Level gekettet.
 - **`EditorRequired` nur dort, wo es weh tut:** Ohne `Namen` ist die Komponente sinnlos, ohne `Ausgewaehlt` nur unschön. Deshalb ist nur der erste Parameter als erforderlich markiert.
@@ -142,7 +141,7 @@ Es funktioniert – im Browser. Schiebe die Logik dorthin zurück, wo sie hingeh
 - Welche Zeilen bestehen die Konsolen-Probe aus dem [Architektur-Modul](/modules/schichten_architektur/schichten_architektur.md) und welche nicht?
 - Wie verhält sich dieselbe Situation in `Adventure.Konsole` – und warum ist der Unterschied ein Fehler und nicht nur eine Unschönheit?
 - Es steckt zusätzlich ein echter Spielfehler in diesem Code, den man erst beim Spielen bemerkt. Welcher?
-- Wie sähe ein NUnit-Test für „verschlossene Tür ohne Schlüssel“ aus, und warum lässt er sich mit der Fassung oben nicht schreiben?
+- Wie würdest du ohne Browser prüfen, dass der Held vor einer verschlossenen Tür ohne Schlüssel stehen bleibt, und warum geht das mit der Fassung oben nicht?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -217,23 +216,19 @@ private void TasteGedrueckt(KeyboardEventArgs e)
 
 Das Feld `meldung` in der Komponente entfällt ebenfalls: Die Meldung steht nach dem Zug in `feld.LetzteMeldung` und wird über den Parameter `Meldung` an die `Statusleiste` gereicht. Eine Kopie weniger, die veralten kann.
 
-**Schritt 5 — Der Test, der vorher unmöglich war:**
+**Schritt 5 — Prüfbar ohne Browser:**
 
 ```csharp
-[Test]
-public void SpielerZieht_VerschlosseneTuerOhneSchluessel_SpielerBleibtStehen()
-{
-    Spielfeld feld = LevelParser.Parsen(new Level("Test", ["###", "#@D", "###"]));
-    Koordinate vorher = feld.Spieler.Position;
+Spielfeld feld = LevelParser.Parsen(new Level("Test", ["###", "#@D", "###"]));
+Koordinate vorher = feld.Spieler.Position;
 
-    feld.SpielerZieht(Richtung.Rechts);
+feld.SpielerZieht(Richtung.Rechts);
 
-    Assert.That(feld.Spieler.Position, Is.EqualTo(vorher));
-    Assert.That(feld.LetzteMeldung, Does.Contain("Schlüssel"));
-}
+Console.WriteLine(feld.Spieler.Position == vorher);   // True: der Held bleibt stehen
+Console.WriteLine(feld.LetzteMeldung);                // Meldung, dass ein Schlüssel fehlt
 ```
 
-Mit der ursprünglichen Fassung wäre dieser Test nicht schreibbar gewesen: Die Regel lebte in einer Razor-Komponente, und um sie zu prüfen, hätte man einen Browser, eine SignalR-Verbindung und ein simuliertes `keydown`-Ereignis gebraucht. Testbarkeit ist kein Nebeneffekt sauberer Schichten – sie ist ihr bestes Messgerät.
+Mit der ursprünglichen Fassung ginge das nicht: Die Regel lebte in einer Razor-Komponente, und um sie zu prüfen, hätte man einen Browser gebraucht. Wie man solche Prüfungen automatisch laufen lässt, zeigt [Vorlesung 11](/lectures/11/11.md). Prüfbarkeit ist kein Nebeneffekt sauberer Schichten, sondern ihr bestes Messgerät.
 
 **Zentrale Designentscheidungen:**
 

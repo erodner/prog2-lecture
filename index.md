@@ -35,41 +35,51 @@ Die Vorlesung besteht aus:
 ### Teil 0: Einstieg
 
 0. [Einstieg – Rückblick und Werkzeuge](/lectures/00/00.md) – Was du aus Programmierung 1 mitbringst, .NET SDK, IDE, dotnet-CLI
+{: start="0"}
 
 ### Teil 1: Objektorientierung vertieft
 
 1. [Vererbung](/lectures/01/01.md) – `virtual`/`override`, `sealed`, Laufzeittyp, `object`, Garbage Collection
 2. [Abstrakte Klassen und Interfaces](/lectures/02/02.md) – `abstract`, `interface`, Schnittstellen- vs. Implementierungsvererbung
+{: start="1"}
 
 
 ### Teil 2: Anwendungen bauen
 
 3. [GUI mit Blazor und Schichten-Architekturen](/lectures/03/03.md) – Razor-Komponenten, Layout, Ereignisse, Datenbindung, Dialoge, Drei-Schichten-Architektur
+{: start="3"}
 
 
 ### Teil 3: Zusammenarbeit
 
 4. [Git – Versionsverwaltung](/lectures/04/04.md) – Konzepte, Kommandozeile, Remote-Repositorys, Branches, Merge-Konflikte
+{: start="4"}
 
-{% comment %}
+
 ### Teil 4: Generisch und funktional
 
 5. [Generizität](/lectures/05/05.md) – Generische Methoden und Typen, Constraints
 6. [Collections, Algorithmen und LINQ](/lectures/06/06.md) – Hashing, Sortieren, Suchen, Collections, LINQ-Abfragen
 7. [Delegaten, Lambdas und Ereignisse](/lectures/07/07.md) – `delegate`, `Func`/`Action`, Lambda-Ausdrücke, LINQ-Methodensyntax, `event`
+{: start="5"}
+
+{% comment %}
 
 ### Teil 5: Entwurf
 
 8. [Entwurfsmuster](/lectures/08/08.md) – Singleton, Adapter, Composite, Iterator, Observer
+{: start="8"}
 
 ### Teil 6: Daten rein und raus
 
 9. [Dateien, Streams und Serialisierung](/lectures/09/09.md) – `File`, Streams, `IDisposable`, JSON/XML, `HttpClient`
+{: start="9"}
 
 ### Teil 7: Werkzeuge der Softwareentwicklung
 
 10. [NuGet – Paketverwaltung](/lectures/10/10.md) – Pakete finden, einbinden, bewerten, Logging mit NLog
 11. [Unit-Testing](/lectures/11/11.md) – NUnit, Assertions, `dotnet test`
+{: start="10"}
 {% endcomment %}
 
 ---

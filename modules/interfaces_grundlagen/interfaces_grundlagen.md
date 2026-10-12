@@ -45,7 +45,13 @@ public interface IInteragierbar
     /// <summary>Führt die Interaktion aus und liefert eine Meldung für den Spieler.</summary>
     string Interagieren(Spieler spieler);
 }
+```
 
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/ISammelbar.cs">Adventure.Kern/ISammelbar.cs</a></div>
+
+```csharp
 /// <summary>Etwas, das der Spieler aufheben und im Inventar tragen kann.</summary>
 public interface ISammelbar
 {
@@ -73,18 +79,24 @@ Die Syntax sieht aus wie Vererbung – nach dem Doppelpunkt steht das Interface,
 <div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/Tuer.cs">Adventure.Kern/Tuer.cs</a></div>
 
 ```csharp
+/// <summary>Eine Tür ist eine Wand, die sich mit einem Schlüssel öffnen lässt.</summary>
 public sealed class Tuer : StatischesObjekt, IInteragierbar
 {
     public bool IstOffen { get; private set; }
 
-    public Tuer(Koordinate position) : base("Tür", position) { }
+    public Tuer(Koordinate position) : base("Tür", position)
+    {
+    }
 
     public override char Symbol => IstOffen ? '/' : 'D';
     public override bool IstPassierbar => IstOffen;
 
     public string Interagieren(Spieler spieler)
     {
-        if (IstOffen) return "Die Tür ist schon offen.";
+        if (IstOffen)
+        {
+            return "Die Tür ist schon offen.";
+        }
         if (!spieler.Inventar.Enthaelt<Schluessel>())
         {
             return "Die Tür ist verschlossen. Du brauchst einen Schlüssel.";
@@ -108,25 +120,40 @@ Nach demselben Muster wird die `Truhe` interagierbar, und die Gegenstände erfü
 <div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v02-interfaces/Adventure.Kern/Gegenstand.cs">Adventure.Kern/Gegenstand.cs</a></div>
 
 ```csharp
+/// <summary>Ein Gegenstand liegt auf dem Boden, bis der Spieler darüber läuft.</summary>
 public abstract class Gegenstand : StatischesObjekt, ISammelbar
 {
-    protected Gegenstand(string name, Koordinate position) : base(name, position) { }
+    protected Gegenstand(string name, Koordinate position) : base(name, position)
+    {
+    }
 
     // Man kann auf einen Gegenstand treten – dabei wird er aufgehoben.
     public override bool IstPassierbar => true;
 
-    public virtual string Aufheben(Spieler spieler) => $"{spieler.Name} hebt {Name} auf.";
+    public virtual string Aufheben(Spieler spieler)
+    {
+        return $"{spieler.Name} hebt {Name} auf.";
+    }
 }
 
 public sealed class Schluessel : Gegenstand
 {
-    public Schluessel(Koordinate position) : base("Schlüssel", position) { }
+    public Schluessel(Koordinate position) : base("Schlüssel", position)
+    {
+    }
+
     public override char Symbol => 'k';
 }
 
 public sealed class Trank : Gegenstand
 {
     public int Heilung { get; }
+
+    public Trank(Koordinate position, int heilung = 1) : base("Trank", position)
+    {
+        Heilung = heilung;
+    }
+
     public override char Symbol => '!';
 
     // Ein Trank wird sofort getrunken statt ins Inventar gelegt.
@@ -136,6 +163,8 @@ public sealed class Trank : Gegenstand
         return $"{spieler.Name} trinkt einen Trank (+{Heilung}).";
     }
 }
+
+// … Schatz entsprechend
 ```
 
 </div>

@@ -111,6 +111,8 @@ Die Methode oben allein reicht nicht. Ein `<div>` ist im Browser kein Bedienelem
 </div>
 </div>
 
+`async`, `await` und `Task` gehören zu einer Schreibweise für Abläufe, die etwas Zeit brauchen; Blazor verlangt sie hier. Was dahintersteckt, kommt in [Vorlesung 09](/lectures/09/09.md). Für den Moment genügt: `await` wartet, bis der Fokus gesetzt ist.
+
 `@ref="feldElement"` verschafft der Komponente einen Griff auf das erzeugte HTML-Element, gespeichert in einer `ElementReference`. Blazor ruft `OnAfterRenderAsync` nach jedem Rendern auf und setzt `firstRender` nur beim allerersten Mal auf `true` – genau dort gehört der Fokus hin, denn später soll er dem Benutzer nicht mehr weggenommen werden. Früher geht es nicht: In `OnInitialized` existiert das `<div>` im Browser noch gar nicht.
 
 `ElementReference` ist die einzige Stelle, an der wir ein konkretes HTML-Element anfassen – und sie ist bewusst mager: Man kann den Fokus setzen, mehr nicht. Wer versucht, darüber Texte oder Farben zu ändern, ist auf dem falschen Weg; dafür gibt es Felder und Markup.

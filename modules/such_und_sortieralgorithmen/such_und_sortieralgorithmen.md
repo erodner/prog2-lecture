@@ -13,7 +13,7 @@ Wer in einem Telefonbuch den Namen „Meier“ sucht, blättert nicht auf Seite 
 
 ## Lineare Suche – die erste Fassung des Spielfelds
 
-Die einfachste Suche prüft ein Element nach dem anderen, bis der Treffer gefunden ist. Genau so hat das `Spielfeld` in [Vorlesung 01](/lectures/01/01.md) begonnen: Alle Objekte lagen in einer einzigen Liste, und `ObjektAn` lief bei jeder Anfrage von vorne los.
+Die einfachste Suche prüft ein Element nach dem anderen, bis der Treffer gefunden ist. Genau so hat das `Spielfeld` in [Vorlesung 01](/lectures/01/01.md) begonnen, wie du es aus [`virtual` und `override`](/modules/virtual_override/virtual_override.md) kennst: Alle Objekte lagen in einer einzigen Liste, und `ObjektAn` lief bei jeder Anfrage von vorne los.
 
 ```csharp
 private readonly List<Spielobjekt> objekte = new();
@@ -34,17 +34,9 @@ Für ein Spielfeld ist das teurer, als es klingt. Das Level „Kerker“ ist 20 
 
 ## Nachschlagen statt suchen
 
-Ab [Vorlesung 02](/lectures/02/02.md) sieht das Spielfeld deshalb anders aus. Die statischen Objekte liegen in einem `Dictionary<Koordinate, StatischesObjekt>`, und aus der Schleife wird ein einziger Zugriff:
+Deshalb liegen die statischen Objekte im Repo seit [Vorlesung 02](/lectures/02/02.md) in einem `Dictionary<Koordinate, StatischesObjekt>`. Dort haben wir das nur nebenbei erwähnt, hier ist der Grund: Wie das Dictionary eine Wand findet, hat das Modul [Hashcodes und `Equals`](/modules/hashcodes_equals/hashcodes_equals.md) gezeigt. `StatischesObjektAn` springt über den Hashcode direkt in den passenden Bucket, unabhängig davon, ob zehn oder zehntausend Wände gespeichert sind. Aus 67 Vergleichen pro Feld wird im Mittel einer. Interessant ist, was in `ObjektAn` übrig bleibt:
 
 ```csharp
-private readonly Dictionary<Koordinate, StatischesObjekt> statische = new();
-private readonly List<Gegner> gegner = new();
-
-public StatischesObjekt? StatischesObjektAn(Koordinate p)
-{
-    return statische.TryGetValue(p, out StatischesObjekt? s) ? s : null;
-}
-
 public Spielobjekt? ObjektAn(Koordinate p)
 {
     if (p == Spieler.Position) return Spieler;
@@ -56,7 +48,7 @@ public Spielobjekt? ObjektAn(Koordinate p)
 }
 ```
 
-`TryGetValue` berechnet den Hashcode der Position, springt in den passenden Bucket und vergleicht dort höchstens eine Handvoll Einträge – unabhängig davon, ob zehn oder zehntausend Wände gespeichert sind. Aus 60 Vergleichen pro Feld wird einer. Interessant ist die zweite Methode: Für die Gegner bleibt es bei einer linearen Suche (`FirstOrDefault` durchläuft die Liste). Das ist kein Versehen, sondern eine bewusste Abwägung – in einem Level stehen zwei oder drei Gegner, und die bewegen sich jede Runde. Ein Dictionary müsste bei jedem Zug umgebaut werden, und veränderliche Schlüssel sind, wie wir im Modul [Hashcodes und Equals](/modules/hashcodes_equals/hashcodes_equals.md) gesehen haben, ohnehin eine schlechte Idee. **Die richtige Datenstruktur hängt am Zugriffsmuster, nicht an der Eleganz.**
+Für die Gegner bleibt es bei einer linearen Suche. Das ist kein Versehen, sondern eine bewusste Abwägung: In einem Level stehen zwei oder drei Gegner, und die bewegen sich jede Runde. Ein Dictionary müsste bei jedem Zug umgebaut werden, und Schlüssel, die sich ändern, sind ohnehin eine schlechte Idee (siehe [Hashcodes und `Equals`](/modules/hashcodes_equals/hashcodes_equals.md), erweitertes Wissen). **Die richtige Datenstruktur hängt am Zugriffsmuster, nicht an der Eleganz.**
 
 ## Binäre Suche: Teilen und Herrschen
 

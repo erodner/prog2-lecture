@@ -9,6 +9,9 @@ toc: false
 classes: wide
 ---
 
+**➕ Erweitertes Wissen.** Wie man LINQ-Abfragen schreibt, kennst du aus [LINQ – Query-Syntax](/modules/linq_query_syntax/linq_query_syntax.md). Dieses Modul zeigt, *wann* eine Abfrage eigentlich ausgeführt wird. Die folgenden Module setzen es nicht voraus.
+{: .notice--success}
+
 Ein Kochrezept ist kein Essen. Wer ein Rezept aufschreibt, hat noch nichts gekocht – erst wenn jemand es Schritt für Schritt ausführt, entsteht das Gericht, und zwar aus den Zutaten, die *in diesem Moment* im Kühlschrank liegen. Eine LINQ-Abfrage verhält sich genauso: Die Zeile `from g in feld.Gegner where … select g` sucht keinen einzigen Gegner, sie beschreibt nur, wonach zu suchen wäre. Das nennt man **verzögerte Ausführung** (*deferred execution*). Für unser Spiel ist das ein Geschenk: Wir definieren die Abfrage „Gegner in Sichtweite“ ein einziges Mal beim Start und geben sie nach jeder Runde neu aus – sie liefert immer die aktuelle Lage, ohne dass wir sie anfassen. Wer das Prinzip nicht kennt, erlebt allerdings Ergebnisse, die sich scheinbar von allein ändern, oder Programme, die eine teure Abfrage unbemerkt zehnmal ausführen.
 
 ## Eine Abfrage ist ein Plan, keine Liste

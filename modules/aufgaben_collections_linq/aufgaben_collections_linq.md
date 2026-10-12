@@ -394,7 +394,7 @@ Zerlege jede der folgenden Fragen in ihre Bestandteile – *Quelle*, *Filter*, *
 - (a) Die Namen aller Gegner, die höchstens vier Schritte entfernt sind, der nächste zuerst. Bei gleicher Entfernung soll der Name entscheiden. Welche Quelle nimmst du – `feld.Gegner` oder `feld.AlleObjekte`?
 - (b) Alle Gegenstände, die noch auf dem Boden liegen, als Text `"Name (x, y)"`, der entfernteste zuerst, bei gleicher Entfernung alphabetisch. Achtung: Die `Truhe` ist kein `Gegenstand` – warum eigentlich nicht?
 - (c) Eine Gruppierung **aller** Objekte nach ihrem `Symbol` mit der Anzahl je Gruppe. Wie viele Gruppen entstehen, welchen Typ hat `gruppe.Key`, und in welcher Reihenfolge kommen die Gruppen? Sortiere sie anschließend nach Symbol – und erkläre die Reihenfolge, die dabei herauskommt.
-- (d) Zusatzfrage: Gib das Ergebnis von (b) aus, lass den Helden dann mit `feld.SpielerZieht(...)` zweimal nach oben und einmal nach links laufen und gib **dieselbe Abfragevariable** erneut aus. Beide Ausgaben unterscheiden sich in zwei Punkten, obwohl die Abfrage nicht angefasst wurde. Welche sind das – und wie hättest du die erste Ausgabe „einfrieren“ können?
+- (d) ➕ Zusatzfrage (erweitertes Wissen, siehe [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md)): Gib das Ergebnis von (b) aus, lass den Helden dann mit `feld.SpielerZieht(...)` zweimal nach oben und einmal nach links laufen und gib **dieselbe Abfragevariable** erneut aus. Beide Ausgaben unterscheiden sich in zwei Punkten, obwohl die Abfrage nicht angefasst wurde. Welche sind das – und wie hättest du die erste Ausgabe „einfrieren“ können?
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>

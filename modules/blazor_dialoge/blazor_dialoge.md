@@ -83,7 +83,7 @@ Es gibt keinen Aufruf wie `dialog.Show()`. Stattdessen entscheidet eine Bedingun
 ```razor
 @if (feld.Status != Spielstatus.Laeuft)
 {
-    <SpielEndeDialog Status="feld.Status" Punkte="feld.Spieler.Punkte" Runden="feld.Runde"
+    <SpielEndeDialog Status="@feld.Status" Punkte="@feld.Spieler.Punkte" Runden="@feld.Runde"
                      OnNeustart="NeuStarten" />
 }
 ```

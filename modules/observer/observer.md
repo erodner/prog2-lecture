@@ -137,7 +137,7 @@ In `Adventure.Web` h√§ngen wir uns als zweiten Beobachter an dasselbe Ereignis ‚
 ```razor
 @implements IDisposable
 
-<Statusleiste Spieler="feld.Spieler" Runde="feld.Runde" Meldung="@jubel" />
+<Statusleiste Spieler="@feld.Spieler" Runde="@feld.Runde" Meldung="@jubel" />
 
 @code {
     private Spielfeld feld = null!;

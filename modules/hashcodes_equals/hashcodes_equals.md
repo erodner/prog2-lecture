@@ -78,79 +78,38 @@ public readonly record struct Koordinate(int X, int Y)
 
 Das Schlüsselwort `record` weist den Compiler an, `Equals` und `GetHashCode` **inhaltsbasiert** zu erzeugen: Zwei Positionen sind gleich, wenn `X` und `Y` gleich sind, und dann ist auch ihr Hashcode gleich. Genau deshalb findet `statische.TryGetValue(new Koordinate(5, 2), out _)` die Wand, die irgendwann einmal mit einer anderen `Koordinate`-Instanz eingefügt wurde. Und weil `record struct` außerdem `==` sinnvoll definiert, funktioniert auch `if (p == Spieler.Position)` im `Spielfeld` so, wie man es erwartet.
 
-## Das Problem: eine eigene Klasse als Schlüssel
+## Rückblick: eine Klasse als Schlüssel
 
-Jetzt die Gegenprobe. Angenommen, wir hätten die Koordinate nicht als `record struct`, sondern als gewöhnliche Klasse geschrieben – ein völlig naheliegender erster Entwurf:
-
-```csharp
-public class Punkt
-{
-    public int X { get; }
-    public int Y { get; }
-
-    public Punkt(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
-}
-```
-
-Damit bauen wir ein Spielfeld auf und versuchen, ein Feld nachzuschlagen:
+Im Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md) aus Vorlesung 01 lief der Held durch alle Wände, solange `Koordinate` eine gewöhnliche Klasse ohne eigenes `Equals` und `GetHashCode` war. Mit dem Wissen über Buckets sehen wir jetzt genau, was dabei schiefgeht. Wir nehmen dafür eine Klasse `Punkt` mit den Properties `X` und `Y`, so wie die erste Fassung von `Koordinate`, aber unter eigenem Namen, damit sie nicht mit dem echten Typ verwechselt wird:
 
 ```csharp
-Dictionary<Punkt, StatischesObjekt> statische = new Dictionary<Punkt, StatischesObjekt>();
+Dictionary<Punkt, string> karte = new Dictionary<Punkt, string>();
 
 Punkt wandStelle = new Punkt(5, 2);
-statische.Add(wandStelle, new Wand(new Punkt(5, 2)));
+karte.Add(wandStelle, "Wand");
 
-Console.WriteLine(statische.ContainsKey(wandStelle));             // True
-StatischesObjekt s = statische[new Punkt(5, 2)];             // KeyNotFoundException!
+Console.WriteLine(karte.ContainsKey(wandStelle));   // True: dasselbe Objekt
+Console.WriteLine(karte[new Punkt(5, 2)]);           // KeyNotFoundException
 ```
 
-Aus unserer Sicht ist `new Punkt(5, 2)` dasselbe Feld wie `wandStelle`. Aus Sicht des Dictionaries sind es zwei Fremde: Die zweite Instanz liefert einen anderen Hashcode, das Dictionary schaut in den falschen Bucket, findet nichts und wirft die Exception. Selbst wenn beide zufällig im selben Bucket landen würden, scheiterte der zweite Schritt: `Equals` vergleicht standardmäßig ebenfalls nur die Identität. Für das Spiel heißt das: Der Held läuft durch alle Wände, denn `StatischesObjektAn` liefert für jedes frisch berechnete Zielfeld `null`.
+Aus unserer Sicht ist `new Punkt(5, 2)` dasselbe Feld wie `wandStelle`, für das Dictionary sind es zwei Fremde. Beide Schritte der Suche scheitern: Die zweite Instanz liefert einen anderen Hashcode, also schaut das Dictionary in den falschen Bucket. Und selbst im richtigen Bucket würde `Equals` nur die Identität vergleichen.
 
-## Die Lösung: `Equals` und `GetHashCode` überschreiben
+Die Lösung kennst du aus Vorlesung 01: `Equals` und `GetHashCode` überschreiben, mit `HashCode.Combine(X, Y)` für den Hashcode. Jetzt ist auch klar, warum es **beide** sein müssen: `GetHashCode` repariert die Wahl des Buckets, `Equals` den Vergleich innerhalb des Buckets.
 
-Damit das Dictionary unsere Vorstellung von Gleichheit teilt, müssen wir ihm beide Schritte beibringen – die Bucket-Wahl über `GetHashCode` und den Vergleich innerhalb des Buckets über `Equals`:
-
-```csharp
-public class Punkt
-{
-    public int X { get; }
-    public int Y { get; }
-
-    public Punkt(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is Punkt andere && X == andere.X && Y == andere.Y;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(X, Y);
-    }
-}
-```
-
-`obj is Punkt andere` prüft den Typ und legt in einem Schritt die Variable `andere` an – für `null` oder fremde Typen ergibt der Ausdruck `false`. `HashCode.Combine` ist die empfohlene Art, aus mehreren Feldern einen gut verteilten Hashcode zu erzeugen; alle Felder, die in `Equals` verglichen werden, gehören hinein, und keine anderen. Mit dieser Version findet `statische[new Punkt(5, 2)]` die Wand – und der Held stößt wieder dagegen.
-
-Der **Vertrag** zwischen beiden Methoden ist nicht verhandelbar: Wenn `a.Equals(b)` `true` liefert, **muss** `a.GetHashCode() == b.GetHashCode()` gelten. Die Umkehrung ist nicht gefordert – gleiche Hashcodes bei ungleichen Objekten sind eine erlaubte Kollision. Wer nur `Equals` überschreibt, verletzt den Vertrag, und das Dictionary schaut weiterhin in den falschen Bucket. Der Compiler warnt in diesem Fall (CS0659).
+Der **Vertrag** zwischen beiden Methoden ist nicht verhandelbar: Wenn `a.Equals(b)` `true` liefert, **muss** `a.GetHashCode() == b.GetHashCode()` gelten. Die Umkehrung ist nicht gefordert, gleiche Hashcodes bei ungleichen Objekten sind eine erlaubte Kollision. Wer nur `Equals` überschreibt, verletzt den Vertrag, und das Dictionary schaut weiterhin in den falschen Bucket.
 {: .notice--warning}
 
-## Schlüssel müssen unveränderlich sein
+Übung: Baue das Beispiel mit `Punkt` nach und lege drei Wände in ein `Dictionary<Punkt, string>`. Prüfe zunächst ohne Überschreibungen, wie viele davon du wiederfindest, wenn du mit frisch erzeugten Koordinaten suchst. Ergänze dann `Equals` und `GetHashCode` wie in Vorlesung 01 und wiederhole den Test. Lass anschließend `GetHashCode` konstant `0` zurückgeben: Funktioniert das Spiel noch – und was hat sich verändert? Schreibe zum Schluss die Klasse als `public readonly record struct Punkt(int X, int Y);` und vergleiche den Aufwand.
+{: .notice--info}
+
+## ➕ Schlüssel müssen unveränderlich sein
+
+**➕ Erweitertes Wissen.** Die folgenden Module setzen diesen Abschnitt nicht voraus.
+{: .notice--success}
 
 In `Punkt` haben `X` und `Y` bewusst nur einen Getter – genau wie `Koordinate` ein `readonly record struct` ist. Der Grund: Der Bucket wird beim Einfügen aus dem damaligen Hashcode bestimmt. Änderte sich `X` später, würde `GetHashCode` einen anderen Wert liefern, das Dictionary suchte im neuen Bucket – der Eintrag liegt aber noch im alten und ist damit praktisch verloren. Für das Spiel wäre das ein Albtraum: eine Wand, die im Dictionary steht, dort aber niemand mehr findet.
 
 Deshalb bewegt sich im `Spielfeld` auch nie ein Schlüssel. Wenn ein Gegenstand aufgehoben wird, verschwindet der Eintrag komplett (`statische.Remove(gegenstand.Position)`), und bewegliche Objekte liegen gar nicht erst im Dictionary, sondern in `List<Gegner>`. Das ist kein Zufall, sondern die Konsequenz aus dieser Regel: **Nur was sich nicht bewegt, taugt als Schlüssel.**
-
-Übung: Baue das Beispiel mit `Punkt` nach und lege drei Wände in ein `Dictionary<Punkt, StatischesObjekt>`. Prüfe zunächst ohne Überschreibungen, wie viele davon du wiederfindest, wenn du mit frisch erzeugten Koordinaten suchst. Ergänze dann `Equals` und `GetHashCode` und wiederhole den Test. Lass anschließend `GetHashCode` konstant `0` zurückgeben: Funktioniert das Spiel noch – und was hat sich verändert? Schreibe zum Schluss die Klasse als `public readonly record struct Punkt(int X, int Y);` und vergleiche den Aufwand.
-{: .notice--info}
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)).
 

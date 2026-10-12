@@ -104,7 +104,13 @@ Console.WriteLine(gegangen.Peek()); // Unten
 Im Zweifel `List<T>` – und sobald eine Suche nach Schlüssel, eine Duplikatprüfung oder eine feste Zugriffsreihenfolge auftaucht, zur spezialisierten Collection wechseln. Die Tabelle ist die Landkarte; welchen Aufwand die Buchstaben O(1), O(log n) und O(n) bedeuten, erklärt das Modul [Such- und Sortieralgorithmen](/modules/such_und_sortieralgorithmen/such_und_sortieralgorithmen.md).
 {: .notice--primary}
 
-## Die Interfaces dahinter
+Übung: Erweitere das Spielfeld gedanklich um ein `HashSet<Koordinate> besucht`, in das bei jedem erfolgreichen Zug die neue Spielerposition eingetragen wird. Schreibe eine Methode `AlsTextMitNebel()`, die nur besuchte Felder zeichnet und alles andere als Leerzeichen ausgibt. Warum ist ein `HashSet<Koordinate>` hier besser als eine `List<Koordinate>` – und wie viele Vergleiche spart es pro gezeichnetem Feld? Was müsste sich ändern, wenn `Position` eine Klasse ohne `Equals`/`GetHashCode` wäre?
+{: .notice--info}
+
+## ➕ Die Interfaces dahinter
+
+**➕ Erweitertes Wissen.** Die folgenden Module setzen diesen Abschnitt nicht voraus.
+{: .notice--success}
 
 Alle diese Klassen teilen sich eine Hierarchie von [Interfaces](/modules/interfaces_grundlagen/interfaces_grundlagen.md), und die ist für gute Methodensignaturen wichtiger als die konkreten Klassen:
 
@@ -114,22 +120,7 @@ Alle diese Klassen teilen sich eine Hierarchie von [Interfaces](/modules/interfa
 - `IDictionary<K, V>` – Zugriff über Schlüssel. Implementiert von `Dictionary`, `SortedDictionary`, `SortedList`.
 - `IReadOnlyList<T>`, `IReadOnlyDictionary<K, V>` – nur lesender Zugriff.
 
-Das `Spielfeld` nutzt beide Enden dieser Liste. Nach außen gibt es seine Gegner als `IReadOnlyList<Gegner>` heraus – lesen ja, `Clear()` nein. Und alle Objekte zusammen liefert es als `IEnumerable<Spielobjekt>`, das gar keine Collection mehr ist, sondern eine Aufzählung, die beim Durchlaufen entsteht:
-
-```csharp
-public IReadOnlyList<Gegner> Gegner => gegner;
-
-/// <summary>Alle Objekte auf dem Feld – erst die statischen, dann die Gegner, zuletzt der Spieler.</summary>
-public IEnumerable<Spielobjekt> AlleObjekte
-{
-    get
-    {
-        foreach (StatischesObjekt s in statische.Values) yield return s;
-        foreach (Gegner g in gegner) yield return g;
-        yield return Spieler;
-    }
-}
-```
+Das `Spielfeld` nutzt beide Enden dieser Liste. Nach außen gibt es seine Gegner als `IReadOnlyList<Gegner>` heraus – lesen ja, `Clear()` nein. Und alle Objekte zusammen liefert es als `IEnumerable<Spielobjekt>`, das gar keine Collection mehr ist, sondern eine Aufzählung, die erst beim Durchlaufen entsteht (wie das geht, zeigt das Modul [Iterator](/modules/iterator/iterator.md) in Vorlesung 08).
 
 Daraus folgt eine Faustregel für Parameter: **So allgemein wie möglich annehmen.** Eine Methode, die nur durchläuft, sollte `IEnumerable<T>` verlangen – dann kann man ihr ein Array, eine Liste, ein `HashSet`, `feld.AlleObjekte` oder das Ergebnis einer LINQ-Abfrage übergeben:
 
@@ -149,9 +140,6 @@ Console.WriteLine(Gesamtwert(new[] { new Schatz(new Koordinate(0, 0), 100) }));
 ```
 
 Hätten wir `List<Gegenstand>` als Parametertyp gewählt, müsste das Inventar erst umkopiert werden. Und der Rückgabetyp? Hier darf es konkreter sein, damit der Aufrufer weiß, was er bekommt – aber wer eine interne Liste nach außen gibt, sollte `IReadOnlyList<T>` wählen, genau wie das Spielfeld es tut.
-
-Übung: Erweitere das Spielfeld gedanklich um ein `HashSet<Koordinate> besucht`, in das bei jedem erfolgreichen Zug die neue Spielerposition eingetragen wird. Schreibe eine Methode `AlsTextMitNebel()`, die nur besuchte Felder zeichnet und alles andere als Leerzeichen ausgibt. Warum ist ein `HashSet<Koordinate>` hier besser als eine `List<Koordinate>` – und wie viele Vergleiche spart es pro gezeichnetem Feld? Was müsste sich ändern, wenn `Position` eine Klasse ohne `Equals`/`GetHashCode` wäre?
-{: .notice--info}
 
 ## Weitere Quellen
 

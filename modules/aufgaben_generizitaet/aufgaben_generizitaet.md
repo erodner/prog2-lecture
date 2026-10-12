@@ -204,7 +204,10 @@ Console.WriteLine(waende.Count);
 
 </details>
 
-## Aufgabe 3 — Fehler finden
+## ➕ Aufgabe 3 — Fehler finden
+
+**➕ Erweitertes Wissen.** Diese Aufgabe setzt `IComparable<T>` als Constraint aus [Vergleichen, `default` und generische Interfaces](/modules/generische_interfaces/generische_interfaces.md) voraus.
+{: .notice--success}
 
 Für die Schatzkammer des Spiels wurde eine generische Sammelklasse begonnen. Sie enthält **drei** Compilerfehler, die alle mit fehlenden oder falschen Constraints zu tun haben.
 

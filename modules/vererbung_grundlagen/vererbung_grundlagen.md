@@ -100,7 +100,7 @@ public sealed class Wand : Spielobjekt
 }
 ```
 
-Auffällig ist, wie wenig in der Klasse steht: ein Konstruktor und ein Zeichen. Trotzdem hat jede Wand einen Namen, eine Position und eine Beschreibung – alles geerbt. Das `sealed` bedeutet, dass von `Wand` niemand mehr erben darf; die Begründung liefert das Modul [Versiegeln mit `sealed`](/modules/sealed/sealed.md).
+Auffällig ist, wie wenig in der Klasse steht: ein Konstruktor und ein Zeichen. Trotzdem hat jede Wand einen Namen, eine Position und eine Beschreibung – alles geerbt. Das `sealed` bedeutet, dass von `Wand` niemand mehr erben darf; die Begründung liefert das Modul [Versiegeln mit `sealed`](/modules/sealed/sealed.md) (erweitertes Wissen).
 
 Der Spieler braucht mehr: Er hat Lebenspunkte und kann sich bewegen.
 
