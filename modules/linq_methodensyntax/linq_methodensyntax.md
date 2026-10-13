@@ -1,5 +1,5 @@
 ---
-title: "LINQ-Methodensyntax"
+title: "LINQ – Abfragen mit Lambdas"
 layout: single
 author_profile: true
 author: Erik Rodner
@@ -9,34 +9,63 @@ toc: false
 classes: wide
 ---
 
-Im Modul [LINQ-Abfragen](/modules/linq_query_syntax/linq_query_syntax.md) haben wir Abfragen mit `from`, `where`, `orderby` und `select` geschrieben – eine Syntax, die an SQL erinnert und in C# ein wenig wie ein Fremdkörper wirkt. Jetzt, mit [Lambda-Ausdrücken](/modules/lambda_ausdruecke/lambda_ausdruecke.md) im Gepäck, können wir hinter die Kulissen schauen: Die Query-Syntax ist nur Zucker. Der Compiler übersetzt jede Abfrage in eine Kette gewöhnlicher Methodenaufrufe, denen Lambdas übergeben werden. Diese **Methodensyntax** kann man auch direkt schreiben – und in der Praxis wird sie sogar häufiger benutzt, weil sie mehr Operationen kennt und sich nahtlos mit dem restlichen Code mischt.
+Wie oft haben wir dieselbe Schleife geschrieben: über eine Liste laufen, mit `if` filtern, Treffer in eine neue Liste kopieren, hinterher sortieren? Der Leser muss aus fünf Zeilen erst rekonstruieren, *was* eigentlich gesucht wird. **LINQ** (*Language Integrated Query*) macht daraus eine kurze Kette von Methodenaufrufen, denen wir die Bedingungen als [Lambda-Ausdrücke](/modules/lambda_ausdruecke/lambda_ausdruecke.md) übergeben. Das funktioniert mit allem, was `IEnumerable<T>` ist: Arrays, Listen, Dictionaries, unserem `Inventar<T>` und `feld.AlleObjekte`.
 
-## Dieselbe Abfrage, zwei Schreibweisen
+## Deklarativ statt imperativ
 
-Nehmen wir die Abfrage aus der letzten Vorlesung: alle Städte, die mit „B“ beginnen, alphabetisch sortiert und in Großbuchstaben. In Query-Syntax:
-
-```csharp
-string[] staedte = ["Berlin", "Hamburg", "Bremen", "München", "Bonn", "Köln"];
-
-IEnumerable<string> ergebnis =
-    from s in staedte
-    where s.StartsWith("B")
-    orderby s
-    select s.ToUpper();
-```
-
-Dieselbe Abfrage in Methodensyntax – und genau das macht der Compiler aus dem obigen Code:
+Die Statusanzeige soll alle Gegner melden, die höchstens fünf Schritte vom Helden entfernt sind, der nächste zuerst. Mit dem Wissen aus [`IComparable<T>` und Sortieren](/modules/icomparable_sortieren/icomparable_sortieren.md) beschreiben wir Schritt für Schritt, *wie* das Ergebnis entsteht (imperativ):
 
 ```csharp
-IEnumerable<string> ergebnis = staedte
-    .Where(s => s.StartsWith("B"))
-    .OrderBy(s => s)
-    .Select(s => s.ToUpper());
-
-Console.WriteLine(string.Join(", ", ergebnis));   // BERLIN, BONN, BREMEN
+List<Gegner> bedrohlich = new List<Gegner>();
+foreach (Gegner g in feld.Gegner)
+{
+    if (g.Position.Entfernung(feld.Spieler.Position) <= 5)
+    {
+        bedrohlich.Add(g);
+    }
+}
+bedrohlich.Sort(new NachEntfernungComparer(feld.Spieler.Position));
 ```
 
-Jedes Schlüsselwort wird zu einem Methodenaufruf, jede Bedingung zu einem Lambda: `where s.StartsWith("B")` wird zu `Where(s => s.StartsWith("B"))`, `orderby s` zu `OrderBy(s => s)`, `select s.ToUpper()` zu `Select(s => s.ToUpper())`. Die Bereichsvariable `s` aus `from s in staedte` taucht als Lambda-Parameter wieder auf. Man liest so eine Kette von oben nach unten wie eine Verarbeitungsstraße: Erst filtern, dann sortieren, dann umformen.
+Mit LINQ beschreiben wir nur, *was* wir haben wollen (deklarativ):
+
+```csharp
+Koordinate held = feld.Spieler.Position;
+
+IEnumerable<Gegner> bedrohlich = feld.Gegner
+    .Where(g => g.Position.Entfernung(held) <= 5)
+    .OrderBy(g => g.Position.Entfernung(held));
+```
+
+Man liest die Kette von oben nach unten wie eine Verarbeitungsstraße: aus den Gegnern die nahen auswählen, dann nach Entfernung sortieren. Keine Hilfsliste, kein `Add`, keine Comparer-Klasse. Jede Methode bekommt ein Lambda: `Where` eine Bedingung, `OrderBy` den Wert, nach dem sortiert wird.
+
+## Die Abfrage am laufenden Spiel
+
+Bauen wir ein kleines Spielfeld auf, an dem sich das Ergebnis nachrechnen lässt. Der Held steht auf `(5, 3)`, drum herum liegen ein paar Objekte und drei Gegner:
+
+```csharp
+Spielfeld feld = new Spielfeld(12, 6, new Spieler("Held", new Koordinate(5, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(0, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(11, 3)));
+feld.Hinzufuegen(new Truhe(new Koordinate(2, 1), wert: 100));
+feld.Hinzufuegen(new Schluessel(new Koordinate(4, 4)));
+feld.Hinzufuegen(new Wache(new Koordinate(7, 3)));
+feld.Hinzufuegen(new Verfolger(new Koordinate(8, 2)));
+feld.Hinzufuegen(new Wache(new Koordinate(1, 5)));
+```
+
+Zur Wache auf `(7, 3)` sind es 2 Schritte, zum Verfolger auf `(8, 2)` 3 + 1 = 4, zur zweiten Wache auf `(1, 5)` 4 + 2 = 6. Die dritte fällt also aus dem Filter heraus:
+
+```csharp
+foreach (Gegner g in bedrohlich)
+{
+    Console.WriteLine($"{g.Name} bei {g.Position}: {g.Position.Entfernung(held)} Schritte");
+}
+// Wache bei (7, 3): 2 Schritte
+// Verfolger bei (8, 2): 4 Schritte
+```
+
+Mit `Select` formt man jedes Element um: `.Select(g => g.Name)` macht aus den Gegnern ihre Namen, also ein `IEnumerable<string>`. Den Ergebnistyp leitet der Compiler ab, deshalb schreibt man meist einfach `var`.
 
 ## Erweiterungsmethoden auf `IEnumerable<T>`
 
@@ -66,7 +95,7 @@ Beide Aufrufe sind gleichwertig; die Punktschreibweise ist nur bequemer. Weil de
 
 ## Die wichtigsten LINQ-Methoden
 
-Die Query-Syntax kennt nur eine Handvoll Schlüsselwörter. Die Methodensyntax bietet deutlich mehr. Angenommen, `e` ist ein `IEnumerable<T>`:
+Angenommen, `e` ist ein `IEnumerable<T>`:
 
 | Methode | Bedeutung | Ergebnis |
 | :--- | :--- | :--- |
@@ -121,22 +150,38 @@ public bool Enthaelt<TArt>() where TArt : T => inhalt.Any(d => d is TArt);
 
 Beide Aufrufe brechen ab, sobald die Antwort feststeht: `All` beim ersten Gegenbeispiel, `Any` beim ersten Treffer. Eine handgeschriebene Schleife mit `return` täte dasselbe – nur dass man bei `Any` und `All` keinen Zähler und kein `break` mehr falsch machen kann.
 
-## Query- oder Methodensyntax?
+## Gruppieren mit `GroupBy`
 
-Beide Schreibweisen sind gleichwertig: Der Compiler übersetzt die Query-Syntax vor dem eigentlichen Kompilieren in Methodenaufrufe, das erzeugte Programm ist identisch. Die Query-Syntax liest sich bei komplexen Abfragen mit mehreren `from` (Joins, verschachtelte Collections) oft angenehmer; die Methodensyntax ist kompakter, kennt alle Operationen und passt besser zu kurzen Ausdrücken mitten im Code wie `if (feld.Gegner.Any(g => g.Position.Entfernung(held) <= 1))`. `Take`, `ThenBy`, `Distinct` und `OfType` haben in der Query-Syntax gar keine Entsprechung – wer sie braucht, mischt ohnehin beide Schreibweisen oder bleibt gleich bei der Methodensyntax. Im .NET-Ökosystem ist sie der Normalfall.
+Statt zu filtern, können wir die Objekte auch nach ihrer Art zusammenfassen, etwa für eine Statistik. `GroupBy` bekommt ein Lambda, das den Gruppenschlüssel liefert, hier den Klassennamen des Laufzeittyps:
 
-Wichtig ist die **verzögerte Ausführung** (mehr dazu im Modul [LINQ – verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md), erweitertes Wissen): `Where`, `Select` und `OrderBy` bauen nur eine Abfrage zusammen, ausgeführt wird sie erst beim Durchlaufen – durch `foreach`, `ToList`, `Count`, `First` und ähnliche Methoden. Wer die Abfrage vor der Runde baut und nach der Runde durchläuft, sieht die neuen Gegnerpositionen. Und wer eine teure Abfrage zweimal durchläuft, rechnet zweimal.
-{: .notice--warning}
+```csharp
+foreach (var gruppe in feld.AlleObjekte.GroupBy(o => o.GetType().Name))
+{
+    Console.WriteLine($"{gruppe.Key}: {gruppe.Count()}");
+}
+// Wand: 2
+// Truhe: 1
+// Schluessel: 1
+// Wache: 2
+// Verfolger: 1
+// Spieler: 1
+```
+
+Jede Gruppe hat einen `Key` und ist selbst wieder eine Aufzählung ihrer Elemente, die man durchlaufen oder zählen kann. Wer die Gruppen sortiert haben will, hängt `.OrderBy(gruppe => gruppe.Key)` an.
+
+## Der Compiler prüft mit
+
+Anders als eine Datenbankabfrage, die als Text im Code steht, wird LINQ vom Compiler geprüft. Ein Tippfehler wie `g.Psoition` oder der Vergleich einer Zahl mit `"5"` ist ein Compilerfehler, bevor das Spiel startet, und die IDE vervollständigt `g.` mit allen Mitgliedern von `Gegner`. Genau das meint „Language *Integrated*“.
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
-Übung: Schreibe in Methodensyntax: (a) die Namen aller Truhen auf dem Feld, alphabetisch; (b) die durchschnittliche Entfernung aller Gegner zum Helden; (c) ein `Dictionary<Koordinate, char>` von Position auf Symbol für alle nicht passierbaren Objekte; (d) die drei Objekte, die dem Helden am nächsten liegen, ihn selbst ausgenommen. Welche der vier Abfragen ließen sich auch in Query-Syntax schreiben?
+Übung: Schreibe in Methodensyntax: (a) die Namen aller Truhen auf dem Feld, alphabetisch; (b) die durchschnittliche Entfernung aller Gegner zum Helden; (c) ein `Dictionary<Koordinate, char>` von Position auf Symbol für alle nicht passierbaren Objekte; (d) die drei Objekte, die dem Helden am nächsten liegen, ihn selbst ausgenommen.
 {: .notice--info}
 
 ## Weitere Quellen
 
 - [Standardabfrageoperatoren – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/standard-query-operators/)
-- [Abfragesyntax und Methodensyntax in LINQ – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/get-started/write-linq-queries)
+- [Language Integrated Query (LINQ) – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/linq/)
 - [Erweiterungsmethoden – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/programming-guide/classes-and-structs/extension-methods)
 - [Enumerable-Klasse – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/api/system.linq.enumerable)
 - [101 LINQ-Beispiele – dotnet/try-samples](https://github.com/dotnet/try-samples/tree/main/101-linq-samples) – für jeden Operator ein winziges lauffähiges Beispiel; ideal zum Nachschlagen, wenn man den Namen der passenden Methode sucht.

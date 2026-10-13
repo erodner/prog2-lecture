@@ -59,8 +59,8 @@ Die Vorlesung besteht aus:
 ### Teil 4: Generisch und funktional
 
 5. [Generizität](/lectures/05/05.md) – Generische Methoden und Typen, Constraints
-6. [Collections, Algorithmen und LINQ](/lectures/06/06.md) – Hashing, Sortieren, Suchen, Collections, LINQ-Abfragen
-7. [Delegaten, Lambdas und Ereignisse](/lectures/07/07.md) – `delegate`, `Func`/`Action`, Lambda-Ausdrücke, LINQ-Methodensyntax, `event`
+6. [Collections und Algorithmen](/lectures/06/06.md) – Hashing, Sortieren, Suchen, Collections
+7. [Delegaten, Lambdas und Ereignisse](/lectures/07/07.md) – `delegate`, `Func`/`Action`, Lambda-Ausdrücke, LINQ, `event`
 {: start="5"}
 
 {% comment %}

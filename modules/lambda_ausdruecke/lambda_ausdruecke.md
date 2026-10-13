@@ -128,7 +128,7 @@ public bool Enthaelt<TArt>() where TArt : T
 </div>
 </div>
 
-`Any` ist fremder Code, der nicht weiß, wonach gesucht wird; `d => d is TArt` ist unser Beitrag. Ebenso wird `Entfernen` mit `FirstOrDefault(d => d is TArt)` zu einer Zeile. Wer die LINQ-Query-Syntax aus dem Modul [LINQ-Abfragen](/modules/linq_query_syntax/linq_query_syntax.md) kennt, ahnt schon: `where d is TArt` ist am Ende nichts anderes als so ein Lambda, das an eine Methode namens `Where` übergeben wird. Wie das genau aussieht, zeigt das Modul [LINQ-Methodensyntax](/modules/linq_methodensyntax/linq_methodensyntax.md).
+`Any` ist fremder Code, der nicht weiß, wonach gesucht wird; `d => d is TArt` ist unser Beitrag. Ebenso wird `Entfernen` mit `FirstOrDefault(d => d is TArt)` zu einer Zeile. Wie man mit solchen Methoden ganze Abfragen baut, zeigt das Modul [LINQ – Abfragen mit Lambdas](/modules/linq_methodensyntax/linq_methodensyntax.md).
 
 ## Closures: Zugriff auf äußere Variablen
 

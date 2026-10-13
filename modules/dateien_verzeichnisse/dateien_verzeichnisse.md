@@ -96,7 +96,7 @@ public class TextdateiLevelQuelle : ILevelQuelle
 
 `GetFiles` liefert alle passenden **vollständigen Pfade** als `string[]`; das Muster `"*.txt"` filtert nach Dateiendung. Aus `/…/levels/kerker.txt` macht `Path.GetFileNameWithoutExtension` den Levelnamen `kerker` – die Methode ist hier als [Methodengruppe](/modules/func_action/func_action.md) an `Select` übergeben. Das anschließende `OrderBy` sorgt dafür, dass die Reihenfolge nicht vom Dateisystem abhängt: Ohne es liefert derselbe Ordner unter Windows und Linux womöglich eine andere Liste, und das Spiel startet mit einem anderen Level.
 
-Bei sehr großen Verzeichnissen ist `Directory.EnumerateFiles` die bessere Wahl: Es gibt ein `IEnumerable<string>` zurück, das die Einträge erst liefert, wenn man darüber iteriert – genau das Prinzip der [verzögerten Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md). Schreibt man umgekehrt in ein Verzeichnis, das es noch nicht gibt, legt man es vorher mit `Directory.CreateDirectory(ordner)` an; die Methode tut nichts, wenn der Ordner schon existiert, und erzeugt bei Bedarf auch alle Zwischenverzeichnisse.
+Bei sehr großen Verzeichnissen ist `Directory.EnumerateFiles` die bessere Wahl: Es gibt ein `IEnumerable<string>` zurück, das die Einträge erst liefert, wenn man darüber iteriert. Schreibt man umgekehrt in ein Verzeichnis, das es noch nicht gibt, legt man es vorher mit `Directory.CreateDirectory(ordner)` an; die Methode tut nichts, wenn der Ordner schon existiert, und erzeugt bei Bedarf auch alle Zwischenverzeichnisse.
 
 ## Existiert die Datei? `File.Exists` und `FileInfo`
 

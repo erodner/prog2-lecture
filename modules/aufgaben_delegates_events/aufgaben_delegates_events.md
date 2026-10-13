@@ -213,94 +213,110 @@ Ja, auch das Laden eines Spielstands soll melden – sonst zeigt die Statusleist
 
 </details>
 
-## Aufgabe 3 — Abfragen übersetzen
+## Aufgabe 3 — Zerlegung
 
-Gegeben ist ein Spielfeld `feld` mit `feld.AlleObjekte` (`IEnumerable<Spielobjekt>`), `feld.Gegner` (`IReadOnlyList<Gegner>`) und `Koordinate held = feld.Spieler.Position;`. Übersetze die Abfragen (a) bis (c) von Query- in Methodensyntax, (d) und (e) von Methoden- in Query-Syntax. Schreibe dann (f) und begründe, warum diese Abfrage nur in Methodensyntax vollständig ausdrückbar ist.
+Für diese Aufgabe bauen wir ein kleines Spielfeld von Hand auf, damit sich jedes Ergebnis auf dem Papier nachrechnen lässt. Der Held steht auf `(6, 3)`, um ihn herum liegen sechs statische Objekte und drei Gegner:
 
 ```csharp
-// (a)
-var a = from o in feld.AlleObjekte where o.IstPassierbar select o.Position;
+Spielfeld feld = new Spielfeld(14, 7, new Spieler("Held", new Koordinate(6, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(0, 3)));
+feld.Hinzufuegen(new Wand(new Koordinate(13, 3)));
+feld.Hinzufuegen(new Schluessel(new Koordinate(5, 1)));
+feld.Hinzufuegen(new Trank(new Koordinate(9, 5)));
+feld.Hinzufuegen(new Schatz(new Koordinate(2, 2), wert: 25));
+feld.Hinzufuegen(new Truhe(new Koordinate(11, 1), wert: 100));
+feld.Hinzufuegen(new Wache(new Koordinate(8, 3)));
+feld.Hinzufuegen(new Verfolger(new Koordinate(6, 5)));
+feld.Hinzufuegen(new Wache(new Koordinate(1, 5)));
 
-// (b)
-var b = from g in feld.Gegner orderby g.Position.Entfernung(held), g.Name select g;
-
-// (c)
-var c = from o in feld.AlleObjekte where o is Truhe select $"{o.Name} bei {o.Position}";
-
-// (d)
-var d = feld.Gegner.Where(g => g.Position.X > 0 && g.Position.Y > 0).Select(g => g.Name);
-
-// (e)
-var e = feld.AlleObjekte.Where(o => !o.IstPassierbar).OrderBy(o => o.Name).Select(o => o.Symbol);
-
-// (f) Die Namen der zwei Gegner, die dem Helden am nächsten stehen – ohne doppelte Namen.
+Koordinate held = feld.Spieler.Position;   // (6, 3)
 ```
 
-Leitfragen:
-- Welches Schlüsselwort entspricht welcher Methode – und in welcher Reihenfolge?
-- Wie drückt man einen zweiten Sortierschlüssel in Methodensyntax aus?
-- Warum ist `where o is Gegner` etwas anderes als `OfType<Gegner>()`?
+Alle Entfernungen sind Manhattan-Entfernungen aus `Koordinate.Entfernung`, also Schritte ohne Diagonalen. Rechne sie einmal für alle Objekte aus, bevor du weiterliest.
+
+Zerlege jede der folgenden Fragen in ihre Bestandteile – *Quelle*, *Filter*, *Ordnung*, *Ergebnisform* – und schreibe sie als LINQ-Methodenkette. Sage dann die Ausgabe voraus, **bevor** du den Code startest.
+
+- (a) Die Namen aller Gegner, die höchstens vier Schritte entfernt sind, der nächste zuerst. Bei gleicher Entfernung soll der Name entscheiden. Welche Quelle nimmst du – `feld.Gegner` oder `feld.AlleObjekte`?
+- (b) Alle Gegenstände, die noch auf dem Boden liegen, als Text `"Name (x, y)"`, der entfernteste zuerst, bei gleicher Entfernung alphabetisch. Achtung: Die `Truhe` ist kein `Gegenstand` – warum eigentlich nicht?
+- (c) Eine Gruppierung **aller** Objekte nach ihrem `Symbol` mit der Anzahl je Gruppe. Wie viele Gruppen entstehen, und welchen Typ hat `gruppe.Key`? Sortiere die Gruppen anschließend nach Symbol und erkläre die Reihenfolge, die dabei herauskommt.
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Query nach Methode (a bis c):**
+**Schritt 0 — Die Entfernungen:**
 
-Jedes `where` wird zu `Where`, `orderby` zu `OrderBy`, ein zweiter Sortierschlüssel zu `ThenBy`, und `select` zu `Select`:
+| Objekt | Position | Entfernung zu `(6, 3)` |
+| :--- | :--- | :--- |
+| Wache | `(8, 3)` | 2 + 0 = 2 |
+| Verfolger | `(6, 5)` | 0 + 2 = 2 |
+| Wache | `(1, 5)` | 5 + 2 = 7 |
+| Schlüssel | `(5, 1)` | 1 + 2 = 3 |
+| Trank | `(9, 5)` | 3 + 2 = 5 |
+| Schatz | `(2, 2)` | 4 + 1 = 5 |
 
-```csharp
-var a = feld.AlleObjekte.Where(o => o.IstPassierbar).Select(o => o.Position);
+**Schritt 1 — Abfrage (a):**
 
-var b = feld.Gegner.OrderBy(g => g.Position.Entfernung(held)).ThenBy(g => g.Name);
-
-var c = feld.AlleObjekte.Where(o => o is Truhe)
-                        .Select(o => $"{o.Name} bei {o.Position}");
-```
-
-Bei (b) fällt auf: Ein `select g`, das das Element unverändert durchreicht, erzeugt in Methodensyntax gar keinen Aufruf – eine Identitätsprojektion ist ein Leerlauf.
-
-**Schritt 2 — Methode nach Query (d und e):**
-
-Umgekehrt wird jede Methode wieder zu einem Schlüsselwort. Die Reihenfolge bleibt erhalten, das `from` kommt hinzu:
+Quelle `feld.Gegner` (nicht `AlleObjekte`, denn wir wollen ausschließlich Gegner, und `feld.Gegner` liefert sie schon mit dem richtigen Typ), Filter „Entfernung höchstens 4“, Ordnung nach Entfernung und dann `Name`, Ergebnis nur der `Name`. Das zweite Sortierkriterium hängt man mit `ThenBy` an:
 
 ```csharp
-var d = from g in feld.Gegner
-        where g.Position.X > 0 && g.Position.Y > 0
-        select g.Name;
+IEnumerable<string> nah = feld.Gegner
+    .Where(g => g.Position.Entfernung(held) <= 4)
+    .OrderBy(g => g.Position.Entfernung(held))
+    .ThenBy(g => g.Name)
+    .Select(g => g.Name);
 
-var e = from o in feld.AlleObjekte
-        where !o.IstPassierbar
-        orderby o.Name
-        select o.Symbol;
+Console.WriteLine(string.Join(", ", nah));
+// Verfolger, Wache
 ```
 
-**Schritt 3 — Nur in Methodensyntax (f):**
+Die zweite Wache fällt mit sieben Schritten aus dem Filter. Die beiden übrigen sind gleich weit entfernt, deshalb entscheidet `ThenBy`, und „Verfolger“ steht alphabetisch vor „Wache“. Weil `Select` einen `string` liefert, ist das Ergebnis ein `IEnumerable<string>`.
 
-Die Query-Syntax kennt weder `Take` noch `Distinct` noch `OfType`. Man kann einen Query-Teil in Klammern setzen und die fehlenden Methoden anhängen – aber vollständig in Query-Syntax geht es nicht:
+**Schritt 2 — Abfrage (b) mit absteigender Ordnung:**
+
+Gegenstände liegen bei den statischen Objekten und haben keine eigene Property am Spielfeld, also ist die Quelle `feld.AlleObjekte`. `OfType<Gegenstand>()` filtert und liefert zugleich den passenden Typ:
 
 ```csharp
-var f = feld.Gegner.OrderBy(g => g.Position.Entfernung(held))
-                   .Select(g => g.Name)
-                   .Distinct()
-                   .Take(2);
+IEnumerable<string> amBoden = feld.AlleObjekte
+    .OfType<Gegenstand>()
+    .OrderByDescending(o => o.Position.Entfernung(held))
+    .ThenBy(o => o.Name)
+    .Select(o => $"{o.Name} {o.Position}");
 
-// Mischform: Query-Teil in Klammern, Rest als Methoden
-var fGemischt = (from g in feld.Gegner
-                 orderby g.Position.Entfernung(held)
-                 select g.Name).Distinct().Take(2);
+foreach (string zeile in amBoden)
+{
+    Console.WriteLine(zeile);
+}
+// Schatz (2, 2)
+// Trank (9, 5)
+// Schlüssel (5, 1)
 ```
 
-Die Reihenfolge von `Distinct` und `Take` ist entscheidend: `Take(2).Distinct()` könnte nur *einen* Namen liefern, wenn die beiden nächsten Gegner beide „Wache“ heißen – und genau das ist im Adventure der Normalfall.
+Schatz und Trank sind beide fünf Schritte entfernt, alphabetisch kommt „Schatz“ zuerst. Die `Truhe` fehlt zu Recht: Sie erbt von `StatischesObjekt`, nicht von `Gegenstand`, denn man hebt sie nicht auf, sondern öffnet sie mit `Interagieren`.
 
-**Schritt 4 — `where o is Gegner` gegen `OfType<Gegner>()`:**
+**Schritt 3 — Abfrage (c) gruppieren:**
 
-Beide liefern dieselben Elemente, aber nicht denselben statischen Typ. `feld.AlleObjekte.Where(o => o is Gegner)` bleibt ein `IEnumerable<Spielobjekt>` – im nächsten `Select` ist `o.NaechsterZug(feld)` deshalb ein Compilerfehler. `feld.AlleObjekte.OfType<Gegner>()` liefert ein `IEnumerable<Gegner>`, und erst damit sind gegnerspezifische Mitglieder erreichbar. `OfType` filtert und typisiert in einem Schritt.
+```csharp
+foreach (var gruppe in feld.AlleObjekte.GroupBy(o => o.Symbol).OrderBy(gruppe => gruppe.Key))
+{
+    Console.WriteLine($"{gruppe.Key}: {gruppe.Count()}");
+}
+// !: 1
+// #: 2
+// $: 1
+// @: 1
+// T: 1
+// V: 1
+// W: 2
+// k: 1
+```
+
+Acht Gruppen, der `Key` ist ein `char`, weil `Symbol` ein `char` ist. Warum steht das kleine `k` hinter dem großen `W`? Weil `char` nach seinem Zahlencode sortiert wird: `!` ist 33, `#` 35, `$` 36, `@` 64, die Großbuchstaben liegen bei 65 bis 90, die Kleinbuchstaben erst bei 97 bis 122. Ohne `OrderBy` kämen die Gruppen in der Reihenfolge, in der ihr Symbol zum ersten Mal auftaucht, und darauf sollte man sich nicht verlassen.
 
 **Zentrale Designentscheidungen:**
 
-- **Die Übersetzung ist mechanisch:** Der Compiler macht genau das, was wir hier von Hand getan haben – deshalb sind beide Formen gleichwertig und gleich schnell.
-- **Methodensyntax ist die Obermenge:** Sobald `Take`, `Skip`, `Distinct`, `OfType`, `Any`, `Count` oder `ToList` gebraucht werden, kommt man um Methoden nicht herum.
-- **Reihenfolge ist Semantik:** `Distinct().Take(2)` und `Take(2).Distinct()` sind zwei verschiedene Abfragen. Wer LINQ liest, liest von links nach rechts wie eine Verarbeitungsstraße.
+- **Frage zuerst zerlegen, dann tippen:** Jede Methode beantwortet genau einen Teil der Frage – `Where` das „welche“, `OrderBy`/`ThenBy` das „in welcher Reihenfolge“, `Select` das „in welcher Form“.
+- **Die engste passende Quelle wählen:** `feld.Gegner` statt `feld.AlleObjekte` spart die Typprüfung und liefert gleich den richtigen Typ. `AlleObjekte` ist erst dann richtig, wenn es keine speziellere Quelle gibt.
+- **Sortierkriterien vollständig angeben:** Bei zwei gleich weit entfernten Wachen ist Gleichstand der Normalfall. `ThenBy` macht die Absicht explizit.
 
 </details>
 

@@ -122,7 +122,7 @@ Alle diese Klassen teilen sich eine Hierarchie von [Interfaces](/modules/interfa
 
 Das `Spielfeld` nutzt beide Enden dieser Liste. Nach außen gibt es seine Gegner als `IReadOnlyList<Gegner>` heraus – lesen ja, `Clear()` nein. Und alle Objekte zusammen liefert es als `IEnumerable<Spielobjekt>`, das gar keine Collection mehr ist, sondern eine Aufzählung, die erst beim Durchlaufen entsteht (wie das geht, zeigt das Modul [Iterator](/modules/iterator/iterator.md) in Vorlesung 08).
 
-Daraus folgt eine Faustregel für Parameter: **So allgemein wie möglich annehmen.** Eine Methode, die nur durchläuft, sollte `IEnumerable<T>` verlangen – dann kann man ihr ein Array, eine Liste, ein `HashSet`, `feld.AlleObjekte` oder das Ergebnis einer LINQ-Abfrage übergeben:
+Daraus folgt eine Faustregel für Parameter: **So allgemein wie möglich annehmen.** Eine Methode, die nur durchläuft, sollte `IEnumerable<T>` verlangen – dann kann man ihr ein Array, eine Liste, ein `HashSet` oder `feld.AlleObjekte` übergeben, und ab Vorlesung 07 auch das Ergebnis einer LINQ-Abfrage:
 
 ```csharp
 static int Gesamtwert(IEnumerable<Gegenstand> sachen)

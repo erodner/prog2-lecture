@@ -36,8 +36,8 @@ Lectures are the "table of contents"; modules contain the actual teaching conten
 - Lecture 03: GUI mit Blazor + Schichten-Architekturen (replaces the former Windows-Forms lecture)
 - Lecture 04: Git (command line only; branches/merges/conflicts are ➕ erweitertes Wissen), comes after Blazor
 - Lecture 05: Generizität
-- Lecture 06: Hashing, Sortieren, Suchen, Collections, LINQ (query syntax)
-- Lecture 07: Delegaten, Func/Action, Lambdas, LINQ-Methodensyntax, Ereignisse
+- Lecture 06: Hashing, Sortieren, Suchen, Collections (no LINQ)
+- Lecture 07: Delegaten, Func/Action, Lambdas, LINQ (method syntax only – no query syntax, no deferred-execution topic), Ereignisse
 - Lecture 08: Entwurfsmuster (Singleton, Adapter, Composite, Iterator, Observer)
 - Lecture 09: Dateien, Streams, IDisposable, JSON/XML-Serialisierung, HttpClient
 - Lecture 10: NuGet

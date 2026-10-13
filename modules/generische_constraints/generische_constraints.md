@@ -128,7 +128,7 @@ public string Interagieren(Spieler spieler)
 }
 ```
 
-Die Typinferenz hilft hier übrigens nicht: `TArt` kommt in keinem Parameter vor, sondern nur im Rumpf. Deshalb stehen die spitzen Klammern am Aufruf – `Enthaelt<Schluessel>()` liest sich dafür fast wie ein Satz. Die Methoden `Any` und `FirstOrDefault` sind LINQ-Abfragen, die wir in der nächsten Vorlesung kennenlernen; hier tun sie nichts anderes, als die interne Liste einmal zu durchlaufen.
+Die Typinferenz hilft hier übrigens nicht: `TArt` kommt in keinem Parameter vor, sondern nur im Rumpf. Deshalb stehen die spitzen Klammern am Aufruf – `Enthaelt<Schluessel>()` liest sich dafür fast wie ein Satz.
 
 ## Alle Constraint-Arten im Überblick
 

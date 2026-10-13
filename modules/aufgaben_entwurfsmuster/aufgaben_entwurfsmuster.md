@@ -326,7 +326,7 @@ Verfolger (2, 2)
 Wache (1, 2)
 ```
 
-Zehn Zeilen: fünf Prüfungen, vier Treffer und die Meldung ganz oben. Prüfzeilen und Treffer sind *verzahnt* – nicht erst alle Prüfungen, dann alle Namen. Das ist das elementweise Verhalten aus dem Modul [verzögerte Ausführung](/modules/linq_deferred_execution/linq_deferred_execution.md).
+Zehn Zeilen: fünf Prüfungen, vier Treffer und die Meldung ganz oben. Prüfzeilen und Treffer sind *verzahnt* – nicht erst alle Prüfungen, dann alle Namen.
 
 **Schritt 4 — `First()`:**
 
