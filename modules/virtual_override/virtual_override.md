@@ -13,7 +13,7 @@ Im Modul [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grun
 
 ## Das Spielfeld
 
-Das `Spielfeld` ist ein Raster aus `Breite` mal `Hoehe` Feldern. Den Spieler merkt es sich in einer eigenen Property, alle anderen Objekte liegen in einer einzigen Liste:
+Eine erste, sehr einfache Fassung des `Spielfelds` kennen wir schon aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md): eine Liste von Spielobjekten und die Methode `Hinzufuegen`, mehr nicht. Jetzt bekommt es eine Größe und einen Spieler. Das `Spielfeld` ist ein Raster aus `Breite` mal `Hoehe` Feldern. Den Spieler merkt es sich in einer eigenen Property, alle anderen Objekte liegen wie bisher in der Liste `objekte`:
 
 ```csharp
 public class Spielfeld
@@ -38,7 +38,7 @@ public class Spielfeld
 }
 ```
 
-Das Raster selbst wird nirgends gespeichert. Ein Feld ist nur eine `Koordinate`; was dort liegt, steht in der Position des jeweiligen Objekts. Ein Raum von 10 × 6 Feldern braucht also kein Array mit 60 Einträgen, sondern nur eine Liste mit den Wänden. Weil die Liste den Typ `List<Spielobjekt>` hat, passt jede Unterklasse hinein, wie wir im Modul [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) gesehen haben.
+Das Raster selbst wird nirgends gespeichert. Ein Feld ist nur eine `Koordinate`; was dort liegt, steht in der Position des jeweiligen Objekts. Ein Raum von 10 × 6 Feldern braucht also kein Array mit 60 Einträgen, sondern nur eine Liste mit den Wänden. Weil die Liste den Typ `List<Spielobjekt>` hat, passt jede Unterklasse hinein.
 
 ## Was liegt auf diesem Feld? `ObjektAn`
 
@@ -55,7 +55,7 @@ public Spielobjekt? ObjektAn(Koordinate position)
 }
 ```
 
-Das Fragezeichen in `Spielobjekt?` bedeutet: Das Ergebnis kann `null` sein, nämlich wenn das Feld leer ist. Den Spieler findet `ObjektAn` nicht, weil er nicht in der Liste steht.
+Das Fragezeichen in `Spielobjekt?` bedeutet: Das Ergebnis kann `null` sein, nämlich wenn das Feld leer ist. Aus Programmierung 1 kennst du die Schreibweise von [Nullable-Typen](https://www.erodner.de/prog-lecture/modules/nullable/nullable/) wie `int?`. Dort macht das `?` aus einem Werttyp, der nie `null` sein kann, einen, der es kann. Eine Variable vom Typ `Spielobjekt` kann dagegen auch ohne `?` `null` enthalten, denn sie ist eine Referenz. Bei Referenztypen ist das `?` deshalb nur ein Hinweis an den Compiler: Ohne `?` warnt er bei `return null;`, mit `?` warnt er jeden, der das Ergebnis benutzt, ohne vorher auf `null` zu prüfen. So fällt ein vergessener Fall schon beim Kompilieren auf und nicht erst als `NullReferenceException` im Spiel. Den Spieler findet `ObjektAn` nicht, weil er nicht in der Liste steht.
 
 Interessant ist der Rückgabetyp. Wer `ObjektAn` aufruft, bekommt ein `Spielobjekt` zurück und weiß nicht, ob es eine Wand oder etwas ganz anderes ist. Trotzdem muss er es zeichnen können. Er kann also nur fragen: „Spielobjekt, welches Zeichen hast du?“ Damit die Antwort von der Art des Objekts abhängt, braucht es `virtual` und `override`.
 
