@@ -263,7 +263,15 @@ public string AlsText()
     {
         for (int x = 0; x < Breite; x++)
         {
-            sb.Append(ObjektAn(new Koordinate(x, y))?.Symbol() ?? '.');
+            Spielobjekt? objekt = ObjektAn(new Koordinate(x, y));
+            if (objekt == null)
+            {
+                sb.Append('.');
+            }
+            else
+            {
+                sb.Append(objekt.Symbol());
+            }
         }
         sb.AppendLine();
     }

@@ -42,11 +42,12 @@ Das Raster selbst wird nirgends gespeichert. Ein Feld ist nur eine `Koordinate`;
 
 ## Was liegt auf diesem Feld? `ObjektAn`
 
-Zum Zeichnen und für Kollisionen muss das Spielfeld immer wieder dieselbe Frage beantworten: Was liegt an einer bestimmten Koordinate? Das erledigt `ObjektAn`. Die Methode geht die Liste durch und liefert das erste Objekt, dessen Position passt:
+Zum Zeichnen und für Kollisionen muss das Spielfeld immer wieder dieselbe Frage beantworten: Was liegt an einer bestimmten Koordinate? Das erledigt `ObjektAn`. Die Methode prüft zuerst, ob dort der Spieler steht, denn er liegt nicht in der Liste. Danach geht sie die Liste durch und liefert das erste Objekt, dessen Position passt:
 
 ```csharp
 public Spielobjekt? ObjektAn(Koordinate position)
 {
+    if (position == Spieler.Position) return Spieler;
     foreach (Spielobjekt o in objekte)
     {
         if (o.Position == position) return o;
@@ -55,7 +56,7 @@ public Spielobjekt? ObjektAn(Koordinate position)
 }
 ```
 
-Das Fragezeichen in `Spielobjekt?` bedeutet: Das Ergebnis kann `null` sein, nämlich wenn das Feld leer ist. Aus Programmierung 1 kennst du die Schreibweise von [Nullable-Typen](https://www.erodner.de/prog-lecture/modules/nullable/nullable/) wie `int?`. Dort macht das `?` aus einem Werttyp, der nie `null` sein kann, einen, der es kann. Eine Variable vom Typ `Spielobjekt` kann dagegen auch ohne `?` `null` enthalten, denn sie ist eine Referenz. Bei Referenztypen ist das `?` deshalb nur ein Hinweis an den Compiler: Ohne `?` warnt er bei `return null;`, mit `?` warnt er jeden, der das Ergebnis benutzt, ohne vorher auf `null` zu prüfen. So fällt ein vergessener Fall schon beim Kompilieren auf und nicht erst als `NullReferenceException` im Spiel. Den Spieler findet `ObjektAn` nicht, weil er nicht in der Liste steht.
+Das Fragezeichen in `Spielobjekt?` bedeutet: Das Ergebnis kann `null` sein, nämlich wenn das Feld leer ist. Aus Programmierung 1 kennst du die Schreibweise von [Nullable-Typen](https://www.erodner.de/prog-lecture/modules/nullable/nullable/) wie `int?`. Dort macht das `?` aus einem Werttyp, der nie `null` sein kann, einen, der es kann. Eine Variable vom Typ `Spielobjekt` kann dagegen auch ohne `?` `null` enthalten, denn sie ist eine Referenz. Bei Referenztypen ist das `?` deshalb nur ein Hinweis an den Compiler: Ohne `?` warnt er bei `return null;`, mit `?` warnt er jeden, der das Ergebnis benutzt, ohne vorher auf `null` zu prüfen. So fällt ein vergessener Fall schon beim Kompilieren auf und nicht erst als `NullReferenceException` im Spiel.
 
 Interessant ist der Rückgabetyp. Wer `ObjektAn` aufruft, bekommt ein `Spielobjekt` zurück und weiß nicht, ob es eine Wand oder etwas ganz anderes ist. Trotzdem muss er es zeichnen können. Er kann also nur fragen: „Spielobjekt, welches Zeichen hast du?“ Damit die Antwort von der Art des Objekts abhängt, braucht es `virtual` und `override`.
 
@@ -135,9 +136,15 @@ public string AlsText()
     {
         for (int x = 0; x < Breite; x++)
         {
-            Koordinate p = new(x, y);
-            char zeichen = p == Spieler.Position ? Spieler.Symbol() : ObjektAn(p)?.Symbol() ?? '.';
-            sb.Append(zeichen);
+            Spielobjekt? objekt = ObjektAn(new Koordinate(x, y));
+            if (objekt == null)
+            {
+                sb.Append('.');
+            }
+            else
+            {
+                sb.Append(objekt.Symbol());
+            }
         }
         sb.AppendLine();
     }
@@ -145,9 +152,9 @@ public string AlsText()
 }
 ```
 
-Die Zeile mit `zeichen` hat drei Fälle. Steht dort der Spieler, wird sein Symbol gezeichnet. Sonst fragt `ObjektAn(p)?.Symbol()` das Objekt auf dem Feld nach seinem Symbol; das `?.` liefert `null`, wenn das Feld leer ist. In dem Fall greift `?? '.'` und zeichnet einen Punkt.
+Für jedes Feld holt `AlsText` mit `ObjektAn` das Objekt, das dort liegt. Ist das Feld leer, liefert `ObjektAn` `null`, und es wird ein Punkt gezeichnet. Sonst fragt `objekt.Symbol()` das Objekt nach seinem Zeichen, egal ob Wand oder Spieler.
 
-Entscheidend ist `ObjektAn(p)?.Symbol()`. Der Ausdruck hat den Typ `Spielobjekt`, aber welches `Symbol()` läuft, entscheidet das **tatsächliche Objekt** zur Laufzeit. Für eine Wand ist das `#`:
+Entscheidend ist `objekt.Symbol()`. Die Variable `objekt` hat den Typ `Spielobjekt`, aber welches `Symbol()` läuft, entscheidet das **tatsächliche Objekt** zur Laufzeit. Für eine Wand ist das `#`:
 
 ```csharp
 Spieler held = new Spieler("Held", new Koordinate(1, 1));

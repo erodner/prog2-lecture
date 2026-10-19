@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Seit dem Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) wissen wir, dass `ObjektAn(p)?.Symbol()` je nach Objekt `#` oder `@` liefert, obwohl `ObjektAn` immer ein `Spielobjekt?` zurückgibt. Um zu verstehen, *warum* das funktioniert, müssen wir bei jeder Variablen zwei Typen auseinanderhalten: den Typ, den der Compiler sieht, und den Typ des Objekts, das zur Laufzeit wirklich dahintersteckt. Diese Unterscheidung ist eine der wichtigsten in der objektorientierten Programmierung. Sie erklärt, was der Compiler erlaubt, welche Methode tatsächlich läuft und wann ein Cast scheitert.
+Seit dem Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) wissen wir, dass `objekt.Symbol()` in `AlsText` je nach Objekt `#` oder `@` liefert, obwohl `ObjektAn` immer ein `Spielobjekt?` zurückgibt. Um zu verstehen, *warum* das funktioniert, müssen wir bei jeder Variablen zwei Typen auseinanderhalten: den Typ, den der Compiler sieht, und den Typ des Objekts, das zur Laufzeit wirklich dahintersteckt. Diese Unterscheidung ist eine der wichtigsten in der objektorientierten Programmierung. Sie erklärt, was der Compiler erlaubt, welche Methode tatsächlich läuft und wann ein Cast scheitert.
 
 ## Zwei Typen für eine Variable
 
