@@ -127,7 +127,7 @@ Links löst der Dialog den Rückkanal aus, rechts weist die Startseite ihm eine 
 
 Braucht der Dialog einen *Wert* zurück – eine Auswahl, eine Eingabe, ein `null` bei Abbruch –, nimmt man die generische Form `EventCallback<T>`. Eine Levelauswahl als eigene Komponente würde `EventCallback<string>` melden, ein Dialog mit Abbrechen-Knopf `EventCallback<string?>`, damit der Abbruch ein eigener, prüfbarer Fall ist. Aufgerufen wird sie mit `InvokeAsync(wert)`, und der Handler der Eltern nimmt den Wert als Parameter entgegen.
 
-Nach einem `EventCallback` rendert Blazor die Elternkomponente automatisch neu. Das ist der Unterschied zu einem gewöhnlichen `Action`-Delegaten – mit dem müsste die Startseite selbst `StateHasChanged` aufrufen. Für Kind-nach-Eltern-Kommunikation deshalb immer `EventCallback`.
+Nach einem `EventCallback` rendert Blazor die Elternkomponente automatisch neu. Das ist der Unterschied zu einem gewöhnlichen `Action`-Delegaten (Delegaten kommen in [Vorlesung 07](/lectures/07/07.md)) – mit dem müsste die Startseite selbst `StateHasChanged` aufrufen. Für Kind-nach-Eltern-Kommunikation deshalb immer `EventCallback`.
 {: .notice--primary}
 
 ## Der Handler der Eltern

@@ -196,6 +196,26 @@ public void SpielerZieht(Richtung richtung)
 }
 ```
 
+`Einsammeln` ruft zwei Methoden auf, die der `Spieler` bisher noch nicht hat. Sie kommen als Ergänzung dazu:
+
+```csharp
+class Spieler : Spielobjekt
+{
+    // Lebenspunkte, Konstruktor, Symbol, Bewegen wie bisher
+    public int Punkte { get; private set; }
+
+    public void PunkteGutschreiben(int punkte)
+    {
+        Punkte += punkte;
+    }
+
+    public void Heilen(int menge)
+    {
+        Lebenspunkte = Math.Min(3, Lebenspunkte + menge);
+    }
+}
+```
+
 **Zentrale Designentscheidungen:**
 
 - **`IstPassierbar` liefert `true` an einer Stelle, in `Gegenstand`:** Kein konkreter Gegenstand muss daran denken. Ein vergessenes `override` hätte sonst einen Schlüssel zur Folge, der wie eine Wand blockiert.
@@ -217,7 +237,7 @@ Das Spiel soll sich merken, welche Felder der Held schon gesehen hat, damit die 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — `Contains` zerlegen:** (1) `GetHashCode()` des gesuchten Felds berechnen, (2) den Bucket mit diesem Hashcode auswählen, (3) nur die Objekte in diesem Bucket mit `Equals` vergleichen. Die von `object` geerbte `GetHashCode`-Implementierung liefert für zwei verschiedene Objekte fast sicher verschiedene Werte – das gesuchte Feld landet in einem anderen Bucket, und `Equals` wird nie aufgerufen. Selbst wenn es aufgerufen würde, vergleicht das Standard-`Equals` nur Referenzen.
+**Schritt 1 — `Contains` zerlegen:** (1) `GetHashCode()` des gesuchten Felds berechnen, (2) das Fach mit diesem Hashcode auswählen – intern verteilt das Set seine Einträge nach Hashcode auf solche Fächer, *Buckets* genannt, mehr dazu in [Hashcodes und `Equals`](/modules/hashcodes_equals/hashcodes_equals.md) in Vorlesung 06 –, (3) nur die Objekte in diesem Bucket mit `Equals` vergleichen. Die von `object` geerbte `GetHashCode`-Implementierung liefert für zwei verschiedene Objekte fast sicher verschiedene Werte – das gesuchte Feld landet in einem anderen Bucket, und `Equals` wird nie aufgerufen. Selbst wenn es aufgerufen würde, vergleicht das Standard-`Equals` nur Referenzen.
 
 **Schritt 2 — Beide Methoden überschreiben:**
 

@@ -188,7 +188,7 @@ public void SpielerZieht(Richtung richtung)
     }
 
     LetzteMeldung = meldung.ToString().Trim();
-    RundeBeendet?.Invoke(this, new RundeEventArgs(Runde, LetzteMeldung));
+    // ... danach meldet das Spielfeld die Runde (Ereignisse, Vorlesung 07)
 }
 ```
 

@@ -193,7 +193,7 @@ using StreamReader reader = new(roh);                  // adaptiert zu Text
 string? ersteZeile = reader.ReadLine();
 ```
 
-Dass der Adapter mit *jedem* `Stream` funktioniert, nicht nur mit `FileStream`, ist genau der Vorteil des Objektadapters aus der Tabelle.
+Dass der Adapter mit *jedem* `Stream` funktioniert, nicht nur mit `FileStream`, ist genau der Vorteil des Objektadapters aus der Tabelle. Streams und das `using` davor schauen wir uns in [Vorlesung 09](/lectures/09/09.md) genauer an; hier zählt nur die Rollenverteilung zwischen Adapter und Adaptee.
 
 ## Vor- und Nachteile
 
