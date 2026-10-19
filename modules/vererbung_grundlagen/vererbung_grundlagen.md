@@ -49,15 +49,10 @@ public class Koordinate
             return new Koordinate(X + 1, Y);
         }
     }
-
-    public override string ToString()
-    {
-        return $"({X}, {Y})";
-    }
 }
 ```
 
-`Verschoben` verändert die Koordinate nicht, sondern liefert eine neue. Mit `ToString` legen wir fest, dass eine Position als `(3, 4)` ausgegeben wird; was das `override` davor bedeutet, klärt das Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md). Diese erste Fassung hat noch einen Haken, den wir im Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md) aufdecken.
+`Verschoben` verändert die Koordinate nicht, sondern liefert eine neue. Diese erste Fassung hat noch einen Haken, den wir im Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md) aufdecken.
 
 Auf `Koordinate` baut die gemeinsame Basisklasse auf. Sie enthält genau das, was *alles* hat, was auf dem Spielfeld liegt – vom Aufbau her ist das eine ganz normale Klasse, wie wir sie aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/klassen/klassen/) kennen:
 

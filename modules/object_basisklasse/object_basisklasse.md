@@ -68,7 +68,7 @@ Keine der abgeleiteten Klassen überschreibt `ToString`, und trotzdem gibt jede 
 
 ## Gleichheit: die Standardimplementierung enttäuscht
 
-Bei `Equals` und `GetHashCode` ist mehr Handarbeit nötig. Unsere Klasse `Koordinate` aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) überschreibt bisher nur `ToString`:
+Bei `Equals` und `GetHashCode` ist mehr Handarbeit nötig. Unsere Klasse `Koordinate` überschreibt bisher nur `ToString` (siehe [`virtual` und `override`](/modules/virtual_override/virtual_override.md)):
 
 ```csharp
 Koordinate a = new Koordinate(1, 2);

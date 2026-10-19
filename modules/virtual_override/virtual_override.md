@@ -199,6 +199,22 @@ Console.WriteLine(held.Beschreibung());                        // Held bei (1, 1
 Console.WriteLine(new Wand(new Koordinate(5, 2)).Beschreibung()); // Wand bei (5, 2)
 ```
 
+Dass dort `(5, 2)` steht, ist ebenfalls ein `override`. Jede Klasse in C# erbt automatisch eine Methode `ToString()`, die `Console.WriteLine` und `$"{…}"` aufrufen, um ein Objekt in Text zu verwandeln. Von Haus aus liefert sie nur den Klassennamen, `Beschreibung()` hätte also `Wand bei Adventure.Kern.Koordinate` ergeben. `Koordinate` überschreibt sie deshalb:
+
+```csharp
+public class Koordinate
+{
+    // X, Y, Konstruktor, Verschoben wie bisher
+
+    public override string ToString()
+    {
+        return $"({X}, {Y})";
+    }
+}
+```
+
+Woher diese geerbte Methode kommt, obwohl `Koordinate` gar keine Basisklasse angibt, zeigt das Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md).
+
 Ändern wir später `Spielobjekt.Beschreibung`, bekommt der Spieler die Änderung automatisch mit.
 
 ## Ohne `virtual` keine Polymorphie
