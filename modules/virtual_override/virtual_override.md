@@ -102,7 +102,24 @@ public class Spieler : Spielobjekt
 }
 ```
 
-`virtual` und `override` funktionieren für Properties genauso wie für Methoden. `IstPassierbar` ist ein solches Property: Es hat nur einen `get`-Teil, und eine Unterklasse kann es mit `public override bool IstPassierbar { get { return true; } }` neu beantworten.
+## Property oder Methode?
+
+`Symbol()` ist eine Methode, `IstPassierbar` eine Property. Für `virtual` und `override` macht das keinen Unterschied: Eine Unterklasse überschreibt die Property genauso, mit `public override bool IstPassierbar { get { return true; } }`. Auch technisch liegen die beiden näher beieinander, als es aussieht. Der Compiler macht aus dem `get`-Teil eine gewöhnliche Methode namens `get_IstPassierbar()`. `wand.IstPassierbar` ist also in Wahrheit ein Methodenaufruf ohne Klammern.
+
+Der Unterschied liegt deshalb nicht darin, was passiert, sondern darin, was der Code dem Leser verspricht. Aus [Programmierung 1](https://www.erodner.de/prog-lecture/modules/properties/properties/) kennst du Properties als Zugang zu den Daten eines Objekts. In .NET gilt dafür eine feste Absprache:
+
+| Property | Methode |
+| :--- | :--- |
+| beschreibt eine Eigenschaft: *ist passierbar*, *hat 3 Lebenspunkte* | beschreibt eine Tätigkeit: *bewege dich*, *beschreibe dich* |
+| billig und ohne Nebenwirkungen | darf aufwendig sein oder etwas verändern |
+| zweimal hintereinander abgefragt, gleiches Ergebnis | darf jedes Mal etwas anderes liefern, etwa `Random.Next()` |
+| keine Parameter | darf Parameter haben |
+
+Manche Werkzeuge nehmen diese Absprache wörtlich: `@bind` in [Blazor](/lectures/03/03.md) und die [JSON-Serialisierung](/lectures/09/09.md) arbeiten nur mit Properties, Methoden ignorieren sie.
+
+Streng nach dieser Tabelle wäre auch das Symbol eine Property, denn es ist eine Eigenschaft wie die Passierbarkeit. Viele .NET-Projekte würden `public virtual char Symbol { get { … } }` schreiben. Wir haben eine Methode gewählt, weil man das Überschreiben an einer Methode am leichtesten sieht. Am Verhalten des Spiels ändert die Wahl nichts.
+
+Im Zweifel eine Property, wenn die Frage an das Objekt „Was bist du?“ oder „Was hast du?“ lautet, und eine Methode, wenn sie „Tu etwas!“ lautet oder Parameter braucht.
 {: .notice--primary}
 
 ## Polymorphie beim Zeichnen
@@ -232,5 +249,6 @@ Im Zweifel gilt: Ein Mitglied, das abgeleitete Klassen sinnvoll anpassen könnte
 - [Polymorphie – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/fundamentals/object-oriented/polymorphism)
 - [`virtual` – C#-Referenz – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/virtual)
 - [`override` – C#-Referenz – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/csharp/language-reference/keywords/override)
+- [Entwurfsrichtlinien für Eigenschaften – Microsoft Learn](https://learn.microsoft.com/de-de/dotnet/standard/design-guidelines/property) – wann eine Property und wann eine Methode die richtige Wahl ist
 - [Game Programming Patterns – Robert Nystrom](https://gameprogrammingpatterns.com/) – ein kostenlos lesbares Buch darüber, wie Objektorientierung in echten Spielen eingesetzt wird (und wo sie schadet).
 - [Type Object – Game Programming Patterns](https://gameprogrammingpatterns.com/type-object.html) – zeigt die Kehrseite: Wenn ein Spiel hunderte Objektarten bekommt, wird aus jeder Unterklasse irgendwann besser ein Datensatz.
