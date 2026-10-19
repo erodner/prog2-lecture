@@ -75,7 +75,7 @@ public abstract class Gegenstand : StatischesObjekt, ISammelbar
     }
 }
 
-public sealed class Schluessel : Gegenstand { /* nur noch Symbol */ }
+public sealed class Schluessel : Gegenstand { /* nur noch Symbol() */ }
 
 public class Auftrag : ISammelbar   // kein Spielobjekt, liegt nie auf der Karte
 {

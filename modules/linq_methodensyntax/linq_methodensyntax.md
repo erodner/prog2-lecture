@@ -133,7 +133,7 @@ Console.WriteLine(string.Join(", ", bedrohung));
 
 Console.WriteLine(feld.AlleObjekte.Count(o => o is Wand));        // 60
 Console.WriteLine(feld.AlleObjekte.Any(o => o is Schluessel));    // True
-Console.WriteLine(string.Join("", feld.Gegner.Select(g => g.Symbol)));  // WV
+Console.WriteLine(string.Join("", feld.Gegner.Select(g => g.Symbol())));  // WV
 ```
 
 Beim Lesen hilft es, jede Zeile als Frage zu formulieren: „Welche Objekte sind Gegner? Welche davon stehen höchstens fünfzehn Schritte entfernt? Sortiere sie nach Entfernung. Mache aus jedem einen Text. Nimm die ersten drei. Packe sie in eine Liste.“ `OfType<Gegner>()` erledigt dabei zwei Dinge auf einmal: Es filtert *und* liefert ein `IEnumerable<Gegner>` statt `IEnumerable<Spielobjekt>` – erst dadurch darf das nächste Lambda auf gegnerspezifische Mitglieder zugreifen. Ein `Where(o => o is Gegner)` allein würde den statischen Typ nicht ändern.

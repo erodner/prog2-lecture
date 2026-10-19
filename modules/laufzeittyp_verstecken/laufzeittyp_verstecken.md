@@ -9,7 +9,7 @@ toc: false
 classes: wide
 ---
 
-Seit dem Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) wissen wir, dass `ObjektAn(p)?.Symbol` je nach Objekt `#` oder `@` liefert, obwohl `ObjektAn` immer ein `Spielobjekt?` zurückgibt. Um zu verstehen, *warum* das funktioniert, müssen wir bei jeder Variablen zwei Typen auseinanderhalten: den Typ, den der Compiler sieht, und den Typ des Objekts, das zur Laufzeit wirklich dahintersteckt. Diese Unterscheidung ist eine der wichtigsten in der objektorientierten Programmierung. Sie erklärt, was der Compiler erlaubt, welche Methode tatsächlich läuft und wann ein Cast scheitert.
+Seit dem Modul [`virtual` und `override`](/modules/virtual_override/virtual_override.md) wissen wir, dass `ObjektAn(p)?.Symbol()` je nach Objekt `#` oder `@` liefert, obwohl `ObjektAn` immer ein `Spielobjekt?` zurückgibt. Um zu verstehen, *warum* das funktioniert, müssen wir bei jeder Variablen zwei Typen auseinanderhalten: den Typ, den der Compiler sieht, und den Typ des Objekts, das zur Laufzeit wirklich dahintersteckt. Diese Unterscheidung ist eine der wichtigsten in der objektorientierten Programmierung. Sie erklärt, was der Compiler erlaubt, welche Methode tatsächlich läuft und wann ein Cast scheitert.
 
 ## Zwei Typen für eine Variable
 
@@ -47,14 +47,14 @@ Beide Typen haben eine klare Aufgabe:
 
 ```csharp
 Spielobjekt o = new Spieler("Held", new Koordinate(1, 1));
-Console.WriteLine(o.Symbol);                  // @ – erlaubt, jedes Spielobjekt hat ein Symbol
+Console.WriteLine(o.Symbol());                  // @ – erlaubt, jedes Spielobjekt hat ein Symbol
 o.Bewegen(Richtung.Rechts, feld);             // Fehler CS1061: 'Spielobjekt' enthält keine
                                               // Definition für 'Bewegen'
 ```
 
-`o.Symbol` ist erlaubt, weil `Spielobjekt` ein `Symbol` hat. Welches Symbol herauskommt, entscheidet der Laufzeittyp: `@`. `o.Bewegen` verbietet der Compiler, obwohl das Objekt einen Spieler enthält, denn auf dem Karton steht nur „Spielobjekt“.
+`o.Symbol()` ist erlaubt, weil `Spielobjekt` ein `Symbol()` hat. Welches Symbol herauskommt, entscheidet der Laufzeittyp: `@`. `o.Bewegen` verbietet der Compiler, obwohl das Objekt einen Spieler enthält, denn auf dem Karton steht nur „Spielobjekt“.
 
-Wie findet die Laufzeitumgebung (die CLR, *Common Language Runtime*) die richtige Implementierung? Sie beginnt beim Laufzeittyp und sucht nach oben: Hat `Spieler` ein `override` für `Symbol`? Ja, also `@`. Wenn nicht, schaut sie in der Basisklasse nach, dann in deren Basisklasse, bis sie eine Implementierung findet. Ein `Magier : Spieler`, der `Symbol` nicht überschreibt, erscheint deshalb als `@` und nicht als `?`.
+Wie findet die Laufzeitumgebung (die CLR, *Common Language Runtime*) die richtige Implementierung? Sie beginnt beim Laufzeittyp und sucht nach oben: Hat `Spieler` ein `override` für `Symbol()`? Ja, also `@`. Wenn nicht, schaut sie in der Basisklasse nach, dann in deren Basisklasse, bis sie eine Implementierung findet. Ein `Magier : Spieler`, der `Symbol()` nicht überschreibt, erscheint deshalb als `@` und nicht als `?`.
 
 Übung: Bestimme für jede Zeile Kompilierzeittyp und Laufzeittyp von `x` und entscheide, ob der Aufruf kompiliert und was er ausgibt: (a) `Spielobjekt x = new Wand(new Koordinate(0, 0)); Console.WriteLine(x.Symbol);` (b) `Spielobjekt x = new Spieler("Held", new Koordinate(1, 1)); Console.WriteLine(x.Lebenspunkte);` (c) `Spieler x = new Spielobjekt("Held", new Koordinate(1, 1));` (d) `Spielobjekt? x = feld.ObjektAn(new Koordinate(1, 1));` für das Spielfeld aus [`virtual` und `override`](/modules/virtual_override/virtual_override.md).
 {: .notice--info}
@@ -101,7 +101,7 @@ Spieler p = (Spieler)wand;
 
 Der Compiler lässt den Cast durch, weil er nur den Kompilierzeittyp `Spielobjekt` sieht, und ein Spielobjekt *könnte* ein Spieler sein. Erst zur Laufzeit stellt die CLR fest, dass im Karton eine `Wand` liegt.
 
-Wenn du mehrere `is`-Abfragen nacheinander schreibst („wenn Wand, dann `#`, wenn Spieler, dann `@` …“), fehlt meist ein `virtual`-Mitglied. Genau dafür gibt es `Symbol`: Polymorphie erledigt die Fallunterscheidung für dich und vergisst keine der Objektarten, die im Laufe des Semesters noch dazukommen.
+Wenn du mehrere `is`-Abfragen nacheinander schreibst („wenn Wand, dann `#`, wenn Spieler, dann `@` …“), fehlt meist ein `virtual`-Mitglied. Genau dafür gibt es `Symbol()`: Polymorphie erledigt die Fallunterscheidung für dich und vergisst keine der Objektarten, die im Laufe des Semesters noch dazukommen.
 {: .notice--primary}
 
 ## Sonderfall: versteckte Mitglieder
@@ -129,12 +129,12 @@ Spielobjekt o = held;                     // dasselbe Objekt, anderer Kompilierz
 Console.WriteLine(o.Beschreibung());      // Held bei (1, 1)
 ```
 
-Beide Variablen zeigen auf dasselbe Objekt, liefern aber verschiedene Beschreibungen. Über `held` (Kompilierzeittyp `Spieler`) läuft die neue Fassung, über `o` (Kompilierzeittyp `Spielobjekt`) die alte. Weil das Spielfeld alle Objekte als `Spielobjekt` behandelt, verschwinden die Lebenspunkte damit überall, wo es darauf ankommt. Dasselbe mit `Symbol` in `Wand` ergibt eine Karte voller `?`, obwohl `new Wand(...).Symbol` weiterhin `#` liefert. **Versteckte Mitglieder sind für Polymorphie unsichtbar.**
+Beide Variablen zeigen auf dasselbe Objekt, liefern aber verschiedene Beschreibungen. Über `held` (Kompilierzeittyp `Spieler`) läuft die neue Fassung, über `o` (Kompilierzeittyp `Spielobjekt`) die alte. Weil das Spielfeld alle Objekte als `Spielobjekt` behandelt, verschwinden die Lebenspunkte damit überall, wo es darauf ankommt. Dasselbe mit `Symbol()` in `Wand` ergibt eine Karte voller `?`, obwohl `new Wand(...).Symbol` weiterhin `#` liefert. **Versteckte Mitglieder sind für Polymorphie unsichtbar.**
 
 Lässt man `override` und `new` beide weg, verhält sich der Code wie mit `new`, aber der Compiler warnt mit CS0114 („blendet den geerbten Member aus …“). Diese Warnung ist fast immer ein vergessenes `override` (oder ein vergessenes `virtual` in der Basisklasse). Nimm sie ernst. Bewusstes Verstecken mit `new` braucht man in sauberem Code praktisch nie.
 {: .notice--warning}
 
-Übung: Lege ein Array `Spielobjekt[] objekte = { new Wand(new Koordinate(0, 0)), new Spieler("Held", new Koordinate(1, 1)) };` an. Schreibe eine Schleife, die für jedes Element den Laufzeittyp und das Symbol ausgibt und nur den Spieler einen Schritt nach rechts gehen lässt. Ersetze anschließend `is` durch einen harten Cast: Bei welchem Element fliegt die Exception, und warum erst zur Laufzeit? Baue danach in `Wand` das `override` vor `Symbol` in ein `new` um und beobachte, wie sich die Ausgabe von `feld.AlsText()` verändert, während `new Wand(...).Symbol` unverändert `#` liefert.
+Übung: Lege ein Array `Spielobjekt[] objekte = { new Wand(new Koordinate(0, 0)), new Spieler("Held", new Koordinate(1, 1)) };` an. Schreibe eine Schleife, die für jedes Element den Laufzeittyp und das Symbol ausgibt und nur den Spieler einen Schritt nach rechts gehen lässt. Ersetze anschließend `is` durch einen harten Cast: Bei welchem Element fliegt die Exception, und warum erst zur Laufzeit? Baue danach in `Wand` das `override` vor `Symbol()` in ein `new` um und beobachte, wie sich die Ausgabe von `feld.AlsText()` verändert, während `new Wand(...).Symbol` unverändert `#` liefert.
 {: .notice--info}
 
 ## Weitere Quellen

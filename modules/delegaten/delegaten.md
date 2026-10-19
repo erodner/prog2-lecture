@@ -97,9 +97,9 @@ public sealed class Zufallsgegner : Gegner
         this.verhalten = verhalten;
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'Z'; }
+        return 'Z';
     }
 
     public override Richtung? NaechsterZug(Spielfeld feld)

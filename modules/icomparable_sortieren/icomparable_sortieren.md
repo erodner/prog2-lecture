@@ -158,7 +158,7 @@ Für einen einzigen, schnellen Sonderfall wirkt eine ganze Comparer-Klasse schwe
 ```csharp
 static int NachSymbol(Gegner a, Gegner b)
 {
-    return a.Symbol.CompareTo(b.Symbol);
+    return a.Symbol().CompareTo(b.Symbol());
 }
 
 nachNaehe.Sort(NachSymbol);   // Methodenname statt Comparer-Objekt: erst alle V, dann alle W

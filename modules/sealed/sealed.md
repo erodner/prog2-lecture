@@ -25,9 +25,9 @@ public sealed class Wand : Spielobjekt
     {
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '#'; }
+        return '#';
     }
 }
 ```
@@ -153,12 +153,12 @@ class MeinZinsrechner : Zinsrechner   // Fehler CS0709
 Es gibt zwei gute Gründe für `sealed`:
 
 - **Sicherheit und Klarheit:** Die Klasse hat eine feste Bedeutung, die niemand durch Überschreiben verändern soll – wie bei `Wand` oder `SicheresKonto`. Auch in .NET selbst sind viele Klassen versiegelt, allen voran `string`: Ein String, der sich beim Vergleichen plötzlich anders verhält, wäre eine Katastrophe für jedes Programm.
-- **Performance:** Ruft man ein `virtual`-Mitglied auf, muss die Laufzeitumgebung nachschauen, welche Implementierung zum tatsächlichen Objekt gehört (mehr dazu im Modul [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md)). Bei einer versiegelten Klasse kann es nur eine Implementierung geben – der JIT-Compiler darf den Aufruf dann direkt auflösen und die Methode sogar inlinen. Für die meisten Programme ist dieser Effekt unmessbar klein; in einer Schleife, die bei jedem Zeichnen der Karte für jedes Feld `Symbol` abfragt, ist er immerhin messbar.
+- **Performance:** Ruft man ein `virtual`-Mitglied auf, muss die Laufzeitumgebung nachschauen, welche Implementierung zum tatsächlichen Objekt gehört (mehr dazu im Modul [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md)). Bei einer versiegelten Klasse kann es nur eine Implementierung geben – der JIT-Compiler darf den Aufruf dann direkt auflösen und die Methode sogar inlinen. Für die meisten Programme ist dieser Effekt unmessbar klein; in einer Schleife, die bei jedem Zeichnen der Karte für jedes Feld `Symbol()` abfragt, ist er immerhin messbar.
 
 Im Zweifel nicht `sealed` – außer du hast einen Grund. Jedes Siegel nimmt späteren Erweiterungen eine Option weg, und die beste Erweiterung ist oft eine, an die man beim Schreiben der Klasse noch nicht gedacht hat. `Spielobjekt` und `Spieler` bleiben deshalb offen: Aus `Spieler` könnte später ein `Magier` mit eigenen Fähigkeiten werden. Wenn du aber weißt, dass eine Klasse ein abgeschlossenes Konzept ist, dann versiegle sie und dokumentiere damit deine Absicht.
 {: .notice--primary}
 
-Übung: Die Klasse `Spieler` soll erweiterbar bleiben, aber ihre Property `Symbol` soll in keiner abgeleiteten Klasse noch einmal überschrieben werden können – der Held ist immer `@`. Wie erreichst du das, ohne die Klasse selbst zu versiegeln? Schreibe anschließend eine Klasse `Magier : Spieler`, die `Beschreibung()` um die Zahl der Zaubersprüche erweitert, und versuche darin trotzdem, `Symbol` zu überschreiben: Welchen Fehler meldet der Compiler?
+Übung: Die Klasse `Spieler` soll erweiterbar bleiben, aber ihre Methode `Symbol()` soll in keiner abgeleiteten Klasse noch einmal überschrieben werden können – der Held ist immer `@`. Wie erreichst du das, ohne die Klasse selbst zu versiegeln? Schreibe anschließend eine Klasse `Magier : Spieler`, die `Beschreibung()` um die Zahl der Zaubersprüche erweitert, und versuche darin trotzdem, `Symbol()` zu überschreiben: Welchen Fehler meldet der Compiler?
 {: .notice--info}
 
 ## Weitere Quellen

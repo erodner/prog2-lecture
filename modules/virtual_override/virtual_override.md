@@ -66,9 +66,9 @@ Interessant ist der Rückgabetyp. Wer `ObjektAn` aufruft, bekommt ein `Spielobje
 ```csharp
 public class Spielobjekt
 {
-    public virtual char Symbol
+    public virtual char Symbol()
     {
-        get { return '?'; }
+        return '?';
     }
 
     public virtual bool IstPassierbar
@@ -86,23 +86,23 @@ public class Spielobjekt
 public class Wand : Spielobjekt
 {
     // Konstruktor wie bisher
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '#'; }
+        return '#';
     }
 }
 
 public class Spieler : Spielobjekt
 {
     // Lebenspunkte, Konstruktor, Bewegen wie bisher
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '@'; }
+        return '@';
     }
 }
 ```
 
-`virtual` und `override` funktionieren für Properties wie `Symbol` genauso wie für Methoden. `Symbol` hat nur einen `get`-Teil und berechnet seinen Wert jedes Mal neu, statt ihn in einem Feld zu speichern.
+`virtual` und `override` funktionieren für Properties genauso wie für Methoden. `IstPassierbar` ist ein solches Property: Es hat nur einen `get`-Teil, und eine Unterklasse kann es mit `public override bool IstPassierbar { get { return true; } }` neu beantworten.
 {: .notice--primary}
 
 ## Polymorphie beim Zeichnen
@@ -119,7 +119,7 @@ public string AlsText()
         for (int x = 0; x < Breite; x++)
         {
             Koordinate p = new(x, y);
-            char zeichen = p == Spieler.Position ? Spieler.Symbol : ObjektAn(p)?.Symbol ?? '.';
+            char zeichen = p == Spieler.Position ? Spieler.Symbol() : ObjektAn(p)?.Symbol() ?? '.';
             sb.Append(zeichen);
         }
         sb.AppendLine();
@@ -128,9 +128,9 @@ public string AlsText()
 }
 ```
 
-Die Zeile mit `zeichen` hat drei Fälle. Steht dort der Spieler, wird sein Symbol gezeichnet. Sonst fragt `ObjektAn(p)?.Symbol` das Objekt auf dem Feld nach seinem Symbol; das `?.` liefert `null`, wenn das Feld leer ist. In dem Fall greift `?? '.'` und zeichnet einen Punkt.
+Die Zeile mit `zeichen` hat drei Fälle. Steht dort der Spieler, wird sein Symbol gezeichnet. Sonst fragt `ObjektAn(p)?.Symbol()` das Objekt auf dem Feld nach seinem Symbol; das `?.` liefert `null`, wenn das Feld leer ist. In dem Fall greift `?? '.'` und zeichnet einen Punkt.
 
-Entscheidend ist `ObjektAn(p)?.Symbol`. Der Ausdruck hat den Typ `Spielobjekt`, aber welches `Symbol` läuft, entscheidet das **tatsächliche Objekt** zur Laufzeit. Für eine Wand ist das `#`:
+Entscheidend ist `ObjektAn(p)?.Symbol()`. Der Ausdruck hat den Typ `Spielobjekt`, aber welches `Symbol()` läuft, entscheidet das **tatsächliche Objekt** zur Laufzeit. Für eine Wand ist das `#`:
 
 ```csharp
 Spieler held = new Spieler("Held", new Koordinate(1, 1));
@@ -161,7 +161,7 @@ Console.WriteLine(feld.AlsText());
 Programmierst du mit der Klasse `Koordinate` aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) mit, besteht deine Karte nur aus Punkten, und der Held läuft durch alle Wände. Das liegt nicht an der Polymorphie, sondern am Vergleich `o.Position == position` in `ObjektAn`. Warum, klärt das Modul [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md).
 {: .notice--warning}
 
-In `AlsText` steht nirgends das Wort `Wand`. Das Spielfeld fragt jedes Objekt nach seinem Symbol und bekommt die passende Antwort. Man sagt: `Symbol` ist **polymorph**.
+In `AlsText` steht nirgends das Wort `Wand`. Das Spielfeld fragt jedes Objekt nach seinem Symbol und bekommt die passende Antwort. Man sagt: `Symbol()` ist **polymorph**.
 
 Dasselbe gilt für Kollisionen. Bevor der Held einen Schritt macht, fragt `Bewegen` das Spielfeld, ob das Zielfeld frei ist. Dafür gibt es zwei Methoden:
 
@@ -219,7 +219,7 @@ Woher diese geerbte Methode kommt, obwohl `Koordinate` gar keine Basisklasse ang
 
 ## Ohne `virtual` keine Polymorphie
 
-Fehlt in der Basisklasse das `virtual`, meldet der Compiler beim `override` den Fehler CS0506. Lässt man auch das `override` weg und schreibt in `Wand` einfach eine zweite Property `Symbol`, gibt es nur eine Warnung, aber die Mauern bestehen plötzlich aus `?`: `AlsText` fragt über den Typ `Spielobjekt` und bekommt dessen Symbol. Das Mitglied wird dann nicht überschrieben, sondern **versteckt**, siehe [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md).
+Fehlt in der Basisklasse das `virtual`, meldet der Compiler beim `override` den Fehler CS0506. Lässt man auch das `override` weg und schreibt in `Wand` einfach eine zweite Methode `Symbol()`, gibt es nur eine Warnung, aber die Mauern bestehen plötzlich aus `?`: `AlsText` fragt über den Typ `Spielobjekt` und bekommt dessen Symbol. Das Mitglied wird dann nicht überschrieben, sondern **versteckt**, siehe [Kompilierzeittyp und Laufzeittyp](/modules/laufzeittyp_verstecken/laufzeittyp_verstecken.md).
 {: .notice--warning}
 
 Im Zweifel gilt: Ein Mitglied, das abgeleitete Klassen sinnvoll anpassen könnten, wird `virtual`. Eines, dessen Verhalten für alle Erben verbindlich sein soll (etwa die geprüfte Schrittlogik in `Bewegen`), bleibt ohne `virtual` oder wird ausdrücklich versiegelt, siehe [`sealed`](/modules/sealed/sealed.md) (erweitertes Wissen).

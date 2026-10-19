@@ -177,14 +177,14 @@ Den Pfeil kennst du schon aus Programmierung 1, aus der [Kurzform für Methoden]
 <div class="editor-titel">Langform</div>
 
 ```csharp
-public override char Symbol
+public override char Symbol()
 {
-    get { return '#'; }
+    return '#';
 }
 
-public override string ToString()
+public override bool IstPassierbar
 {
-    return $"({X}, {Y})";
+    get { return true; }
 }
 ```
 
@@ -193,15 +193,15 @@ public override string ToString()
 <div class="editor-titel">Kurzform mit =></div>
 
 ```csharp
-public override char Symbol => '#';
+public override char Symbol() => '#';
 
-public override string ToString() => $"({X}, {Y})";
+public override bool IstPassierbar => true;
 ```
 
 </div>
 </div>
 
-Beide Spalten bedeuten exakt dasselbe. Wichtig ist der Unterschied zum Lambda: `Symbol => '#'` ist **kein** Delegat und lässt sich keiner `Func` zuweisen. Es ist eine gewöhnliche Property, nur kürzer aufgeschrieben. Der Pfeil steht in beiden Fällen für „liefert“, deshalb sehen sich die Schreibweisen so ähnlich. Im Adventure-Code bleibt es bei der Langform, damit er schon ab Vorlesung 01 lesbar ist. In eigenem Code und in vielen .NET-Projekten wirst du die Kurzform oft sehen.
+Beide Spalten bedeuten exakt dasselbe. Wichtig ist der Unterschied zum Lambda: `Symbol() => '#'` ist **kein** Delegat und lässt sich keiner `Func` zuweisen. Es ist eine gewöhnliche Methode, nur kürzer aufgeschrieben. Bei der Property fällt neben `return` auch das `get` weg: `IstPassierbar => true` hat keine Klammern, und genau daran erkennst du, dass es eine Property ist. Der Pfeil steht in beiden Fällen für „liefert“, deshalb sehen sich die Schreibweisen so ähnlich. Im Adventure-Code bleibt es bei der Langform, damit er schon ab Vorlesung 01 lesbar ist. In eigenem Code und in vielen .NET-Projekten wirst du die Kurzform oft sehen.
 
 Im Zweifel die Kurzform nur für echte Einzeiler: Sobald ein Rumpf eine zweite Anweisung braucht oder der Ausdruck über mehrere Zeilen wächst, ist die Langform leichter zu lesen.
 {: .notice--primary}

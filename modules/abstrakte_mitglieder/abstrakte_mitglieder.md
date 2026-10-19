@@ -11,28 +11,28 @@ classes: wide
 
 Eine abstrakte Klasse ist kein leeres Gerüst. Sie ist eher wie eine Rezeptvorlage, in der die meisten Schritte schon ausformuliert sind – nur an einzelnen Stellen steht „hier die Hauptzutat einsetzen“. Die Vorlage kann den ganzen Ablauf beschreiben, obwohl sie die Zutat nicht kennt, weil sie sich darauf verlässt, dass jedes konkrete Rezept sie liefert. In diesem Modul schauen wir uns an, was in einer abstrakten Klasse alles abstrakt sein darf, wie fertiger Code in der Basisklasse abstrakte Mitglieder benutzt und wann `virtual` statt `abstract` die bessere Wahl ist.
 
-## Nicht nur Methoden: abstrakte Properties
+## Abstrakte Methoden: Signatur ohne Rumpf
 
-Im [vorigen Modul](/modules/abstrakte_klassen/abstrakte_klassen.md) haben wir es schon benutzt, ohne groß darüber zu reden: `Symbol` in `Spielobjekt` ist keine Methode, sondern ein **abstraktes Property**. Alles, was in einer Klasse überschreibbar sein kann, darf auch abstrakt sein – Methoden, Properties, Indexer und Ereignisse.
+Im [vorigen Modul](/modules/abstrakte_klassen/abstrakte_klassen.md) haben wir sie schon benutzt, ohne groß darüber zu reden: `Symbol()` in `Spielobjekt` ist eine **abstrakte Methode**. Sie hat einen Rückgabetyp, einen Namen und eine Parameterliste, aber statt eines Rumpfs in geschweiften Klammern nur ein Semikolon.
 
 ```csharp
 public abstract class Spielobjekt
 {
     // ...
-    public abstract char Symbol { get; }
+    public abstract char Symbol();
 }
 ```
 
-Das `{ get; }` legt fest, dass die Unterklasse einen Getter liefern muss – und nur einen Getter. Ein Symbol von außen zu setzen, wäre auch sinnlos: Eine Wand ist ein `#`, Punkt. Wie die Unterklasse den Getter schreibt, bleibt ihr überlassen. `Wand` antwortet mit einer Konstanten, `Tuer` rechnet:
+Die Basisklasse legt damit nur fest, *dass* jedes Spielobjekt auf die Frage nach seinem Zeichen ein `char` liefert. *Wie* es zu der Antwort kommt, bleibt der Unterklasse überlassen. `Wand` antwortet mit einer Konstanten, `Tuer` rechnet:
 
 ```csharp
 public sealed class Tuer : StatischesObjekt
 {
     public bool IstOffen { get; private set; }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return IstOffen ? '/' : 'D'; }
+        return IstOffen ? '/' : 'D';
     }
 
     public override bool IstPassierbar
@@ -44,7 +44,7 @@ public sealed class Tuer : StatischesObjekt
 }
 ```
 
-Beide Properties der Tür hängen vom selben Feld ab – eine offene Tür sieht anders aus *und* verhält sich anders. Für die Basisklasse ist das völlig unsichtbar: Sie hat nur die Signatur `char Symbol { get; }` gefordert.
+`Symbol()` und `IstPassierbar` hängen beide vom selben Property `IstOffen` ab – eine offene Tür sieht anders aus *und* verhält sich anders. Für die Basisklasse ist das völlig unsichtbar: Sie hat nur die Signatur `char Symbol()` gefordert. Abstrakt sein dürfen übrigens nicht nur Methoden, sondern alles, was sich überschreiben lässt, auch Properties: `public abstract bool IstPassierbar { get; }` würde jede Unterklasse zwingen, die Frage selbst zu beantworten.
 
 ## Abstrakt und konkret gemischt
 
@@ -107,9 +107,9 @@ public sealed class Wache : Gegner
 {
     public Richtung Laufrichtung { get; private set; }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'W'; }
+        return 'W';
     }
 
     public override Richtung? NaechsterZug(Spielfeld feld)
@@ -130,9 +130,9 @@ public sealed class Verfolger : Gegner
 {
     public int Sichtweite { get; }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'V'; }
+        return 'V';
     }
 
     public override Richtung? NaechsterZug(Spielfeld feld)
@@ -186,7 +186,7 @@ Beide Schlüsselwörter erlauben `override` in Unterklassen, und beide führen z
 | Erlaubt in normalen Klassen | ja | nein, nur in `abstract class` |
 | `base.Methode()` aus dem `override` aufrufbar | ja | nein, es gibt keinen Rumpf |
 
-In `Spielobjekt` sind alle drei Varianten vertreten, und jede Entscheidung hat einen Grund. `Symbol` ist `abstract`, weil es kein Zeichen gibt, das für irgendein Objekt richtig wäre. `IstPassierbar` ist `virtual` mit der Standardantwort `false`, weil die meisten Objekte blockieren – nur `Ausgang`, `Gegenstand` und die offene `Tuer` überschreiben es. `Beschreibung()` ist ebenfalls `virtual`, und der `Spieler` nutzt die Freiheit, sie zu erweitern:
+In `Spielobjekt` sind alle drei Varianten vertreten, und jede Entscheidung hat einen Grund. `Symbol()` ist `abstract`, weil es kein Zeichen gibt, das für irgendein Objekt richtig wäre. `IstPassierbar` ist `virtual` mit der Standardantwort `false`, weil die meisten Objekte blockieren – nur `Ausgang`, `Gegenstand` und die offene `Tuer` überschreiben es. `Beschreibung()` ist ebenfalls `virtual`, und der `Spieler` nutzt die Freiheit, sie zu erweitern:
 
 ```csharp
 public override string Beschreibung()

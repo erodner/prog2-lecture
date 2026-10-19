@@ -27,9 +27,9 @@ public class Spielobjekt
         Position = position;
     }
 
-    public virtual char Symbol
+    public virtual char Symbol()
     {
-        get { return '?'; } // Notnagel!
+        return '?'; // Notnagel!
     }
 
     public virtual bool IstPassierbar
@@ -46,7 +46,7 @@ Spielobjekt ding = new Spielobjekt("Ding", new Koordinate(3, 4));
 feld.Hinzufuegen(ding);   // liegt jetzt als '?' im Dungeon herum
 ```
 
-Ein Objekt, das weder Wand noch Tür noch Trank ist, kann es im Spiel nicht geben. Und wenn jemand später eine neue Objektart schreibt und das `override` für `Symbol` vergisst, fällt das nicht beim Kompilieren auf – es erscheint einfach ein `?` auf der Karte. Beide Probleme lösen wir mit einem einzigen Schlüsselwort.
+Ein Objekt, das weder Wand noch Tür noch Trank ist, kann es im Spiel nicht geben. Und wenn jemand später eine neue Objektart schreibt und das `override` für `Symbol()` vergisst, fällt das nicht beim Kompilieren auf – es erscheint einfach ein `?` auf der Karte. Beide Probleme lösen wir mit einem einzigen Schlüsselwort.
 
 ## Die abstrakte Klasse `Spielobjekt`
 
@@ -65,7 +65,7 @@ public abstract class Spielobjekt
     }
 
     /// <summary>Das Zeichen, mit dem das Objekt auf der Karte gezeichnet wird.</summary>
-    public abstract char Symbol { get; }
+    public abstract char Symbol();
 
     /// <summary>Darf ein bewegliches Objekt dieses Feld betreten?</summary>
     public virtual bool IstPassierbar
@@ -85,7 +85,7 @@ public abstract class Spielobjekt
 }
 ```
 
-Zwei Dinge fallen auf. Erstens steht hinter `Symbol` keine Berechnung mehr, nur ein `{ get; }` – die Basisklasse verspricht, dass es dieses Property gibt, überlässt die Antwort aber den Unterklassen. Zweitens ist der Konstruktor `protected`: Er wird nur noch von abgeleiteten Klassen über `base(...)` aufgerufen, denn von außen kann ohnehin niemand ein `Spielobjekt` erzeugen. `IstPassierbar` und `Beschreibung()` bleiben dagegen `virtual`, weil „Wände blockieren, alles andere überschreibt bei Bedarf“ eine brauchbare Standardantwort ist – mehr dazu im [nächsten Modul](/modules/abstrakte_mitglieder/abstrakte_mitglieder.md).
+Zwei Dinge fallen auf. Erstens hat `Symbol()` keinen Rumpf mehr, hinter der Parameterliste steht nur ein Semikolon – die Basisklasse verspricht, dass es diese Methode gibt, überlässt die Antwort aber den Unterklassen. Zweitens ist der Konstruktor `protected`: Er wird nur noch von abgeleiteten Klassen über `base(...)` aufgerufen, denn von außen kann ohnehin niemand ein `Spielobjekt` erzeugen. `IstPassierbar` und `Beschreibung()` bleiben dagegen `virtual`, weil „Wände blockieren, alles andere überschreibt bei Bedarf“ eine brauchbare Standardantwort ist – mehr dazu im [nächsten Modul](/modules/abstrakte_mitglieder/abstrakte_mitglieder.md).
 
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces)).
 {: .notice--primary}
@@ -136,7 +136,7 @@ public abstract class BeweglichesObjekt : Spielobjekt
 }
 ```
 
-`StatischesObjekt` enthält nichts als einen Konstruktor und ist trotzdem `abstract` – sie ist eine reine Einordnung, und „ein statisches Objekt“ ohne genauere Art gibt es nicht. `BeweglichesObjekt` bringt zusätzlich echten Code mit, den sich Spieler und Gegner teilen. Beide erben das abstrakte `Symbol` weiter, ohne es zu implementieren: Eine abstrakte Klasse darf einen abstrakten Vertrag an ihre Erben durchreichen.
+`StatischesObjekt` enthält nichts als einen Konstruktor und ist trotzdem `abstract` – sie ist eine reine Einordnung, und „ein statisches Objekt“ ohne genauere Art gibt es nicht. `BeweglichesObjekt` bringt zusätzlich echten Code mit, den sich Spieler und Gegner teilen. Beide erben das abstrakte `Symbol()` weiter, ohne es zu implementieren: Eine abstrakte Klasse darf einen abstrakten Vertrag an ihre Erben durchreichen.
 
 Mit diesen beiden Zwischenklassen steht das Gerüst, das uns bis zum Semesterende trägt:
 
@@ -227,9 +227,9 @@ public sealed class Wand : StatischesObjekt
 {
     public Wand(Koordinate position) : base("Wand", position) { }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '#'; }
+        return '#';
     }
 }
 
@@ -237,9 +237,9 @@ public sealed class Ausgang : StatischesObjekt
 {
     public Ausgang(Koordinate position) : base("Ausgang", position) { }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'E'; }
+        return 'E';
     }
 
     public override bool IstPassierbar
@@ -249,11 +249,11 @@ public sealed class Ausgang : StatischesObjekt
 }
 ```
 
-Das `override` ist dasselbe Schlüsselwort wie bei [`virtual`-Methoden](/modules/virtual_override/virtual_override.md) – nur dass es hier keine Wahl ist, sondern Pflicht. Schön sichtbar wird der Unterschied an `Ausgang`: `Symbol` **muss** überschrieben werden, `IstPassierbar` **darf** überschrieben werden, weil man durch den Ausgang hindurchlaufen können soll. Die `Wand` verzichtet darauf und erbt die Standardantwort `false`. Neu ist das Schlüsselwort `sealed` (versiegelt): Von einer versiegelten Klasse darf niemand mehr erben, ein `class Geheimwand : Wand` meldet der Compiler als Fehler. Ab dieser Vorlesung sind die konkreten Klassen im Adventure versiegelt, weil die Hierarchie an ihnen endet; wann sich das lohnt, zeigt das Modul [Versiegeln mit `sealed`](/modules/sealed/sealed.md) (erweitertes Wissen).
+Das `override` ist dasselbe Schlüsselwort wie bei [`virtual`-Methoden](/modules/virtual_override/virtual_override.md) – nur dass es hier keine Wahl ist, sondern Pflicht. Schön sichtbar wird der Unterschied an `Ausgang`: `Symbol()` **muss** überschrieben werden, `IstPassierbar` **darf** überschrieben werden, weil man durch den Ausgang hindurchlaufen können soll. Die `Wand` verzichtet darauf und erbt die Standardantwort `false`. Neu ist das Schlüsselwort `sealed` (versiegelt): Von einer versiegelten Klasse darf niemand mehr erben, ein `class Geheimwand : Wand` meldet der Compiler als Fehler. Ab dieser Vorlesung sind die konkreten Klassen im Adventure versiegelt, weil die Hierarchie an ihnen endet; wann sich das lohnt, zeigt das Modul [Versiegeln mit `sealed`](/modules/sealed/sealed.md) (erweitertes Wissen).
 
 ## Polymorphie mit abstrakten Klassen
 
-Der Gewinn zeigt sich, sobald das Spielfeld alle Objekte gemeinsam behandelt. Beim Zeichnen der Karte fragt es jedes Feld nach dem Objekt, das dort liegt, und holt sich dessen `Symbol`:
+Der Gewinn zeigt sich, sobald das Spielfeld alle Objekte gemeinsam behandelt. Beim Zeichnen der Karte fragt es jedes Feld nach dem Objekt, das dort liegt, und holt sich dessen `Symbol()`:
 
 ```csharp
 public string AlsText()
@@ -263,7 +263,7 @@ public string AlsText()
     {
         for (int x = 0; x < Breite; x++)
         {
-            sb.Append(ObjektAn(new Koordinate(x, y))?.Symbol ?? '.');
+            sb.Append(ObjektAn(new Koordinate(x, y))?.Symbol() ?? '.');
         }
         sb.AppendLine();
     }
@@ -283,7 +283,7 @@ public string AlsText()
 
 Der entscheidende Punkt: Das `?` kann in dieser Ausgabe nicht mehr auftauchen. Der Compiler hat jede Objektart gezwungen, sich für ein Zeichen zu entscheiden – und jede neue Objektart, die wir in den nächsten Modulen ergänzen, wird beim Kompilieren daran erinnert.
 
-Übung: Ergänze eine Klasse `Statue : StatischesObjekt` mit dem Symbol `'S'`, die nicht passierbar ist. Lass zuerst das `override` bei `Symbol` weg und lies die Fehlermeldung genau. Versuche danach, `StatischesObjekt` direkt zu instanziieren, und vergleiche die Fehlernummer mit CS0144. Welche der beiden Fehlermeldungen hättest du bei der alten, nicht-abstrakten Version aus Vorlesung 01 bekommen?
+Übung: Ergänze eine Klasse `Statue : StatischesObjekt` mit dem Symbol `'S'`, die nicht passierbar ist. Lass zuerst das `override` bei `Symbol()` weg und lies die Fehlermeldung genau. Versuche danach, `StatischesObjekt` direkt zu instanziieren, und vergleiche die Fehlernummer mit CS0144. Welche der beiden Fehlermeldungen hättest du bei der alten, nicht-abstrakten Version aus Vorlesung 01 bekommen?
 {: .notice--info}
 
 ## Weitere Quellen

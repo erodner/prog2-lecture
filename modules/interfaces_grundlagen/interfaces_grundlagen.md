@@ -88,9 +88,9 @@ public sealed class Tuer : StatischesObjekt, IInteragierbar
     {
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return IstOffen ? '/' : 'D'; }
+        return IstOffen ? '/' : 'D';
     }
 
     public override bool IstPassierbar
@@ -118,7 +118,7 @@ public sealed class Tuer : StatischesObjekt, IInteragierbar
 </div>
 </div>
 
-Die Tür ist jetzt beides: **ein** statisches Objekt (Vererbung, mit `Name`, `Position` und dem geerbten Vertrag `Symbol`) und sie **kann** Interaktion (Interface). `public` ist bei `Interagieren` Pflicht – das Interface verspricht öffentliche Mitglieder, also muss die Klasse sie auch öffentlich anbieten. Lässt man die Methode weg oder macht sie privat, meldet der Compiler, dass `Tuer` das Interface nicht vollständig implementiert.
+Die Tür ist jetzt beides: **ein** statisches Objekt (Vererbung, mit `Name`, `Position` und dem geerbten Vertrag `Symbol()`) und sie **kann** Interaktion (Interface). `public` ist bei `Interagieren` Pflicht – das Interface verspricht öffentliche Mitglieder, also muss die Klasse sie auch öffentlich anbieten. Lässt man die Methode weg oder macht sie privat, meldet der Compiler, dass `Tuer` das Interface nicht vollständig implementiert.
 
 Nach demselben Muster wird die `Truhe` interagierbar, und die Gegenstände erfüllen den zweiten Vertrag. Interessant ist dabei, dass nicht die einzelnen Gegenstände `ISammelbar` implementieren, sondern ihre gemeinsame abstrakte Basisklasse:
 
@@ -152,9 +152,9 @@ public sealed class Schluessel : Gegenstand
     {
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'k'; }
+        return 'k';
     }
 }
 
@@ -167,9 +167,9 @@ public sealed class Trank : Gegenstand
         Heilung = heilung;
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '!'; }
+        return '!';
     }
 
     // Ein Trank wird sofort getrunken statt ins Inventar gelegt.

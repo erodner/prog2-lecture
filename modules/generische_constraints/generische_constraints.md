@@ -142,7 +142,7 @@ Die Typinferenz hilft hier übrigens nicht: `TArt` kommt in keinem Parameter vor
 | `where T : struct` | `T` muss ein Werttyp sein (`int`, `double`, eigene `struct`s wie `Koordinate`); Nullable-Typen sind ausgeschlossen | `T` ist nie `null`, `default(T)` ist der Nullwert des Typs |
 | `where T : class` | `T` muss ein Referenztyp sein (Klasse, Interface, Delegat, Array) | Vergleich mit `null`, Referenzgleichheit |
 | `where T : new()` | `T` muss einen öffentlichen parameterlosen Konstruktor haben; bei mehreren Constraints immer als letztes | `new T()` |
-| `where T : Spielobjekt` | `T` muss `Spielobjekt` sein oder davon erben | Zugriff auf alle Mitglieder von `Spielobjekt`, z. B. `Position` und `Symbol` |
+| `where T : Spielobjekt` | `T` muss `Spielobjekt` sein oder davon erben | Zugriff auf alle Mitglieder von `Spielobjekt`, z. B. `Position` und `Symbol()` |
 | `where T : ISammelbar` | `T` muss das Interface implementieren | Aufruf der Interface-Mitglieder, z. B. `Name` |
 | `where T : notnull` | `T` darf kein nullable Typ sein (weder `string?` noch `int?`) | Verwendung als Dictionary-Schlüssel |
 | `where TArt : T` | `TArt` muss ein anderer Typparameter `T` oder davon abgeleitet sein | Zuweisung von `TArt` an `T`, Typprüfung mit `is` |
@@ -156,14 +156,14 @@ static List<T> Erzeugen<T>(int anzahl) where T : Spielobjekt, new()
     for (int i = 0; i < anzahl; i++)
     {
         T objekt = new T();
-        Console.WriteLine(objekt.Symbol);   // erlaubt, weil T : Spielobjekt
+        Console.WriteLine(objekt.Symbol());   // erlaubt, weil T : Spielobjekt
         liste.Add(objekt);
     }
     return liste;
 }
 ```
 
-Der Constraint `Spielobjekt` erlaubt den Zugriff auf `Symbol`, der Constraint `new()` erlaubt `new T()`. Die Reihenfolge ist vorgeschrieben: Basisklasse zuerst, dann Interfaces, `new()` immer zuletzt.
+Der Constraint `Spielobjekt` erlaubt den Zugriff auf `Symbol()`, der Constraint `new()` erlaubt `new T()`. Die Reihenfolge ist vorgeschrieben: Basisklasse zuerst, dann Interfaces, `new()` immer zuletzt.
 
 `new()` verlangt einen **parameterlosen** Konstruktor. Alle Klassen unseres Spiels bekommen im Konstruktor mindestens eine `Position` und wären für `Erzeugen<T>` deshalb nicht zugelassen – ein Constraint kann keinen Konstruktor mit Argumenten fordern. In der Praxis ist das kein Verlust: Eine Fabrikmethode, die `new Wache(position)` aufruft, ist ohnehin ehrlicher.
 {: .notice--warning}

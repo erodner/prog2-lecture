@@ -22,7 +22,7 @@ Der Dungeon soll eine neue Objektart bekommen: eine **Falle**. Eine Falle liegt 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
 
-**Schritt 1 — Die Einordnung:** Eine Falle bewegt sich nie, also `StatischesObjekt`. Pflicht ist `Symbol`, weil es abstrakt aus `Spielobjekt` durchgereicht wird. `IstPassierbar` muss auf `true` überschrieben werden, sonst prallt der Spieler davon ab wie von einer Wand.
+**Schritt 1 — Die Einordnung:** Eine Falle bewegt sich nie, also `StatischesObjekt`. Pflicht ist `Symbol()`, weil es abstrakt aus `Spielobjekt` durchgereicht wird. `IstPassierbar` muss auf `true` überschrieben werden, sonst prallt der Spieler davon ab wie von einer Wand.
 
 **Schritt 2 — Warum kein `Gegenstand`:** `Gegenstand` implementiert `ISammelbar`, und `SpielerZieht` behandelt jeden Gegenstand nach demselben Muster: Meldung ausgeben, vom Feld entfernen, ins Inventar legen (außer beim Trank). Eine Falle im Rucksack des Helden ist Unsinn, und sie soll auch nicht verschwinden, sondern sichtbar ausgelöst liegen bleiben. „Draufgetreten“ ist eine eigene Fähigkeit – und die hat bisher kein Interface. `IInteragierbar` passt nicht, weil Interaktion in `SpielerZieht` nur für **nicht passierbare** Objekte ausgelöst wird (siehe Aufgabe 3).
 
@@ -46,9 +46,9 @@ public sealed class Falle : StatischesObjekt, IBetretbar
     }
 
     // Solange die Falle versteckt ist, sieht sie aus wie normaler Boden.
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return Ausgeloest ? '^' : '.'; }
+        return Ausgeloest ? '^' : '.';
     }
 
     public override bool IstPassierbar
@@ -86,7 +86,7 @@ Damit die Falle auch in Karten vorkommen kann, braucht `LevelParser.ObjektFuer` 
 - **Klasse für das, was die Falle *ist*, Interface für das, was sie *kann*:** `StatischesObjekt` liefert Name, Position und den Symbolvertrag; `IBetretbar` beschreibt eine Fähigkeit, die später auch ein `Teleporter` oder eine `Feuerstelle` haben darf – ohne gemeinsame Basisklasse.
 - **Die Spielregel kennt keine Falle:** `davor is IBetretbar` funktioniert für jede künftige Klasse mit dieser Fähigkeit. Genau dafür sind Interfaces da.
 - **Der Schaden erledigt sich von selbst:** `GegnerZiehen` prüft am Ende jeder Runde `Spieler.IstAmLeben` und setzt den `Spielstatus` auf `Verloren`. Die Falle muss davon nichts wissen.
-- **Ein Symbol, das lügen darf:** Weil `Symbol` ein Property und keine Konstante ist, kann die Falle ihren Zustand im Zeichen ausdrücken – dasselbe Muster wie bei `Tuer` (`'/'` oder `'D'`) und `Truhe` (`'t'` oder `'T'`).
+- **Ein Symbol, das lügen darf:** Weil `Symbol()` eine Methode ist, die bei jedem Aufruf neu antwortet, kann die Falle ihren Zustand im Zeichen ausdrücken – dasselbe Muster wie bei `Tuer` (`'/'` oder `'D'`) und `Truhe` (`'t'` oder `'T'`).
 
 </details>
 
@@ -179,9 +179,9 @@ public sealed class Teleporter : StatischesObjekt, IInteragierbar
         Ziel = ziel;
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'O'; }
+        return 'O';
     }
 
     public override bool IstPassierbar
@@ -271,15 +271,15 @@ abstract class Spielobjekt
 {
     public string Name { get; }
     protected Spielobjekt(string name) { Name = name; }
-    public abstract char Symbol { get; }
+    public abstract char Symbol();
 }
 
 class Brunnen : Spielobjekt, IInteragierbar
 {
     public Brunnen() : base("Brunnen") { }
-    public char Symbol
+    public char Symbol()
     {
-        get { return 'o'; }
+        return 'o';
     }
 
     string Interagieren(Spieler spieler)
@@ -294,7 +294,7 @@ class Brunnen : Spielobjekt, IInteragierbar
 
 **Schritt 1 — Fehlendes `override`:**
 
-`Symbol` in `Brunnen` hat dieselbe Signatur wie das abstrakte `Symbol` in `Spielobjekt`, aber kein `override`. Für den Compiler ist das ein neues Property, das das geerbte versteckt – das abstrakte bleibt unimplementiert: *CS0534: „Brunnen“ implementiert den geerbten abstrakten Member „Spielobjekt.Symbol.get“ nicht.* Dazu kommt die Warnung *CS0114*, die genau sagt, was fehlt: *„Brunnen.Symbol“ blendet den vererbten Member „Spielobjekt.Symbol“ aus. Damit der aktuelle Member diese Implementierung überschreibt, fügen Sie das override-Schlüsselwort hinzu.* Korrektur: `public override char Symbol => 'o';`.
+`Symbol()` in `Brunnen` hat dieselbe Signatur wie das abstrakte `Symbol()` in `Spielobjekt`, aber kein `override`. Für den Compiler ist das eine neue Methode, die die geerbte versteckt – die abstrakte bleibt unimplementiert: *CS0534: „Brunnen“ implementiert den geerbten abstrakten Member „Spielobjekt.Symbol()“ nicht.* Dazu kommt die Warnung *CS0114*, die genau sagt, was fehlt: *„Brunnen.Symbol()“ blendet den vererbten Member „Spielobjekt.Symbol()“ aus. Damit der aktuelle Member diese Implementierung überschreibt, fügen Sie das override-Schlüsselwort hinzu.* Korrektur: `public override char Symbol()`.
 
 **Schritt 2 — Interface nicht öffentlich implementiert:**
 
@@ -308,7 +308,7 @@ Kleines Detail beim Ausprobieren: Solange die beiden Fehler in der Klassendeklar
 
 **Zentrale Designentscheidungen:**
 
-- **Der Compiler prüft Verträge vollständig:** Ob Interface oder abstrakte Klasse – jedes fehlende oder falsch sichtbare Mitglied wird beim Kompilieren gemeldet, nicht erst zur Laufzeit. Genau deshalb haben wir `Symbol` in Vorlesung 02 von `virtual` auf `abstract` umgestellt.
+- **Der Compiler prüft Verträge vollständig:** Ob Interface oder abstrakte Klasse – jedes fehlende oder falsch sichtbare Mitglied wird beim Kompilieren gemeldet, nicht erst zur Laufzeit. Genau deshalb haben wir `Symbol()` in Vorlesung 02 von `virtual` auf `abstract` umgestellt.
 - **`override` ist keine Formsache:** Ohne das Schlüsselwort entsteht ein zweites, unabhängiges Mitglied. Die Warnung CS0114 sollte man nie ignorieren.
 - **Ein fertiger Brunnen gehört an `StatischesObjekt`:** In der echten Hierarchie schreibt man `class Brunnen : StatischesObjekt, IInteragierbar` und bekommt Position und Konstruktor geschenkt.
 

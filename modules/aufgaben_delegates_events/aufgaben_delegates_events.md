@@ -238,7 +238,7 @@ Zerlege jede der folgenden Fragen in ihre Bestandteile – *Quelle*, *Filter*, *
 
 - (a) Die Namen aller Gegner, die höchstens vier Schritte entfernt sind, der nächste zuerst. Bei gleicher Entfernung soll der Name entscheiden. Welche Quelle nimmst du – `feld.Gegner` oder `feld.AlleObjekte`?
 - (b) Alle Gegenstände, die noch auf dem Boden liegen, als Text `"Name (x, y)"`, der entfernteste zuerst, bei gleicher Entfernung alphabetisch. Achtung: Die `Truhe` ist kein `Gegenstand` – warum eigentlich nicht?
-- (c) Eine Gruppierung **aller** Objekte nach ihrem `Symbol` mit der Anzahl je Gruppe. Wie viele Gruppen entstehen, und welchen Typ hat `gruppe.Key`? Sortiere die Gruppen anschließend nach Symbol und erkläre die Reihenfolge, die dabei herauskommt.
+- (c) Eine Gruppierung **aller** Objekte nach ihrem `Symbol()` mit der Anzahl je Gruppe. Wie viele Gruppen entstehen, und welchen Typ hat `gruppe.Key`? Sortiere die Gruppen anschließend nach Symbol und erkläre die Reihenfolge, die dabei herauskommt.
 
 <details markdown="1">
 <summary>Lösung anzeigen</summary>
@@ -296,7 +296,7 @@ Schatz und Trank sind beide fünf Schritte entfernt, alphabetisch kommt „Schat
 **Schritt 3 — Abfrage (c) gruppieren:**
 
 ```csharp
-foreach (var gruppe in feld.AlleObjekte.GroupBy(o => o.Symbol).OrderBy(gruppe => gruppe.Key))
+foreach (var gruppe in feld.AlleObjekte.GroupBy(o => o.Symbol()).OrderBy(gruppe => gruppe.Key))
 {
     Console.WriteLine($"{gruppe.Key}: {gruppe.Count()}");
 }
@@ -310,7 +310,7 @@ foreach (var gruppe in feld.AlleObjekte.GroupBy(o => o.Symbol).OrderBy(gruppe =>
 // k: 1
 ```
 
-Acht Gruppen, der `Key` ist ein `char`, weil `Symbol` ein `char` ist. Warum steht das kleine `k` hinter dem großen `W`? Weil `char` nach seinem Zahlencode sortiert wird: `!` ist 33, `#` 35, `$` 36, `@` 64, die Großbuchstaben liegen bei 65 bis 90, die Kleinbuchstaben erst bei 97 bis 122. Ohne `OrderBy` kämen die Gruppen in der Reihenfolge, in der ihr Symbol zum ersten Mal auftaucht, und darauf sollte man sich nicht verlassen.
+Acht Gruppen, der `Key` ist ein `char`, weil `Symbol()` ein `char` ist. Warum steht das kleine `k` hinter dem großen `W`? Weil `char` nach seinem Zahlencode sortiert wird: `!` ist 33, `#` 35, `$` 36, `@` 64, die Großbuchstaben liegen bei 65 bis 90, die Kleinbuchstaben erst bei 97 bis 122. Ohne `OrderBy` kämen die Gruppen in der Reihenfolge, in der ihr Symbol zum ersten Mal auftaucht, und darauf sollte man sich nicht verlassen.
 
 **Zentrale Designentscheidungen:**
 

@@ -98,7 +98,7 @@ Magier.Melden             // Kette von Spieler.Melden, überschrieben
 
 - **Ein Objekt, zwei Verhalten:** `a` und `b` zeigen auf Objekte desselben Typs, liefern aber bei `Betreten` und `Melden` unterschiedliche Ausgaben. Genau deshalb ist Verstecken in Hierarchien ein Wartungsrisiko.
 - **`new virtual` startet eine neue Kette:** Wer ein Mitglied versteckt und gleichzeitig `virtual` macht, koppelt die Basisklasse ab. Für das Spielfeld, das nur `Spielobjekt` kennt, existiert das Überschreiben in `Magier` nicht – in einer `List<Spielobjekt>` käme immer nur `Spielobjekt.Melden` heraus.
-- **Regel für die Praxis:** Willst du Polymorphie, brauchst du eine ununterbrochene `virtual`/`override`-Kette bis zur Basisklasse. Genau deshalb sind `Symbol`, `IstPassierbar` und `Beschreibung()` im Spiel sauber durchgängig `virtual`.
+- **Regel für die Praxis:** Willst du Polymorphie, brauchst du eine ununterbrochene `virtual`/`override`-Kette bis zur Basisklasse. Genau deshalb sind `Symbol()`, `IstPassierbar` und `Beschreibung()` im Spiel sauber durchgängig `virtual`.
 
 </details>
 
@@ -148,9 +148,9 @@ class Schluessel : Gegenstand
 {
     public Schluessel(Koordinate position) : base("Schlüssel", position, 0) { }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'k'; }
+        return 'k';
     }
 }
 
@@ -158,9 +158,9 @@ class Schatz : Gegenstand
 {
     public Schatz(Koordinate position, int punktwert) : base("Schatz", position, punktwert) { }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '$'; }
+        return '$';
     }
 }
 
@@ -168,9 +168,9 @@ class Trank : Gegenstand
 {
     public Trank(Koordinate position) : base("Trank", position, 0) { }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '!'; }
+        return '!';
     }
 
     public override void Einsammeln(Spieler spieler)
@@ -348,9 +348,9 @@ public class Spielobjekt
         Position = position;
     }
 
-    public virtual char Symbol
+    public virtual char Symbol()
     {
-        get { return '?'; }
+        return '?';
     }
 
     public virtual bool IstPassierbar
@@ -368,9 +368,9 @@ public class Wand : Spielobjekt
 {
     public Wand(Koordinate position) : base("Wand", position) { }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '#'; }
+        return '#';
     }
 }
 
@@ -380,9 +380,9 @@ public class Tuer : Spielobjekt
 
     public Tuer(Koordinate position) : base("Tür", position) { }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return 'D'; }
+        return 'D';
     }
 
     public override bool IstPassierbar

@@ -69,9 +69,9 @@ public class Spielobjekt
     }
 
     /// <summary>Das Zeichen, mit dem das Objekt auf der Karte gezeichnet wird.</summary>
-    public virtual char Symbol
+    public virtual char Symbol()
     {
-        get { return '?'; }
+        return '?';
     }
 
     /// <summary>Kann der Spieler dieses Feld betreten?</summary>
@@ -100,9 +100,9 @@ public class Wand : Spielobjekt
     {
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '#'; }
+        return '#';
     }
 }
 ```
@@ -120,15 +120,16 @@ public class Spieler : Spielobjekt
     {
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '@'; }
+        return '@';
     }
 
     /// <summary>Versucht einen Schritt; bleibt stehen, wenn das Zielfeld belegt ist.</summary>
     public bool Bewegen(Richtung richtung, Spielfeld feld)
     {
         Koordinate ziel = Position.Verschoben(richtung);
+        // IstFrei kommt im Modul „virtual und override“ zum Spielfeld dazu
         if (!feld.IstFrei(ziel))
         {
             return false;
@@ -158,7 +159,7 @@ public class Spielfeld
 ```
 
 ```csharp
-Spielfeld feld = new Spielfeld(10, 6, held);
+Spielfeld feld = new Spielfeld();
 feld.Hinzufuegen(new Wand(new Koordinate(0, 0)));
 feld.Hinzufuegen(new Wand(new Koordinate(5, 2)));
 ```

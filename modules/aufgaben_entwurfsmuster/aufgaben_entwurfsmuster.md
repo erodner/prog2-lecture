@@ -147,7 +147,7 @@ Einzelne Bauteile und Gruppen sollen über dieselben Operationen angesprochen we
 
 **Schritt 2 — Warum kein `Raum : Spielobjekt`?**
 
-`Spielobjekt` hat genau eine `Position` und genau ein `Symbol`; `StatischesObjekt` heißt ausdrücklich „bewegt sich nie“, und `Spielfeld.Hinzufuegen` legt statische Objekte in einem `Dictionary<Koordinate, StatischesObjekt>` ab – ein Eintrag pro Rasterzelle. Ein Raum hat weder eine einzelne Zelle noch ein einzelnes Zeichen; er würde in das Dictionary nicht hineinpassen, und `Verschieben` gäbe es in der Basisklasse gar nicht. Die Komponente des Composite ist deshalb ein neues, eigenes Interface neben der bestehenden Hierarchie.
+`Spielobjekt` hat genau eine `Position` und genau ein `Symbol()`; `StatischesObjekt` heißt ausdrücklich „bewegt sich nie“, und `Spielfeld.Hinzufuegen` legt statische Objekte in einem `Dictionary<Koordinate, StatischesObjekt>` ab – ein Eintrag pro Rasterzelle. Ein Raum hat weder eine einzelne Zelle noch ein einzelnes Zeichen; er würde in das Dictionary nicht hineinpassen, und `Verschieben` gäbe es in der Basisklasse gar nicht. Die Komponente des Composite ist deshalb ein neues, eigenes Interface neben der bestehenden Hierarchie.
 
 **Schritt 3 — Schnittstelle festlegen:**
 

@@ -212,7 +212,7 @@ class SymbolIst : IPruefer<Spielobjekt>
     public SymbolIst(char symbol) { this.symbol = symbol; }
     public bool Pruefen(Spielobjekt o)
     {
-        return o.Symbol == symbol;
+        return o.Symbol() == symbol;
     }
 }
 
@@ -227,7 +227,7 @@ Console.WriteLine(waende.Count);
 
 **Zentrale Designentscheidungen:**
 
-- **Generisches Interface statt `IPruefer` mit `object`:** `IPruefer<Spielobjekt>.Pruefen` bekommt ein `Spielobjekt` und kann direkt auf `Position` und `Symbol` zugreifen. Mit `object` müsste jede Bedingung erst casten – und `Filtern` könnte einen `IPruefer` für Strings mit einer Objektliste kombinieren, ohne dass der Compiler es merkt.
+- **Generisches Interface statt `IPruefer` mit `object`:** `IPruefer<Spielobjekt>.Pruefen` bekommt ein `Spielobjekt` und kann direkt auf `Position` und `Symbol()` zugreifen. Mit `object` müsste jede Bedingung erst casten – und `Filtern` könnte einen `IPruefer` für Strings mit einer Objektliste kombinieren, ohne dass der Compiler es merkt.
 - **`Filtern<T>` weiß nichts über das Spiel:** Die Methode funktioniert genauso für `List<int>` mit einem `IPruefer<int>`. Der Algorithmus (durchlaufen, prüfen, sammeln) ist vom Elementtyp und von der Bedingung getrennt – das ist das Ziel.
 - **Das Umständliche:** Für jede noch so kleine Bedingung braucht man eine ganze Klasse mit Konstruktor und Feldern. Der eigentliche Inhalt ist eine einzige Zeile (`o.Symbol == symbol`), umgeben von zehn Zeilen Verpackung. Genau dieses Problem lösen Delegates und Lambdas in Vorlesung 07: Dort wird aus `new SymbolIst('#')` ein `o => o.Symbol == '#'`, und `Filtern<T>` wird zu `Where` aus LINQ. Das Muster – Algorithmus generisch, Bedingung austauschbar – bleibt dasselbe.
 

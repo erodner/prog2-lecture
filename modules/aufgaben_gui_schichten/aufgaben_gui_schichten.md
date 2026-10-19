@@ -274,13 +274,13 @@ public static class Symbole
             Trank => "🧪",
             Schatz => "💰",
             // ... wie gehabt ...
-            _ => objekt.Symbol.ToString()
+            _ => objekt.Symbol().ToString()
         };
     }
 }
 ```
 
-Der Kern wäre der falsche Ort: Er hat mit `Spielobjekt.Symbol` bereits eine Darstellung – ein `char` für die Konsole. Ein zweites, browserspezifisches Symbol dort einzubauen hieße, dem Fachkonzept eine Oberfläche aufzudrängen. Emojis sind Sache derjenigen Schicht, die Emojis anzeigen kann.
+Der Kern wäre der falsche Ort: Er hat mit `Spielobjekt.Symbol()` bereits eine Darstellung – ein `char` für die Konsole. Ein zweites, browserspezifisches Symbol dort einzubauen hieße, dem Fachkonzept eine Oberfläche aufzudrängen. Emojis sind Sache derjenigen Schicht, die Emojis anzeigen kann.
 
 **Schritt 2 — Die Komponente:**
 

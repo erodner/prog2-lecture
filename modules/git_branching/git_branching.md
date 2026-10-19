@@ -12,7 +12,7 @@ classes: wide
 **➕ Erweitertes Wissen.** Was ein Branch ist (ein Zeiger auf einen Commit), weißt du aus [Git-Konzepte](/modules/git_konzepte/git_konzepte.md). Dieses Modul zeigt, wie man mit mehreren Branches arbeitet und sie wieder zusammenführt. Die folgenden Module setzen es nicht voraus.
 {: .notice--success}
 
-Stell dir vor, du ergänzt im Adventure eine neue Objektart `Falle` und bist mittendrin – die Methode `Ausloesen` ist fertig, das überschriebene `Symbol` fehlt noch, und weil die abstrakte Property nicht implementiert ist, kompiliert das Projekt nicht. Genau jetzt meldet eine Kommilitonin einen Fehler in `Spieler.Heilen`, der schnell behoben werden muss. Ohne Branches müsstest du deinen halbfertigen Umbau irgendwie beiseitelegen oder den Bugfix mit deinem Chaos zusammen committen. Mit Branches arbeitest du am Feature in einem eigenen Zweig, wechselst kurz auf `main`, behebst den Fehler, und kehrst zurück. Der Hauptzweig bleibt dabei zu jedem Zeitpunkt baubar. Branches sind in Git so billig – ein Zeiger auf einen Commit, wie wir in [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) gesehen haben –, dass man sie für jedes Feature und jeden Bugfix anlegt.
+Stell dir vor, du ergänzt im Adventure eine neue Objektart `Falle` und bist mittendrin – die Methode `Ausloesen` ist fertig, das überschriebene `Symbol()` fehlt noch, und weil die abstrakte Methode nicht implementiert ist, kompiliert das Projekt nicht. Genau jetzt meldet eine Kommilitonin einen Fehler in `Spieler.Heilen`, der schnell behoben werden muss. Ohne Branches müsstest du deinen halbfertigen Umbau irgendwie beiseitelegen oder den Bugfix mit deinem Chaos zusammen committen. Mit Branches arbeitest du am Feature in einem eigenen Zweig, wechselst kurz auf `main`, behebst den Fehler, und kehrst zurück. Der Hauptzweig bleibt dabei zu jedem Zeitpunkt baubar. Branches sind in Git so billig – ein Zeiger auf einen Commit, wie wir in [Git-Konzepte](/modules/git_konzepte/git_konzepte.md) gesehen haben –, dass man sie für jedes Feature und jeden Bugfix anlegt.
 
 ## Branches anlegen und wechseln
 
@@ -41,9 +41,9 @@ public sealed class Falle : StatischesObjekt
         Schaden = schaden;
     }
 
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return IstAusgeloest ? '^' : '.'; }
+        return IstAusgeloest ? '^' : '.';
     }
 
     public override bool IstPassierbar

@@ -120,9 +120,9 @@ public abstract class Gegenstand : StatischesObjekt, ISammelbar
 public sealed class Schatz : Gegenstand
 {
     public int Wert { get; }
-    public override char Symbol
+    public override char Symbol()
     {
-        get { return '$'; }
+        return '$';
     }
 
     public override string Aufheben(Spieler spieler)

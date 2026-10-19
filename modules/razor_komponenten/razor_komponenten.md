@@ -69,7 +69,7 @@ Für die Karte gehen zwei Schleifen über alle Felder und fragen das `Spielfeld`
 
 Das `@` steht nur vor der äußeren Schleife: Danach sind wir schon in C#, und erst die Zeile mit `<div` ist wieder Markup. Dass aus den vielen `<div>`-Elementen ein Raster wird, regelt das CSS, siehe [Layout mit HTML und CSS](/modules/blazor_layout/blazor_layout.md).
 
-Was in einer Zelle steht, entscheidet die Hilfsmethode `SymbolFuer` im `@code`-Block. Sie ist das Gegenstück zu `Spielobjekt.Symbol` aus dem Kern: Dort steht ein `char` für die Konsole, hier ein Emoji für den Browser.
+Was in einer Zelle steht, entscheidet die Hilfsmethode `SymbolFuer` im `@code`-Block. Sie ist das Gegenstück zu `Spielobjekt.Symbol()` aus dem Kern: Dort steht ein `char` für die Konsole, hier ein Emoji für den Browser.
 
 <div class="editoren" markdown="1">
 <div class="editor" markdown="1">
@@ -91,7 +91,7 @@ private static string SymbolFuer(Spielobjekt? objekt)
         Trank => "🧪",
         Schatz => "💰",
         Ausgang => "🏁",
-        _ => objekt.Symbol.ToString()
+        _ => objekt.Symbol().ToString()
     };
 }
 ```
