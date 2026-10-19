@@ -22,7 +22,10 @@ class Sensor
     private int messwert;
 
     public string Bezeichnung { get; }
-    public static int Anzahl => anzahl;
+    public static int Anzahl
+    {
+        get { return anzahl; }
+    }
 
     public int Messwert
     {
@@ -42,7 +45,10 @@ class Sensor
         Messwert = startwert;
     }
 
-    public string Beschreibung() => $"{Bezeichnung}: {Messwert} Grad";
+    public string Beschreibung()
+    {
+        return $"{Bezeichnung}: {Messwert} Grad";
+    }
 }
 ```
 
@@ -105,7 +111,7 @@ Der Setter von `Messwert` wirft bei `200` eine Exception, und das Objekt `s4` en
 **Zentrale Designentscheidungen:**
 
 - **Erst prüfen, dann Zustand ändern:** Alle Validierungen gehören an den Anfang des Konstruktors, bevor irgendetwas – auch ein statisches Feld – verändert wird. Die einfachste Korrektur: die Zeile `Messwert = startwert;` vor `anzahl++` ziehen.
-- **`Anzahl` als Expression-bodied Property:** Der Zähler ist von außen lesbar, aber nicht änderbar – dasselbe Prinzip wie `private set`.
+- **`Anzahl` nur mit `get`:** Der Zähler ist von außen lesbar, aber nicht änderbar – dasselbe Prinzip wie `private set`.
 - **`Bezeichnung { get; }`** ohne Setter kann nur im Konstruktor gesetzt werden. So bleibt der Name über die Lebensdauer des Objekts stabil.
 
 </details>
@@ -135,7 +141,10 @@ class Student
 
     public string Name { get; }
     public int Matrikelnummer { get; }
-    public IReadOnlyList<double> Noten => noten;
+    public IReadOnlyList<double> Noten
+    {
+        get { return noten; }
+    }
 
     public Student(string name, int matrikelnummer)
     {
@@ -171,7 +180,10 @@ class Notenverwaltung
 {
     private List<Student> studierende = new List<Student>();
 
-    public void Hinzufuegen(Student student) => studierende.Add(student);
+    public void Hinzufuegen(Student student)
+    {
+        studierende.Add(student);
+    }
 
     public Student Beste()
     {
@@ -306,7 +318,10 @@ class Warenkorb
         return null;
     }
 
-    public decimal PreisVon(string name) => Finde(name)!.Preis;
+    public decimal PreisVon(string name)
+    {
+        return Finde(name)!.Preis;
+    }
 }
 ```
 
@@ -361,7 +376,10 @@ class Position
         Menge = menge;
     }
 
-    public decimal Gesamt => Artikel.Preis * Menge;
+    public decimal Gesamt
+    {
+        get { return Artikel.Preis * Menge; }
+    }
 }
 ```
 

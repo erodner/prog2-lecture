@@ -35,9 +35,15 @@ Ohne Überschreibung liefert `ToString()` nur den vollqualifizierten Klassenname
 ```csharp
 public class Spielobjekt
 {
-    public virtual string Beschreibung() => $"{Name} bei {Position}";
+    public virtual string Beschreibung()
+    {
+        return $"{Name} bei {Position}";
+    }
 
-    public override string ToString() => Beschreibung();
+    public override string ToString()
+    {
+        return Beschreibung();
+    }
 }
 ```
 
@@ -99,7 +105,10 @@ public class Koordinate
         return obj is Koordinate andere && X == andere.X && Y == andere.Y;
     }
 
-    public override int GetHashCode() => HashCode.Combine(X, Y);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
+    }
 }
 
 Koordinate a = new Koordinate(1, 2);
@@ -119,8 +128,15 @@ Console.WriteLine(a == b);                               // False
 Die letzte Ausgabe überrascht: `a == b` bleibt `False`, und damit findet auch `ObjektAn` noch immer nichts. Der Operator `==` hat mit `Equals` erst einmal nichts zu tun. Für Referenztypen vergleicht er Referenzen, und das Überschreiben von `Equals` ändert daran nichts. Wer `==` mit Wertsemantik möchte, muss den Operator **überladen**, und dann zwingend auch `!=`:
 
 ```csharp
-public static bool operator ==(Koordinate? a, Koordinate? b) => a is null ? b is null : a.Equals(b);
-public static bool operator !=(Koordinate? a, Koordinate? b) => !(a == b);
+public static bool operator ==(Koordinate? a, Koordinate? b)
+{
+    return a is null ? b is null : a.Equals(b);
+}
+
+public static bool operator !=(Koordinate? a, Koordinate? b)
+{
+    return !(a == b);
+}
 ```
 
 Jetzt stößt der Held wieder gegen die Wände. Für eigene Klassen ist das trotzdem eine Abwägung: Ein Wert wie `Koordinate` profitiert davon, für ein `Spielobjekt` wäre es irreführend. Zwei Wände auf demselben Feld wären dann „dieselbe“ Wand, obwohl es zwei Objekte mit eigener Geschichte sind. Mit `(object)a == (object)b` kann man jederzeit auf den Referenzvergleich zurückgreifen.
@@ -135,9 +151,15 @@ public readonly record struct Koordinate(int X, int Y)
     // Verschoben wie bisher
 
     /// <summary>Manhattan-Entfernung: Anzahl der Schritte ohne Diagonalen.</summary>
-    public int Entfernung(Koordinate andere) => Math.Abs(X - andere.X) + Math.Abs(Y - andere.Y);
+    public int Entfernung(Koordinate andere)
+    {
+        return Math.Abs(X - andere.X) + Math.Abs(Y - andere.Y);
+    }
 
-    public override string ToString() => $"({X}, {Y})";
+    public override string ToString()
+    {
+        return $"({X}, {Y})";
+    }
 }
 ```
 
@@ -165,7 +187,11 @@ Ein `record` nimmt dir die Arbeit ab, aber nur, solange die generierte Gleichhei
 public class Spielfeld
 {
     private readonly List<Spielobjekt> objekte = new();
-    public Spielfeld Kopie() => (Spielfeld)MemberwiseClone();
+
+    public Spielfeld Kopie()
+    {
+        return (Spielfeld)MemberwiseClone();
+    }
 }
 
 Spielfeld original = new Spielfeld(10, 6, held);

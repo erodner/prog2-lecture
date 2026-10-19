@@ -30,8 +30,16 @@ public sealed class Tuer : StatischesObjekt
 {
     public bool IstOffen { get; private set; }
 
-    public override char Symbol => IstOffen ? '/' : 'D';
-    public override bool IstPassierbar => IstOffen;
+    public override char Symbol
+    {
+        get { return IstOffen ? '/' : 'D'; }
+    }
+
+    public override bool IstPassierbar
+    {
+        get { return IstOffen; }
+    }
+
     // ...
 }
 ```
@@ -99,7 +107,10 @@ public sealed class Wache : Gegner
 {
     public Richtung Laufrichtung { get; private set; }
 
-    public override char Symbol => 'W';
+    public override char Symbol
+    {
+        get { return 'W'; }
+    }
 
     public override Richtung? NaechsterZug(Spielfeld feld)
     {
@@ -119,7 +130,10 @@ public sealed class Verfolger : Gegner
 {
     public int Sichtweite { get; }
 
-    public override char Symbol => 'V';
+    public override char Symbol
+    {
+        get { return 'V'; }
+    }
 
     public override Richtung? NaechsterZug(Spielfeld feld)
     {
@@ -182,7 +196,7 @@ public override string Beschreibung()
 }
 ```
 
-Eine Faustregel für die Wahl: Wenn dir für die Basisklasse nur ein Rumpf wie `return 0;`, `=> '?'` oder `throw new NotImplementedException()` einfällt, ist das Mitglied in Wahrheit abstrakt. Genau das war der Fehler in der Version aus Vorlesung 01.
+Eine Faustregel für die Wahl: Wenn dir für die Basisklasse nur ein Rumpf wie `return 0;`, `return '?';` oder `throw new NotImplementedException()` einfällt, ist das Mitglied in Wahrheit abstrakt. Genau das war der Fehler in der Version aus Vorlesung 01.
 
 Ein häufiger Fehler ist, ein Mitglied `virtual` mit einem sinnlosen Rumpf zu machen, um die Basisklasse „instanziierbar“ zu halten. Dann kompiliert zwar `new Spielobjekt(...)`, aber jedes vergessene `override` in einer Unterklasse fällt erst zur Laufzeit als falsches Ergebnis auf – statt sofort als Compilerfehler.
 {: .notice--warning}

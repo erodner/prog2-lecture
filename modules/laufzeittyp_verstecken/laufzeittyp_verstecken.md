@@ -114,7 +114,10 @@ Bauen wir den Spieler absichtlich falsch:
 public class Spieler : Spielobjekt
 {
     // FALSCH: versteckt statt überschreibt
-    public new string Beschreibung() => base.Beschreibung() + $", {Lebenspunkte} Lebenspunkte";
+    public new string Beschreibung()
+    {
+        return base.Beschreibung() + $", {Lebenspunkte} Lebenspunkte";
+    }
 }
 ```
 

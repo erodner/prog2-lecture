@@ -76,21 +76,24 @@ Was in einer Zelle steht, entscheidet die Hilfsmethode `SymbolFuer` im `@code`-B
 <div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Pages/Home.razor">Adventure.Web/Components/Pages/Home.razor</a> (im <code>@code</code>-Block)</div>
 
 ```csharp
-private static string SymbolFuer(Spielobjekt? objekt) => objekt switch
+private static string SymbolFuer(Spielobjekt? objekt)
 {
-    null => "",
-    Wand => "🧱",
-    Spieler => "🧝",
-    Wache => "💂",
-    Verfolger => "👹",
-    Schluessel => "🔑",
-    Tuer t => t.IstOffen ? "▫️" : "🚪",
-    Truhe t => t.IstGeoeffnet ? "📭" : "🎁",
-    Trank => "🧪",
-    Schatz => "💰",
-    Ausgang => "🏁",
-    _ => objekt.Symbol.ToString()
-};
+    return objekt switch
+    {
+        null => "",
+        Wand => "🧱",
+        Spieler => "🧝",
+        Wache => "💂",
+        Verfolger => "👹",
+        Schluessel => "🔑",
+        Tuer t => t.IstOffen ? "▫️" : "🚪",
+        Truhe t => t.IstGeoeffnet ? "📭" : "🎁",
+        Trank => "🧪",
+        Schatz => "💰",
+        Ausgang => "🏁",
+        _ => objekt.Symbol.ToString()
+    };
+}
 ```
 
 </div>

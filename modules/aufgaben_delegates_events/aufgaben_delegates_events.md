@@ -17,7 +17,7 @@ Sage die vollständige Ausgabe des folgenden Programms voraus, ohne es auszufüh
 
 ```csharp
 Spielfeld feld = LevelParser.Parsen(level);
-List<string> protokoll = [];
+List<string> protokoll = new List<string>();
 
 void Anzeigen(object? sender, RundeEventArgs e) => Console.WriteLine($"[anzeige] Runde {e.Runde}");
 void Protokollieren(object? sender, RundeEventArgs e) => protokoll.Add(e.Meldung);

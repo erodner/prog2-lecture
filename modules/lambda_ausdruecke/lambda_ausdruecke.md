@@ -16,7 +16,10 @@ Mit [Delegaten](/modules/delegaten/delegaten.md) und [`Func`/`Action`](/modules/
 Nehmen wir eine `Func<int, int>` und zwei passende Methoden, wie wir sie bisher geschrieben haben:
 
 ```csharp
-static int Quadrat(int x) => x * x;
+static int Quadrat(int x)
+{
+    return x * x;
+}
 
 Func<int, int> f = Quadrat;
 Console.WriteLine(f(3));   // 9
@@ -80,7 +83,7 @@ Die eigentliche Stärke zeigt sich, wenn eine Methode einen Delegaten als Parame
 ```csharp
 static List<Gegner> Filtern(IEnumerable<Gegner> gegner, Func<Gegner, bool> bedingung)
 {
-    List<Gegner> ergebnis = [];
+    List<Gegner> ergebnis = new List<Gegner>();
     foreach (Gegner g in gegner)
         if (bedingung(g))
             ergebnis.Add(g);
@@ -147,7 +150,7 @@ Console.WriteLine(gefahr.Count);      // 0 – dieselbe Zeile, anderes Ergebnis
 Das ist bequem, weil das Lambda so parametrisierbar wird, ohne dass `Filtern` einen zusätzlichen Parameter braucht. Aber Vorsicht: Das Lambda kopiert den Wert von `sichtweite` **nicht** – es greift auf die Variable selbst zu, und zwar zu dem Zeitpunkt, an dem es *ausgeführt* wird, nicht wenn es *erzeugt* wird. Das führt zu einer klassischen Falle mit Schleifenvariablen:
 
 ```csharp
-List<Action> aktionen = [];
+List<Action> aktionen = new List<Action>();
 for (int i = 0; i < 3; i++)
     aktionen.Add(() => Console.WriteLine(i));
 
@@ -165,9 +168,47 @@ Alle drei Lambdas teilen sich *dieselbe* Variable `i`. Wenn sie ausgeführt werd
 
 Beides ergibt denselben Delegaten, die Wahl ist eine Frage der Lesbarkeit. Ein Lambda ist die richtige Wahl, wenn das Verhalten kurz ist, nur an dieser einen Stelle gebraucht wird und ohne Namen verständlich bleibt – `g => g is Verfolger` sagt alles. Eine benannte Methode lohnt sich, wenn die Logik mehrere Zeilen umfasst, an mehreren Stellen wiederverwendet wird, getestet werden soll oder wenn der Name eine Fachbedeutung transportiert: `HatSichtlinie` liest sich besser als ein zwanzigzeiliges Lambda mit dem Bresenham-Algorithmus. Und wer eine Methode später wieder mit `-=` von einem Delegaten abmelden will, braucht eine Referenz darauf – ein anonym hingeschriebenes Lambda lässt sich nicht wiederfinden. Darauf kommen wir im Modul [Ereignisse](/modules/ereignisse/ereignisse.md) zurück.
 
+## Der Pfeil bei Methoden und Properties
+
+Den Pfeil kennst du schon aus Programmierung 1, aus der [Kurzform für Methoden](https://www.erodner.de/prog-lecture/modules/methoden/methoden/): Besteht der Rumpf einer Methode nur aus einem einzigen `return`, darf man ihn durch `=>` und den Ausdruck ersetzen. Dieselbe Kurzform gibt es für Properties, die nur einen `get`-Teil haben. In C# heißen beide *Expression-bodied Members*, also Mitglieder, deren Rumpf ein einzelner Ausdruck ist:
+
+<div class="editoren" markdown="1">
+<div class="editor" markdown="1">
+<div class="editor-titel">Langform</div>
+
+```csharp
+public override char Symbol
+{
+    get { return '#'; }
+}
+
+public override string ToString()
+{
+    return $"({X}, {Y})";
+}
+```
+
+</div>
+<div class="editor" markdown="1">
+<div class="editor-titel">Kurzform mit =></div>
+
+```csharp
+public override char Symbol => '#';
+
+public override string ToString() => $"({X}, {Y})";
+```
+
+</div>
+</div>
+
+Beide Spalten bedeuten exakt dasselbe. Wichtig ist der Unterschied zum Lambda: `Symbol => '#'` ist **kein** Delegat und lässt sich keiner `Func` zuweisen. Es ist eine gewöhnliche Property, nur kürzer aufgeschrieben. Der Pfeil steht in beiden Fällen für „liefert“, deshalb sehen sich die Schreibweisen so ähnlich. Im Adventure-Code bleibt es bei der Langform, damit er schon ab Vorlesung 01 lesbar ist. In eigenem Code und in vielen .NET-Projekten wirst du die Kurzform oft sehen.
+
+Im Zweifel die Kurzform nur für echte Einzeiler: Sobald ein Rumpf eine zweite Anweisung braucht oder der Ausdruck über mehrere Zeilen wächst, ist die Langform leichter zu lesen.
+{: .notice--primary}
+
 Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v03-blazor`](https://github.com/erodner/prog2-adventure/tree/v03-blazor)).
 
-Übung: Schreibe mit `Filtern` und passenden Lambdas drei Abfragen über `feld.Gegner`: alle Wachen, alle Gegner mit gerader X-Koordinate, alle Gegner, die zwischen zwei lokalen Grenzen `nah` und `fern` vom Helden entfernt stehen. Sage anschließend voraus, was die Schleifenfalle ausgibt, wenn du `for` durch `foreach (int i in new[] { 0, 1, 2 })` ersetzt – und prüfe es.
+Übung: Schreibe mit `Filtern` und passenden Lambdas drei Abfragen über `feld.Gegner`: alle Wachen, alle Gegner mit gerader X-Koordinate, alle Gegner, die zwischen zwei lokalen Grenzen `nah` und `fern` vom Helden entfernt stehen. Sage anschließend voraus, was die Schleifenfalle ausgibt, wenn du `for` durch `foreach (int i in new[] { 0, 1, 2 })` ersetzt – und prüfe es. Schreibe zum Schluss `IstAmLeben` und `Beschreibung()` aus `Spieler` in die Kurzform mit `=>` um. Welche Methoden von `Spieler` lassen sich dagegen nicht so umschreiben, und woran erkennst du das?
 {: .notice--info}
 
 ## Weitere Quellen

@@ -144,7 +144,10 @@ public class EingebauteLevelQuelle : ILevelQuelle
         // ["Katakomben"] = ...
     };
 
-    public IReadOnlyList<string> LevelNamen => level.Keys.ToList();
+    public IReadOnlyList<string> LevelNamen
+    {
+        get { return new List<string>(level.Keys); }
+    }
 
     public Level Laden(string name)
     {

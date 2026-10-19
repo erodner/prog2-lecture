@@ -16,8 +16,15 @@ Im Modul [Delegaten](/modules/delegaten/delegaten.md) haben wir für jede Aufgab
 `Func` steht für Methoden, die etwas zurückgeben. Der **letzte** Typparameter ist immer der Rückgabetyp, alle davor sind die Parameter. `Func<int, int, int>` beschreibt also eine Methode mit zwei `int`-Parametern und `int`-Rückgabe – genau unser `RechenHandler`, ohne dass wir ihn deklarieren müssen:
 
 ```csharp
-static int Addiere(int x, int y) => x + y;
-static bool IstGerade(int zahl) => zahl % 2 == 0;
+static int Addiere(int x, int y)
+{
+    return x + y;
+}
+
+static bool IstGerade(int zahl)
+{
+    return zahl % 2 == 0;
+}
 
 Func<int, int, int> rechnung = Addiere;
 Func<int, bool> pruefung = IstGerade;
@@ -41,9 +48,15 @@ public sealed class Zufallsgegner : Gegner
         this.verhalten = verhalten;
     }
 
-    public override char Symbol => 'Z';
+    public override char Symbol
+    {
+        get { return 'Z'; }
+    }
 
-    public override Richtung? NaechsterZug(Spielfeld feld) => verhalten(feld, this);
+    public override Richtung? NaechsterZug(Spielfeld feld)
+    {
+        return verhalten(feld, this);
+    }
 }
 ```
 
@@ -54,7 +67,10 @@ Der Rest des Spiels ändert sich nicht: `Spielfeld.GegnerZiehen` ruft weiterhin 
 `void` ist kein Typ und kann deshalb nicht als Typparameter stehen. Für Methoden ohne Rückgabewert gibt es darum die zweite Familie: `Action` (keine Parameter), `Action<T>` (ein Parameter), `Action<T1, T2>` und so weiter:
 
 ```csharp
-static void InKonsole(string text) => Console.WriteLine($"> {text}");
+static void InKonsole(string text)
+{
+    Console.WriteLine($"> {text}");
+}
 
 Action<string> melden = InKonsole;
 melden("Der Held findet einen Schatz");   // > Der Held findet einen Schatz
@@ -70,7 +86,7 @@ static void RundeSpielen(Spielfeld feld, Richtung richtung, Action<string> melde
     melden($"Runde {feld.Runde}, {feld.Spieler.Lebenspunkte} Lebenspunkte");
 }
 
-List<string> protokoll = [];
+List<string> protokoll = new List<string>();
 RundeSpielen(feld, Richtung.Rechts, InKonsole);
 RundeSpielen(feld, Richtung.Oben, protokoll.Add);   // in eine List<string> statt auf die Konsole
 ```
@@ -82,10 +98,17 @@ RundeSpielen(feld, Richtung.Oben, protokoll.Add);   // in eine List<string> stat
 Zwei weitere vordefinierte Delegaten begegnen dir ständig, weil `List<T>` und `Array` sie in ihren Methoden verlangen. `Predicate<T>` ist eine Methode, die ein `T` prüft und `bool` liefert – technisch dasselbe wie `Func<T, bool>`, aber älter und in den Signaturen von `FindAll`, `RemoveAll`, `Exists` oder `Find` fest verdrahtet:
 
 ```csharp
-static bool IstVerfolger(Gegner g) => g is Verfolger;
-static bool StehtAmRand(Gegner g) => g.Position.X == 0 || g.Position.Y == 0;
+static bool IstVerfolger(Gegner g)
+{
+    return g is Verfolger;
+}
 
-List<Gegner> gegner = [new Wache(new Koordinate(3, 1)), new Verfolger(new Koordinate(8, 4))];
+static bool StehtAmRand(Gegner g)
+{
+    return g.Position.X == 0 || g.Position.Y == 0;
+}
+
+List<Gegner> gegner = new List<Gegner> { new Wache(new Koordinate(3, 1)), new Verfolger(new Koordinate(8, 4)) };
 
 Predicate<Gegner> jagt = IstVerfolger;
 List<Gegner> jaeger = gegner.FindAll(jagt);
@@ -100,7 +123,9 @@ gegner.RemoveAll(StehtAmRand);     // Methodengruppe direkt übergeben
 static readonly Koordinate Ecke = new(0, 0);
 
 static int NachEntfernungZurEcke(Gegner a, Gegner b)
-    => a.Position.Entfernung(Ecke).CompareTo(b.Position.Entfernung(Ecke));
+{
+    return a.Position.Entfernung(Ecke).CompareTo(b.Position.Entfernung(Ecke));
+}
 
 gegner.Sort(NachEntfernungZurEcke);
 Console.WriteLine(gegner[0].Beschreibung());   // Wache bei (3, 1) – Entfernung 4 statt 12

@@ -49,7 +49,10 @@ public class Inventar<T> : IEnumerable<T> where T : ISammelbar
 {
     private readonly List<T> inhalt = new();
 
-    public int Anzahl => inhalt.Count;
+    public int Anzahl
+    {
+        get { return inhalt.Count; }
+    }
 
     public void Hinzufuegen(T ding)
     {

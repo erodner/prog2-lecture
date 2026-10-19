@@ -91,7 +91,10 @@ namespace Adventure.Tests;
 [TestFixture]
 public class SpielfeldTests
 {
-    private static Spielfeld Feld(params string[] zeilen) => LevelParser.Parsen(new Level("t", zeilen));
+    private static Spielfeld Feld(params string[] zeilen)
+    {
+        return LevelParser.Parsen(new Level("t", zeilen));
+    }
 
     [Test] public void Trank_Heilt()
     {
@@ -113,7 +116,10 @@ Testmethoden sind `public`, geben `void` (oder `Task` bei asynchronem Code) zur�
 Die erste Zeile der Klasse ist keine Testmethode, sondern eine private Hilfsmethode – und sie ist der Grund, warum die Tests des Adventures so kurz sind:
 
 ```csharp
-private static Spielfeld Feld(params string[] zeilen) => LevelParser.Parsen(new Level("t", zeilen));
+private static Spielfeld Feld(params string[] zeilen)
+{
+    return LevelParser.Parsen(new Level("t", zeilen));
+}
 ```
 
 Sie nimmt die Zeilen einer Karte als Strings entgegen, verpackt sie in ein `Level` und schickt sie durch den `LevelParser`, den wir ohnehin schon haben. Aus `Feld("@kD.E")` wird so ein komplettes Spielfeld mit Held, Schlüssel, Tür, Boden und Ausgang – die Karte *ist* die Ausgangslage des Tests und steht direkt lesbar in der ersten Zeile. Wer mehrere Reihen braucht, schreibt sie untereinander:

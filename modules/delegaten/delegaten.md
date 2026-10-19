@@ -45,8 +45,15 @@ Der eigentliche Nutzen zeigt sich, wenn ein Delegat **Parameter** einer Methode 
 ```csharp
 delegate int RechenHandler(int a, int b);
 
-static int Addiere(int x, int y) => x + y;
-static int Subtrahiere(int x, int y) => x - y;
+static int Addiere(int x, int y)
+{
+    return x + y;
+}
+
+static int Subtrahiere(int x, int y)
+{
+    return x - y;
+}
 
 static void FuehreAus(RechenHandler rechnung)
 {
@@ -90,9 +97,15 @@ public sealed class Zufallsgegner : Gegner
         this.verhalten = verhalten;
     }
 
-    public override char Symbol => 'Z';
+    public override char Symbol
+    {
+        get { return 'Z'; }
+    }
 
-    public override Richtung? NaechsterZug(Spielfeld feld) => verhalten(feld, this);
+    public override Richtung? NaechsterZug(Spielfeld feld)
+    {
+        return verhalten(feld, this);
+    }
 }
 ```
 
@@ -109,7 +122,10 @@ static Richtung? ZufaelligerZug(Spielfeld feld, Gegner gegner)
     return null;        // eingekeilt – diese Runde aussetzen
 }
 
-static Richtung? BleibtStehen(Spielfeld feld, Gegner gegner) => null;
+static Richtung? BleibtStehen(Spielfeld feld, Gegner gegner)
+{
+    return null;
+}
 ```
 
 Beim Erzeugen wird das Verhalten eingesetzt, und das Spielfeld merkt keinen Unterschied: Es ruft in `GegnerZiehen` weiterhin nur `g.NaechsterZug(this)` auf.
@@ -126,7 +142,10 @@ Zwei Gegner derselben Klasse, zwei völlig verschiedene Verhalten – ohne Verer
 Der Compiler prüft bei der Zuweisung Rückgabetyp sowie Anzahl, Typ und Art (Wert, `ref`, `out`) aller Parameter. Eine Methode, die nur die Richtung liefert, aber das Spielfeld nicht braucht, passt deshalb nicht:
 
 ```csharp
-static Richtung? ImmerNachRechts(Gegner gegner) => Richtung.Rechts;
+static Richtung? ImmerNachRechts(Gegner gegner)
+{
+    return Richtung.Rechts;
+}
 
 ZugVerhalten verhalten = ImmerNachRechts;
 // Fehler CS0123: Für "ImmerNachRechts" stimmt keine Überladung
@@ -145,8 +164,15 @@ Ein Delegat kann nicht nur auf *eine* Methode zeigen, sondern auf eine ganze Lis
 ```csharp
 delegate void MeldungHandler(string text);
 
-static void InKonsole(string text) => Console.WriteLine($"Konsole: {text}");
-static void InProtokoll(string text) => Console.WriteLine($"Protokoll: {text}");
+static void InKonsole(string text)
+{
+    Console.WriteLine($"Konsole: {text}");
+}
+
+static void InProtokoll(string text)
+{
+    Console.WriteLine($"Protokoll: {text}");
+}
 
 MeldungHandler? melder = InKonsole;
 melder += InProtokoll;

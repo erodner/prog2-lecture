@@ -41,7 +41,7 @@ Bevor eine Zeile Markup entsteht, klären wir, was hinein- und was herausfließt
 </label>
 
 @code {
-    [Parameter, EditorRequired] public IReadOnlyList<string> Namen { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<string> Namen { get; set; } = new List<string>();
     [Parameter] public string Ausgewaehlt { get; set; } = "";
     [Parameter] public EventCallback<string> OnLevelGewaehlt { get; set; }
 
@@ -253,7 +253,7 @@ Die Statusleiste zeigt das Inventar bisher als eine Zeile Text: `@Spieler.Invent
 
 **Schritt 1 — Die gemeinsame Symboltabelle herausziehen:**
 
-`SymbolFuer` wird an zwei Stellen gebraucht: auf dem Spielfeld und im Panel. Doppelt schreiben wäre die Garantie dafür, dass ein neues Objekt irgendwann an einer Stelle als Fragezeichen erscheint. Also wandert die Methode in eine eigene statische Klasse – **im Web-Projekt**, nicht im Kern:
+`SymbolFuer` wird an zwei Stellen gebraucht: auf dem Spielfeld und im Panel. Doppelt schreiben wäre die Garantie dafür, dass ein neues Objekt irgendwann an einer Stelle als Fragezeichen erscheint. Also wandert die Methode in eine eigene statische Klasse – **im Web-Projekt**, nicht im Kern. `static class` heißt: Die Klasse enthält nur `static`-Methoden, und man kann kein Objekt von ihr erzeugen, so wie bei `Math`.
 
 ```csharp
 using Adventure.Kern;
@@ -263,17 +263,20 @@ namespace Adventure.Web;
 /// <summary>Die Übersetzung von Spielobjekten in Emojis – reine Darstellung.</summary>
 public static class Symbole
 {
-    public static string Fuer(Spielobjekt? objekt) => objekt switch
+    public static string Fuer(Spielobjekt? objekt)
     {
-        null => "",
-        Wand => "🧱",
-        Spieler => "🧝",
-        Schluessel => "🔑",
-        Trank => "🧪",
-        Schatz => "💰",
-        // ... wie gehabt ...
-        _ => objekt.Symbol.ToString()
-    };
+        return objekt switch
+        {
+            null => "",
+            Wand => "🧱",
+            Spieler => "🧝",
+            Schluessel => "🔑",
+            Trank => "🧪",
+            Schatz => "💰",
+            // ... wie gehabt ...
+            _ => objekt.Symbol.ToString()
+        };
+    }
 }
 ```
 
@@ -309,7 +312,7 @@ Der Kern wäre der falsche Ort: Er hat mit `Spielobjekt.Symbol` bereits eine Dar
 
 @code {
     [Parameter, EditorRequired]
-    public IEnumerable<Gegenstand> Inhalt { get; set; } = [];
+    public IEnumerable<Gegenstand> Inhalt { get; set; } = new List<Gegenstand>();
 
     /// <summary>Fasst gleichnamige Gegenstände zusammen, z. B. zwei Schlüssel.</summary>
     private Dictionary<string, List<Gegenstand>> Gruppen()

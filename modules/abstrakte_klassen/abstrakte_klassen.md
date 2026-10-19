@@ -27,8 +27,15 @@ public class Spielobjekt
         Position = position;
     }
 
-    public virtual char Symbol => '?';          // Notnagel!
-    public virtual bool IstPassierbar => false;
+    public virtual char Symbol
+    {
+        get { return '?'; } // Notnagel!
+    }
+
+    public virtual bool IstPassierbar
+    {
+        get { return false; }
+    }
 }
 ```
 
@@ -61,11 +68,20 @@ public abstract class Spielobjekt
     public abstract char Symbol { get; }
 
     /// <summary>Darf ein bewegliches Objekt dieses Feld betreten?</summary>
-    public virtual bool IstPassierbar => false;
+    public virtual bool IstPassierbar
+    {
+        get { return false; }
+    }
 
-    public virtual string Beschreibung() => $"{Name} bei {Position}";
+    public virtual string Beschreibung()
+    {
+        return $"{Name} bei {Position}";
+    }
 
-    public override string ToString() => Beschreibung();
+    public override string ToString()
+    {
+        return Beschreibung();
+    }
 }
 ```
 
@@ -211,19 +227,29 @@ public sealed class Wand : StatischesObjekt
 {
     public Wand(Koordinate position) : base("Wand", position) { }
 
-    public override char Symbol => '#';
+    public override char Symbol
+    {
+        get { return '#'; }
+    }
 }
 
 public sealed class Ausgang : StatischesObjekt
 {
     public Ausgang(Koordinate position) : base("Ausgang", position) { }
 
-    public override char Symbol => 'E';
-    public override bool IstPassierbar => true;
+    public override char Symbol
+    {
+        get { return 'E'; }
+    }
+
+    public override bool IstPassierbar
+    {
+        get { return true; }
+    }
 }
 ```
 
-Das `override` ist dasselbe Schlüsselwort wie bei [`virtual`-Methoden](/modules/virtual_override/virtual_override.md) – nur dass es hier keine Wahl ist, sondern Pflicht. Schön sichtbar wird der Unterschied an `Ausgang`: `Symbol` **muss** überschrieben werden, `IstPassierbar` **darf** überschrieben werden, weil man durch den Ausgang hindurchlaufen können soll. Die `Wand` verzichtet darauf und erbt die Standardantwort `false`. Und `sealed` sorgt dafür, dass an dieser Stelle Schluss ist – von einer Wand muss niemand mehr erben.
+Das `override` ist dasselbe Schlüsselwort wie bei [`virtual`-Methoden](/modules/virtual_override/virtual_override.md) – nur dass es hier keine Wahl ist, sondern Pflicht. Schön sichtbar wird der Unterschied an `Ausgang`: `Symbol` **muss** überschrieben werden, `IstPassierbar` **darf** überschrieben werden, weil man durch den Ausgang hindurchlaufen können soll. Die `Wand` verzichtet darauf und erbt die Standardantwort `false`. Neu ist das Schlüsselwort `sealed` (versiegelt): Von einer versiegelten Klasse darf niemand mehr erben, ein `class Geheimwand : Wand` meldet der Compiler als Fehler. Ab dieser Vorlesung sind die konkreten Klassen im Adventure versiegelt, weil die Hierarchie an ihnen endet; wann sich das lohnt, zeigt das Modul [Versiegeln mit `sealed`](/modules/sealed/sealed.md) (erweitertes Wissen).
 
 ## Polymorphie mit abstrakten Klassen
 

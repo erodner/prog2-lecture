@@ -13,27 +13,52 @@ Programmieren lernt man nicht nur durch Codezeilen tippen – sondern auch durch
 
 ## Aufgabe 1 — Ausgabe vorhersagen
 
-Die CLR wählt bei jedem Methodenaufruf nach festen Regeln die Implementierung aus. Spiele diesen Algorithmus von Hand durch und sage die Ausgabe voraus – **ohne** den Code auszuführen. (Im echten Spiel ist `Wand` versiegelt und taugt deshalb nicht für eine dreistufige Hierarchie; wir nehmen den Spieler und einen gedachten `Magier`.)
+Die CLR wählt bei jedem Methodenaufruf nach festen Regeln die Implementierung aus. Spiele diesen Algorithmus von Hand durch und sage die Ausgabe voraus – **ohne** den Code auszuführen. (Wir nehmen den Spieler und einen gedachten `Magier`, denn eine Spezialwand wäre fachlich fragwürdig, siehe [`sealed`](/modules/sealed/sealed.md).)
 
 ```csharp
 class Spielobjekt
 {
-    public virtual void Beschreiben() => Console.WriteLine("Spielobjekt.Beschreiben");
-    public void Betreten() => Console.WriteLine("Spielobjekt.Betreten");
-    public virtual void Melden() => Console.WriteLine("Spielobjekt.Melden");
+    public virtual void Beschreiben()
+    {
+        Console.WriteLine("Spielobjekt.Beschreiben");
+    }
+
+    public void Betreten()
+    {
+        Console.WriteLine("Spielobjekt.Betreten");
+    }
+
+    public virtual void Melden()
+    {
+        Console.WriteLine("Spielobjekt.Melden");
+    }
 }
 
 class Spieler : Spielobjekt
 {
-    public override void Beschreiben() => Console.WriteLine("Spieler.Beschreiben");
-    public new void Betreten() => Console.WriteLine("Spieler.Betreten");
-    public new virtual void Melden() => Console.WriteLine("Spieler.Melden");
+    public override void Beschreiben()
+    {
+        Console.WriteLine("Spieler.Beschreiben");
+    }
+
+    public new void Betreten()
+    {
+        Console.WriteLine("Spieler.Betreten");
+    }
+
+    public new virtual void Melden()
+    {
+        Console.WriteLine("Spieler.Melden");
+    }
 }
 
 class Magier : Spieler
 {
     public override void Beschreiben() { Console.WriteLine("Magier.Beschreiben"); base.Beschreiben(); }
-    public override void Melden() => Console.WriteLine("Magier.Melden");
+    public override void Melden()
+    {
+        Console.WriteLine("Magier.Melden");
+    }
 }
 
 Spielobjekt a = new Magier();
@@ -103,35 +128,50 @@ class Gegenstand : Spielobjekt
         Punktwert = punktwert;
     }
 
-    public override bool IstPassierbar => true;
+    public override bool IstPassierbar
+    {
+        get { return true; }
+    }
 
     public virtual void Einsammeln(Spieler spieler)
     {
         spieler.PunkteGutschreiben(Punktwert);
     }
 
-    public override string Beschreibung() => base.Beschreibung() + " – kann aufgenommen werden";
+    public override string Beschreibung()
+    {
+        return base.Beschreibung() + " – kann aufgenommen werden";
+    }
 }
 
-sealed class Schluessel : Gegenstand
+class Schluessel : Gegenstand
 {
     public Schluessel(Koordinate position) : base("Schlüssel", position, 0) { }
 
-    public override char Symbol => 'k';
+    public override char Symbol
+    {
+        get { return 'k'; }
+    }
 }
 
-sealed class Schatz : Gegenstand
+class Schatz : Gegenstand
 {
     public Schatz(Koordinate position, int punktwert) : base("Schatz", position, punktwert) { }
 
-    public override char Symbol => '$';
+    public override char Symbol
+    {
+        get { return '$'; }
+    }
 }
 
-sealed class Trank : Gegenstand
+class Trank : Gegenstand
 {
     public Trank(Koordinate position) : base("Trank", position, 0) { }
 
-    public override char Symbol => '!';
+    public override char Symbol
+    {
+        get { return '!'; }
+    }
 
     public override void Einsammeln(Spieler spieler)
     {
@@ -158,7 +198,7 @@ public void SpielerZieht(Richtung richtung)
 
 **Zentrale Designentscheidungen:**
 
-- **`IstPassierbar => true` steht einmal in `Gegenstand`:** Kein konkreter Gegenstand muss daran denken. Ein vergessenes `override` hätte sonst einen Schlüssel zur Folge, der wie eine Wand blockiert.
+- **`IstPassierbar` liefert `true` an einer Stelle, in `Gegenstand`:** Kein konkreter Gegenstand muss daran denken. Ein vergessenes `override` hätte sonst einen Schlüssel zur Folge, der wie eine Wand blockiert.
 - **Die Obergrenze gehört in `Spieler.Heilen`:** Sie ist eine Eigenschaft des Helden, nicht des Tranks – im fertigen Spiel steht sie als Konstante `Spieler.MaxLebenspunkte` genau dort. Sonst müsste jeder heilende Gegenstand die Regel kennen und kopieren – und beim Einführen eines zweiten Trankes stünde sie zweimal im Code.
 - **`Trank` ruft `base.Einsammeln(spieler)`:** Kommen später Punkte für jedes aufgenommene Objekt hinzu, profitiert der Trank automatisch davon.
 - **`protected` beim Konstruktor von `Gegenstand`:** Ein „Gegenstand“ ohne nähere Bestimmung soll gar nicht erzeugbar sein. In [Vorlesung 02](/lectures/02/02.md) wird daraus eine `abstract class` – und aus dem Einsammeln ein Interface `ISammelbar`, damit auch Dinge einsammelbar sein können, die keine Gegenstände sind.
@@ -198,8 +238,15 @@ class Feld
         return obj is Feld f && f.GetType() == GetType() && X == f.X && Y == f.Y;
     }
 
-    public override int GetHashCode() => HashCode.Combine(X, Y);
-    public override string ToString() => $"({X}, {Y})";
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
+    }
+
+    public override string ToString()
+    {
+        return $"({X}, {Y})";
+    }
 }
 
 HashSet<Feld> besucht = new HashSet<Feld> { new Feld(1, 2) };
@@ -232,8 +279,15 @@ class Wand
     public char Symbol = '#';
     public bool IstPassierbar = false;
 
-    public string Beschreibung() => $"{Name} bei ({X}, {Y})";
-    public int Entfernung(int x, int y) => Math.Abs(X - x) + Math.Abs(Y - y);
+    public string Beschreibung()
+    {
+        return $"{Name} bei ({X}, {Y})";
+    }
+
+    public int Entfernung(int x, int y)
+    {
+        return Math.Abs(X - x) + Math.Abs(Y - y);
+    }
 }
 
 class Tuer
@@ -244,8 +298,15 @@ class Tuer
     public char Symbol = 'D';
     public bool IstOffen = false;
 
-    public string Beschreibung() => $"{Name} bei ({X}, {Y})" + (IstOffen ? " (offen)" : " (verschlossen)");
-    public int Entfernung(int x, int y) => Math.Abs(X - x) + Math.Abs(Y - y);
+    public string Beschreibung()
+    {
+        return $"{Name} bei ({X}, {Y})" + (IstOffen ? " (offen)" : " (verschlossen)");
+    }
+
+    public int Entfernung(int x, int y)
+    {
+        return Math.Abs(X - x) + Math.Abs(Y - y);
+    }
 }
 ```
 
@@ -265,8 +326,15 @@ Das Spielfeld hält zwei Listen, `List<Wand>` und `List<Tuer>`, und zeichnet die
 ```csharp
 public readonly record struct Koordinate(int X, int Y)
 {
-    public int Entfernung(Koordinate andere) => Math.Abs(X - andere.X) + Math.Abs(Y - andere.Y);
-    public override string ToString() => $"({X}, {Y})";
+    public int Entfernung(Koordinate andere)
+    {
+        return Math.Abs(X - andere.X) + Math.Abs(Y - andere.Y);
+    }
+
+    public override string ToString()
+    {
+        return $"({X}, {Y})";
+    }
 }
 
 public class Spielobjekt
@@ -280,16 +348,30 @@ public class Spielobjekt
         Position = position;
     }
 
-    public virtual char Symbol => '?';
-    public virtual bool IstPassierbar => false;
-    public virtual string Beschreibung() => $"{Name} bei {Position}";
+    public virtual char Symbol
+    {
+        get { return '?'; }
+    }
+
+    public virtual bool IstPassierbar
+    {
+        get { return false; }
+    }
+
+    public virtual string Beschreibung()
+    {
+        return $"{Name} bei {Position}";
+    }
 }
 
-public sealed class Wand : Spielobjekt
+public class Wand : Spielobjekt
 {
     public Wand(Koordinate position) : base("Wand", position) { }
 
-    public override char Symbol => '#';
+    public override char Symbol
+    {
+        get { return '#'; }
+    }
 }
 
 public class Tuer : Spielobjekt
@@ -298,13 +380,25 @@ public class Tuer : Spielobjekt
 
     public Tuer(Koordinate position) : base("Tür", position) { }
 
-    public override char Symbol => 'D';
-    public override bool IstPassierbar => IstOffen;
+    public override char Symbol
+    {
+        get { return 'D'; }
+    }
 
-    public void Oeffnen() => IstOffen = true;
+    public override bool IstPassierbar
+    {
+        get { return IstOffen; }
+    }
+
+    public void Oeffnen()
+    {
+        IstOffen = true;
+    }
 
     public override string Beschreibung()
-        => base.Beschreibung() + (IstOffen ? " (offen)" : " (verschlossen)");
+    {
+        return base.Beschreibung() + (IstOffen ? " (offen)" : " (verschlossen)");
+    }
 }
 ```
 
@@ -313,7 +407,10 @@ public class Tuer : Spielobjekt
 ```csharp
 private readonly List<Spielobjekt> objekte = new();
 
-public void Hinzufuegen(Spielobjekt objekt) => objekte.Add(objekt);
+public void Hinzufuegen(Spielobjekt objekt)
+{
+    objekte.Add(objekt);
+}
 
 public bool IstFrei(Koordinate p)
 {
@@ -325,7 +422,7 @@ public bool IstFrei(Koordinate p)
 **Zentrale Designentscheidungen:**
 
 - **`IstOffen` bleibt in `Tuer`:** Eine Wand hat keinen Öffnungszustand. In die Basisklasse gehört nur, was *jedes* Spielobjekt hat – sonst bekommt man eine aufgeblähte Basisklasse voller Felder, die die meisten Erben ignorieren.
-- **Aus einem Feld wird eine `virtual`-Property:** `bool IstPassierbar = false` lässt sich nicht überschreiben, `public virtual bool IstPassierbar => false` schon. Erst dadurch kann die Tür ihre Durchlässigkeit *berechnen*, statt sie zu speichern – und `IstFrei` muss nie wissen, worum es sich handelt.
+- **Aus einem Feld wird eine `virtual`-Property:** `bool IstPassierbar = false` lässt sich nicht überschreiben, `public virtual bool IstPassierbar { get { return false; } }` schon. Erst dadurch kann die Tür ihre Durchlässigkeit *berechnen*, statt sie zu speichern – und `IstFrei` muss nie wissen, worum es sich handelt.
 - **`Koordinate` als eigener Typ:** Zwei zusammengehörige `int`-Felder, die überall zusammen weitergereicht werden, sind fast immer ein verstecktes Konzept. Der `record struct` liefert obendrein `==` und `GetHashCode` gratis (siehe [Die Basisklasse `object`](/modules/object_basisklasse/object_basisklasse.md)).
 - **Prüfstein:** Die Truhe kostet jetzt eine kleine Klasse und keine Zeile im Spielfeld. Genau das war das Ziel des Refactorings – und genau dieser Stand ist der Ausgangspunkt der nächsten Vorlesung.
 

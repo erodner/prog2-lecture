@@ -182,8 +182,8 @@ class LevelDatei
     public string Name { get; set; } = "";
     public string? Autor { get; set; }
     public string? Schwierigkeit { get; set; }
-    public List<string> Karte { get; set; } = [];
-    public List<ObjektDaten> Objekte { get; set; } = [];
+    public List<string> Karte { get; set; } = new List<string>();
+    public List<ObjektDaten> Objekte { get; set; } = new List<ObjektDaten>();
 }
 
 class ObjektDaten

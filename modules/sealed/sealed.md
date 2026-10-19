@@ -9,14 +9,14 @@ toc: false
 classes: wide
 ---
 
-**➕ Erweitertes Wissen.** Was `sealed` bedeutet, weißt du schon aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md): Von einer versiegelten Klasse darf niemand erben. Dieses Modul zeigt, wann und warum man versiegelt. Die folgenden Module setzen es nicht voraus.
+**➕ Erweitertes Wissen.** Aus [Vererbung – Grundlagen](/modules/vererbung_grundlagen/vererbung_grundlagen.md) weißt du, dass jede Klasse von einer anderen erben kann. Dieses Modul zeigt, wie man das mit `sealed` verbietet und wann sich das lohnt. Die folgenden Module setzen es nicht voraus.
 {: .notice--success}
 
 Vererbung ist mächtig – und genau deshalb manchmal gefährlich. Wer von einer Klasse erbt und ein `virtual`-Mitglied überschreibt, kann ihr Verhalten beliebig verändern: versehentlich, weil man die Semantik nicht verstanden hat, oder absichtlich, um eine Prüfung zu umgehen. Bei einer Klasse `Konto` ist das kein Spaß mehr, und selbst in unserem Spiel wäre eine Wand, durch die man plötzlich hindurchlaufen kann, kein Feature, sondern ein Fehler. Mit dem Schlüsselwort `sealed` lässt sich Vererbung an einer Stelle der Hierarchie gezielt **beenden** – die Klasse ist dann versiegelt, man könnte auch sagen: enterbt.
 
 ## Eine Wand ist eine Wand
 
-Im Adventure gibt es genau eine versiegelte Klasse, und das ist kein Zufall:
+In `v01-vererbung` ist `Wand` noch eine ganz normale Klasse. Sie ist aber der erste Kandidat für ein Siegel, und so sähe sie versiegelt aus:
 
 ```csharp
 public sealed class Wand : Spielobjekt
@@ -25,7 +25,10 @@ public sealed class Wand : Spielobjekt
     {
     }
 
-    public override char Symbol => '#';
+    public override char Symbol
+    {
+        get { return '#'; }
+    }
 }
 ```
 
@@ -36,11 +39,14 @@ sealed class Wand : Spielobjekt { /* ... */ }
 
 class Geheimwand : Wand                 // Fehler CS0509
 {
-    public override bool IstPassierbar => true;
+    public override bool IstPassierbar
+    {
+        get { return true; }
+    }
 }
 ```
 
-Der Compiler meldet CS0509: „kann nicht von dem versiegelten Typ `Wand` abgeleitet werden.“ Wer eine `Wand` in der Hand hält, weiß damit garantiert, womit er es zu tun hat – und wenn jemand später doch eine durchlässige Mauer braucht, muss er eine bewusste Entscheidung treffen und eine eigene Klasse neben `Wand` stellen, statt heimlich deren Bedeutung zu verbiegen. Das vollständige Projekt findest du im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) (Tag [`v01-vererbung`](https://github.com/erodner/prog2-adventure/tree/v01-vererbung)).
+Der Compiler meldet CS0509: „kann nicht von dem versiegelten Typ `Wand` abgeleitet werden.“ Wer eine `Wand` in der Hand hält, weiß damit garantiert, womit er es zu tun hat – und wenn jemand später doch eine durchlässige Mauer braucht, muss er eine bewusste Entscheidung treffen und eine eigene Klasse neben `Wand` stellen, statt heimlich deren Bedeutung zu verbiegen. Ab Tag [`v02-interfaces`](https://github.com/erodner/prog2-adventure/tree/v02-interfaces) ist `Wand` im Repository [prog2-adventure](https://github.com/erodner/prog2-adventure) tatsächlich versiegelt, zusammen mit den anderen konkreten Klassen am Ende der Hierarchie wie `Tuer`, `Truhe` und `Wache`.
 
 ## Versiegeln, damit Prüfungen halten
 
@@ -131,7 +137,10 @@ Von `static`-Klassen kann grundsätzlich nicht geerbt werden – sie sind impliz
 ```csharp
 static class Zinsrechner
 {
-    public static decimal Zinsen(decimal betrag, decimal satz) => betrag * satz / 100;
+    public static decimal Zinsen(decimal betrag, decimal satz)
+    {
+        return betrag * satz / 100;
+    }
 }
 
 class MeinZinsrechner : Zinsrechner   // Fehler CS0709

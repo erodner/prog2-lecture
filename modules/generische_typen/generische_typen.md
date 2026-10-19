@@ -66,7 +66,10 @@ class Ablagestapel<T>
         inhalt = new T[kapazitaet];
     }
 
-    public int Anzahl => anzahl;
+    public int Anzahl
+    {
+        get { return anzahl; }
+    }
 
     public void Push(T element)
     {
@@ -117,15 +120,25 @@ public class Inventar<T> : IEnumerable<T> where T : ISammelbar
 {
     private readonly List<T> inhalt = new();
 
-    public int Anzahl => inhalt.Count;
+    public int Anzahl
+    {
+        get { return inhalt.Count; }
+    }
 
     public void Hinzufuegen(T ding)
     {
         inhalt.Add(ding);
     }
 
-    public IEnumerator<T> GetEnumerator() => inhalt.GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    public IEnumerator<T> GetEnumerator()
+    {
+        return inhalt.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
     public override string ToString()
     {

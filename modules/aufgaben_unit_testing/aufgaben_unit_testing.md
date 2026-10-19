@@ -190,7 +190,10 @@ public class SpielTests
 [TestFixture]
 public class SpielTests
 {
-    private static Spielfeld Feld(params string[] zeilen) => LevelParser.Parsen(new Level("t", zeilen));
+    private static Spielfeld Feld(params string[] zeilen)
+    {
+        return LevelParser.Parsen(new Level("t", zeilen));
+    }
 
     [Test] public void Schluessel_Wird_Ins_Inventar_Gelegt()
     {

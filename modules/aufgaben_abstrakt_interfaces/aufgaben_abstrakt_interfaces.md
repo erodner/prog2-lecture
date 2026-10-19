@@ -46,8 +46,15 @@ public sealed class Falle : StatischesObjekt, IBetretbar
     }
 
     // Solange die Falle versteckt ist, sieht sie aus wie normaler Boden.
-    public override char Symbol => Ausgeloest ? '^' : '.';
-    public override bool IstPassierbar => true;
+    public override char Symbol
+    {
+        get { return Ausgeloest ? '^' : '.'; }
+    }
+
+    public override bool IstPassierbar
+    {
+        get { return true; }
+    }
 
     public string Betreten(Spieler spieler)
     {
@@ -104,14 +111,28 @@ interface IInteragierbar { string Beschreibung(); }
 
 class Zauberbuch : ISammelbar, IInteragierbar
 {
-    public string Beschreibung() => "Ein altes Buch";
-    string ISammelbar.Beschreibung() => "kann eingesteckt werden";
-    string IInteragierbar.Beschreibung() => "kann gelesen werden";
+    public string Beschreibung()
+    {
+        return "Ein altes Buch";
+    }
+
+    string ISammelbar.Beschreibung()
+    {
+        return "kann eingesteckt werden";
+    }
+
+    string IInteragierbar.Beschreibung()
+    {
+        return "kann gelesen werden";
+    }
 }
 
 class Zauberfolio : Zauberbuch
 {
-    public new string Beschreibung() => "Ein dickes Folio";
+    public new string Beschreibung()
+    {
+        return "Ein dickes Folio";
+    }
 }
 ```
 
@@ -158,8 +179,15 @@ public sealed class Teleporter : StatischesObjekt, IInteragierbar
         Ziel = ziel;
     }
 
-    public override char Symbol => 'O';
-    public override bool IstPassierbar => true;      // man soll hineinlaufen können
+    public override char Symbol
+    {
+        get { return 'O'; }
+    }
+
+    public override bool IstPassierbar
+    {
+        get { return true; } // man soll hineinlaufen können
+    }
 
     public string Interagieren(Spieler spieler)
     {
@@ -192,9 +220,9 @@ Interaktion ist in unserem Spiel als **Ersatzhandlung** definiert: Sie passiert 
 
 **Schritt 2 — Zwei mögliche Entwürfe:**
 
-*Variante A – blockierender Teleporter:* `IstPassierbar => false` und alles bleibt, wie es ist. Der Spieler läuft gegen den Teleporter und wird versetzt, genau wie er gegen eine Tür läuft und sie aufschließt. Kosten: keine Änderung am Spielfeld, aber das Gefühl „ich laufe hinein“ geht verloren.
+*Variante A – blockierender Teleporter:* `IstPassierbar` liefert `false`, und alles bleibt, wie es ist. Der Spieler läuft gegen den Teleporter und wird versetzt, genau wie er gegen eine Tür läuft und sie aufschließt. Kosten: keine Änderung am Spielfeld, aber das Gefühl „ich laufe hinein“ geht verloren.
 
-*Variante B – betretbarer Teleporter:* `IstPassierbar => true` plus das Interface `IBetretbar` aus Aufgabe 1. Dann wird `Betreten` nach dem Zug aufgerufen. Kosten: `SpielerZieht` braucht die zusätzliche Zeile – die sich aber sofort auch für Fallen, Feuerstellen und Rutschen lohnt.
+*Variante B – betretbarer Teleporter:* `IstPassierbar` liefert `true`, dazu das Interface `IBetretbar` aus Aufgabe 1. Dann wird `Betreten` nach dem Zug aufgerufen. Kosten: `SpielerZieht` braucht die zusätzliche Zeile – die sich aber sofort auch für Fallen, Feuerstellen und Rutschen lohnt.
 
 Variante B ist der bessere Entwurf, weil sie die Lücke im Modell schließt: Bisher konnte ein Feld nur „blockieren und reagieren“ (Tür, Truhe) oder „passierbar sein und aufgehoben werden“ (Gegenstände). Alles dazwischen war nicht ausdrückbar.
 
@@ -249,8 +277,15 @@ abstract class Spielobjekt
 class Brunnen : Spielobjekt, IInteragierbar
 {
     public Brunnen() : base("Brunnen") { }
-    public char Symbol => 'o';
-    string Interagieren(Spieler spieler) => "Du trinkst aus dem Brunnen.";
+    public char Symbol
+    {
+        get { return 'o'; }
+    }
+
+    string Interagieren(Spieler spieler)
+    {
+        return "Du trinkst aus dem Brunnen.";
+    }
 }
 ```
 

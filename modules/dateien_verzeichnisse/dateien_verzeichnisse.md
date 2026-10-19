@@ -32,7 +32,7 @@ Console.WriteLine(zeilen[1]);     // #@.E#
 Für zeilenorientierte Daten gibt es die Gegenstücke `WriteAllLines` und `ReadAllLines`, die mit beliebigen `IEnumerable<string>` arbeiten – also auch mit einer `List<string>` oder dem Ergebnis einer LINQ-Abfrage. Ein Level ist genau so etwas: eine Liste von Zeichenketten.
 
 ```csharp
-List<string> karte = ["#####", "#@kD#", "#..E#", "#####"];
+List<string> karte = new List<string> { "#####", "#@kD#", "#..E#", "#####" };
 File.WriteAllLines(pfad, karte);
 
 foreach (string zeile in File.ReadAllLines(pfad))
@@ -84,11 +84,16 @@ public class TextdateiLevelQuelle : ILevelQuelle
         this.ordner = ordner;
     }
 
-    public IReadOnlyList<string> LevelNamen =>
-        Directory.GetFiles(ordner, "*.txt")
-            .Select(Path.GetFileNameWithoutExtension)
-            .OrderBy(n => n)
-            .ToList()!;
+    public IReadOnlyList<string> LevelNamen
+    {
+        get
+        {
+            return Directory.GetFiles(ordner, "*.txt")
+                .Select(Path.GetFileNameWithoutExtension)
+                .OrderBy(n => n)
+                .ToList()!;
+        }
+    }
 ```
 
 </div>

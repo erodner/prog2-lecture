@@ -78,14 +78,17 @@ public class Spielfeld
 // Ausschnitt E
 public static class LevelParser
 {
-    private static Spielobjekt ObjektFuer(char zeichen, Koordinate pos) => zeichen switch
+    private static Spielobjekt ObjektFuer(char zeichen, Koordinate pos)
     {
-        '#' => new Wand(pos),
-        'D' => new Tuer(pos),
-        'T' => new Truhe(pos, wert: 100),
-        'W' => new Wache(pos),
-        _ => throw new ArgumentException($"Unbekanntes Zeichen '{zeichen}' bei {pos}.")
-    };
+        return zeichen switch
+        {
+            '#' => new Wand(pos),
+            'D' => new Tuer(pos),
+            'T' => new Truhe(pos, wert: 100),
+            'W' => new Wache(pos),
+            _ => throw new ArgumentException($"Unbekanntes Zeichen '{zeichen}' bei {pos}.")
+        };
+    }
 }
 ```
 
@@ -401,7 +404,10 @@ Kurzfristig ist das bequem: `Gegner.NaechsterZug` braucht keinen Parameter mehr,
 `SpielfeldTests` baut für jeden Test ein winziges, exakt zugeschnittenes Level:
 
 ```csharp
-private static Spielfeld Feld(params string[] zeilen) => LevelParser.Parsen(new Level("t", zeilen));
+private static Spielfeld Feld(params string[] zeilen)
+{
+    return LevelParser.Parsen(new Level("t", zeilen));
+}
 
 [Test] public void Wand_Blockiert()
 {
@@ -448,7 +454,10 @@ Die Signatur verrät jetzt vollständig, was die Methode braucht. Und wer `Spiel
 Spielfeld feld = LevelParser.Parsen(level);
 
 // Blazor: eines pro Komponente, also pro Browsersitzung
-private void NeuStarten() => feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
+private void NeuStarten()
+{
+    feld = LevelParser.Parsen(LevelQuelle.Laden(levelName));
+}
 
 // Test: eines pro Testmethode, frisch und winzig
 Spielfeld f = Feld("#####", "#@#..", "#####");

@@ -122,7 +122,7 @@ Entwirf eine Variante `BinaereSucheMitEinfuegeindex`, die bei einem Treffer wie 
 
 - Der Rückgabewert soll beide Informationen tragen: „gefunden an Index i“ oder „nicht gefunden, einfügen bei Index i“. Warum reicht ein einfaches Vorzeichen (`-i`) dafür nicht aus? Welche Kodierung verwendet `Array.BinarySearch`?
 - Betrachte die Schleife der bisherigen binären Suche: Welchen Wert haben `unten` und `oben` in dem Moment, in dem die Schleife ohne Treffer endet? Was sagt dieser Wert über den Einfügeindex?
-- Sage für `int[] zahlen = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]` die Rückgabe für die Suche nach `23`, `7`, `1` und `100` voraus. Was liefert die Methode für ein leeres Array?
+- Sage für `int[] zahlen = { 2, 5, 8, 12, 16, 23, 38, 56, 72, 91 }` die Rückgabe für die Suche nach `23`, `7`, `1` und `100` voraus. Was liefert die Methode für ein leeres Array?
 - Wie sieht damit eine Methode `SortiertEinfuegen(List<int> sortiert, int wert)` aus?
 
 <details markdown="1">
@@ -180,13 +180,13 @@ Gegenüber der Version aus dem Modul hat sich nur die letzte Zeile geändert –
 Für die Suche nach `7` läuft die Schleife so: `mitte = 4` (Wert 16, zu groß) → `oben = 3`; `mitte = 1` (Wert 5, zu klein) → `unten = 2`; `mitte = 2` (Wert 8, zu groß) → `oben = 1`. Jetzt ist `unten = 2 > oben = 1`, die Schleife endet, Rückgabe `~2 = -3`. Die 7 gehört zwischen die 5 (Index 1) und die 8 (Index 2) – Index 2 ist richtig.
 
 ```csharp
-int[] zahlen = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91];
+int[] zahlen = { 2, 5, 8, 12, 16, 23, 38, 56, 72, 91 };
 
 Console.WriteLine(BinaereSucheMitEinfuegeindex(zahlen, 23));  // 5
 Console.WriteLine(BinaereSucheMitEinfuegeindex(zahlen, 7));   // -3  (einfügen bei 2)
 Console.WriteLine(BinaereSucheMitEinfuegeindex(zahlen, 1));   // -1  (einfügen bei 0)
 Console.WriteLine(BinaereSucheMitEinfuegeindex(zahlen, 100)); // -11 (einfügen bei 10 = Length)
-Console.WriteLine(BinaereSucheMitEinfuegeindex([], 5));       // -1  (einfügen bei 0)
+Console.WriteLine(BinaereSucheMitEinfuegeindex(new int[0], 5)); // -1  (einfügen bei 0)
 ```
 
 Die Randfälle fallen ohne Sonderbehandlung richtig heraus: Ist das Element kleiner als alle anderen, wandert `oben` bis auf `-1` und `unten` bleibt `0`. Ist es größer als alle, wandert `unten` bis auf `Count` – der Index hinter dem letzten Element, genau dort, wo `Insert` anhängen würde. Beim leeren Array ist `oben = -1` von Anfang an, die Schleife läuft kein einziges Mal, und `~0 = -1` sagt: einfügen bei 0. Ein Vergleich mit `Array.BinarySearch(zahlen, 7)` liefert übrigens dieselben Werte.
@@ -201,7 +201,7 @@ static void SortiertEinfuegen(List<int> sortiert, int wert)
     sortiert.Insert(index, wert);
 }
 
-List<int> liste = [2, 5, 8, 12];
+List<int> liste = new List<int> { 2, 5, 8, 12 };
 SortiertEinfuegen(liste, 7);
 SortiertEinfuegen(liste, 20);
 SortiertEinfuegen(liste, 5);
@@ -271,7 +271,10 @@ public class Kurs
 
     public string Kuerzel { get; }
     public string Titel { get; }
-    public int Anzahl => teilnehmer.Count;
+    public int Anzahl
+    {
+        get { return teilnehmer.Count; }
+    }
 
     public Kurs(string kuerzel, string titel)
     {

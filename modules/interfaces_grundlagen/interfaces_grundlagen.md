@@ -88,8 +88,15 @@ public sealed class Tuer : StatischesObjekt, IInteragierbar
     {
     }
 
-    public override char Symbol => IstOffen ? '/' : 'D';
-    public override bool IstPassierbar => IstOffen;
+    public override char Symbol
+    {
+        get { return IstOffen ? '/' : 'D'; }
+    }
+
+    public override bool IstPassierbar
+    {
+        get { return IstOffen; }
+    }
 
     public string Interagieren(Spieler spieler)
     {
@@ -128,7 +135,10 @@ public abstract class Gegenstand : StatischesObjekt, ISammelbar
     }
 
     // Man kann auf einen Gegenstand treten – dabei wird er aufgehoben.
-    public override bool IstPassierbar => true;
+    public override bool IstPassierbar
+    {
+        get { return true; }
+    }
 
     public virtual string Aufheben(Spieler spieler)
     {
@@ -142,7 +152,10 @@ public sealed class Schluessel : Gegenstand
     {
     }
 
-    public override char Symbol => 'k';
+    public override char Symbol
+    {
+        get { return 'k'; }
+    }
 }
 
 public sealed class Trank : Gegenstand
@@ -154,7 +167,10 @@ public sealed class Trank : Gegenstand
         Heilung = heilung;
     }
 
-    public override char Symbol => '!';
+    public override char Symbol
+    {
+        get { return '!'; }
+    }
 
     // Ein Trank wird sofort getrunken statt ins Inventar gelegt.
     public override string Aufheben(Spieler spieler)

@@ -163,7 +163,7 @@ In `Adventure.Web` hängen wir uns als zweiten Beobachter an dasselbe Ereignis �
 </div>
 </div>
 
-Zwei Beobachter, ein Subjekt, und `Spieler` kennt weder `Console` noch `StateHasChanged`. Der Unterschied zur Konsole ist nur die Registrierungsform: Hier ist der Beobachter eine *benannte* Methode, und deshalb funktioniert `-=` in `Dispose` und beim Neustart. Ein Lambda wie in `Program.cs` lässt sich nicht mehr abmelden – man hat keine Referenz darauf.
+Zwei Beobachter, ein Subjekt, und `Spieler` kennt weder `Console` noch `StateHasChanged`. Der Unterschied zur Konsole ist nur die Registrierungsform: Hier ist der Beobachter eine *benannte* Methode, und deshalb funktioniert `-=` in `Dispose` und beim Neustart. `@implements IDisposable` sorgt dafür, dass Blazor `Dispose` aufruft, sobald die Seite verschwindet; das Interface `IDisposable` lernst du in [Vorlesung 09](/modules/idisposable_using/idisposable_using.md) genauer kennen. Ein Lambda wie in `Program.cs` lässt sich nicht mehr abmelden – man hat keine Referenz darauf.
 
 Nicht nur der Spieler ist ein Subjekt. Auch `Spielfeld` meldet sich, wenn eine komplette Runde vorbei ist – also nachdem der Held gezogen ist und alle Gegner nachgezogen sind:
 

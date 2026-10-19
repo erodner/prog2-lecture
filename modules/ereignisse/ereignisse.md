@@ -132,7 +132,7 @@ feld.Spieler.SchatzGefunden += (sender, e) => Console.Beep();
 Der Kern piept nicht selbst – er meldet nur. Dass daraus ein Ton wird, entscheidet `Adventure.Konsole`, und zwar in einem Lambda mit zwei Parametern, dessen Typen der Compiler aus dem Ereignistyp erschließt. Die Weboberfläche wird sich an dasselbe Ereignis hängen, aber etwas völlig anderes tun: Sie lässt die `Statusleiste` neu zeichnen. Wie das in Blazor aussieht, sehen wir im Modul [Observer](/modules/observer/observer.md) in der nächsten Vorlesung. Ein dritter Zuhörer könnte mitschreiben, ohne dass Kern, Konsole oder Web davon erfahren:
 
 ```csharp
-List<string> erfolge = [];
+List<string> erfolge = new List<string>();
 feld.Spieler.SchatzGefunden += (sender, e) =>
     erfolge.Add($"{((Spieler)sender!).Name}: {e.Schatz.Wert} Punkte, jetzt {e.Punkte}");
 ```

@@ -64,16 +64,26 @@ Die beiden Konstrukte schließen sich nicht aus, im Gegenteil: Ein typischer Ent
 ```csharp
 public abstract class Gegenstand : StatischesObjekt, ISammelbar
 {
-    public override bool IstPassierbar => true;
-    public virtual string Aufheben(Spieler spieler) => $"{spieler.Name} hebt {Name} auf.";
+    public override bool IstPassierbar
+    {
+        get { return true; }
+    }
+
+    public virtual string Aufheben(Spieler spieler)
+    {
+        return $"{spieler.Name} hebt {Name} auf.";
+    }
 }
 
-public sealed class Schluessel : Gegenstand { /* nur noch Symbol => 'k' */ }
+public sealed class Schluessel : Gegenstand { /* nur noch Symbol */ }
 
 public class Auftrag : ISammelbar   // kein Spielobjekt, liegt nie auf der Karte
 {
     public string Name { get; }
-    public string Aufheben(Spieler spieler) => $"{spieler.Name} nimmt „{Name}“ an.";
+    public string Aufheben(Spieler spieler)
+    {
+        return $"{spieler.Name} nimmt „{Name}“ an.";
+    }
 }
 ```
 

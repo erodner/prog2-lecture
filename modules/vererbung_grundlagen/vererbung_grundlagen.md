@@ -50,7 +50,10 @@ public class Koordinate
         }
     }
 
-    public override string ToString() => $"({X}, {Y})";
+    public override string ToString()
+    {
+        return $"({X}, {Y})";
+    }
 }
 ```
 
@@ -71,10 +74,16 @@ public class Spielobjekt
     }
 
     /// <summary>Das Zeichen, mit dem das Objekt auf der Karte gezeichnet wird.</summary>
-    public virtual char Symbol => '?';
+    public virtual char Symbol
+    {
+        get { return '?'; }
+    }
 
     /// <summary>Kann der Spieler dieses Feld betreten?</summary>
-    public virtual bool IstPassierbar => false;
+    public virtual bool IstPassierbar
+    {
+        get { return false; }
+    }
 
     public virtual string Beschreibung()
     {
@@ -90,17 +99,20 @@ Das Schlüsselwort `virtual` heißt: „Erben dürfen das anders machen.“ Wie 
 Die Vererbung wird in C# mit einem Doppelpunkt hinter dem Klassennamen angegeben. `Wand` **erbt** von `Spielobjekt`; man sagt auch: `Wand` ist von `Spielobjekt` **abgeleitet**, und `Spielobjekt` ist die **Basisklasse** von `Wand`.
 
 ```csharp
-public sealed class Wand : Spielobjekt
+public class Wand : Spielobjekt
 {
     public Wand(Koordinate position) : base("Wand", position)
     {
     }
 
-    public override char Symbol => '#';
+    public override char Symbol
+    {
+        get { return '#'; }
+    }
 }
 ```
 
-Auffällig ist, wie wenig in der Klasse steht: ein Konstruktor und ein Zeichen. Trotzdem hat jede Wand einen Namen, eine Position und eine Beschreibung – alles geerbt. Das `sealed` bedeutet, dass von `Wand` niemand mehr erben darf; die Begründung liefert das Modul [Versiegeln mit `sealed`](/modules/sealed/sealed.md) (erweitertes Wissen).
+Auffällig ist, wie wenig in der Klasse steht: ein Konstruktor und ein Zeichen. Trotzdem hat jede Wand einen Namen, eine Position und eine Beschreibung – alles geerbt.
 
 Der Spieler braucht mehr: Er hat Lebenspunkte und kann sich bewegen.
 
@@ -113,7 +125,10 @@ public class Spieler : Spielobjekt
     {
     }
 
-    public override char Symbol => '@';
+    public override char Symbol
+    {
+        get { return '@'; }
+    }
 
     /// <summary>Versucht einen Schritt; bleibt stehen, wenn das Zielfeld belegt ist.</summary>
     public bool Bewegen(Richtung richtung, Spielfeld feld)
@@ -133,7 +148,7 @@ In `Bewegen` steckt der ganze Gewinn der Vererbung: `Position` ist nirgends in `
 
 ## Die Ist-eine-Beziehung
 
-Vererbung ist mehr als ein Trick zum Codesparen – sie drückt eine fachliche Beziehung aus: Eine Wand **ist ein** Spielobjekt, ein Spieler **ist ein** Spielobjekt. Deshalb darf eine `Wand` überall dort verwendet werden, wo ein `Spielobjekt` verlangt wird. Genau davon lebt das Spielfeld, das seine Objekte in einer einzigen Liste hält:
+Vererbung ist mehr als ein Trick zum Codesparen – sie drückt eine fachliche Beziehung aus: Eine Wand **ist ein** Spielobjekt, ein Spieler **ist ein** Spielobjekt. Deshalb darf eine `Wand` überall dort verwendet werden, wo ein `Spielobjekt` verlangt wird. Genau davon lebt das Spielfeld, das seine Objekte in einer einzigen Liste hält. Das `readonly` vor dem Feld heißt: Die Liste wird einmal angelegt und danach nie durch eine andere ersetzt; Objekte hinzufügen darf man trotzdem.
 
 ```csharp
 public class Spielfeld

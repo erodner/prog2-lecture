@@ -27,8 +27,15 @@ class IntPaar
         Zweites = zweites;
     }
 
-    public IntPaar Vertauscht() => new IntPaar(Zweites, Erstes);
-    public override string ToString() => $"({Erstes}, {Zweites})";
+    public IntPaar Vertauscht()
+    {
+        return new IntPaar(Zweites, Erstes);
+    }
+
+    public override string ToString()
+    {
+        return $"({Erstes}, {Zweites})";
+    }
 }
 
 class StringPaar
@@ -42,8 +49,15 @@ class StringPaar
         Zweites = zweites;
     }
 
-    public StringPaar Vertauscht() => new StringPaar(Zweites, Erstes);
-    public override string ToString() => $"({Erstes}, {Zweites})";
+    public StringPaar Vertauscht()
+    {
+        return new StringPaar(Zweites, Erstes);
+    }
+
+    public override string ToString()
+    {
+        return $"({Erstes}, {Zweites})";
+    }
 }
 
 class KoordinateObjektPaar
@@ -57,7 +71,10 @@ class KoordinateObjektPaar
         Zweites = zweites;
     }
 
-    public override string ToString() => $"({Erstes}, {Zweites})";
+    public override string ToString()
+    {
+        return $"({Erstes}, {Zweites})";
+    }
 }
 ```
 
@@ -91,9 +108,15 @@ class Paar<T1, T2>
         Zweites = zweites;
     }
 
-    public Paar<T2, T1> Vertauscht() => new Paar<T2, T1>(Zweites, Erstes);
+    public Paar<T2, T1> Vertauscht()
+    {
+        return new Paar<T2, T1>(Zweites, Erstes);
+    }
 
-    public override string ToString() => $"({Erstes}, {Zweites})";
+    public override string ToString()
+    {
+        return $"({Erstes}, {Zweites})";
+    }
 }
 ```
 
@@ -177,14 +200,20 @@ class InReichweite : IPruefer<Spielobjekt>
         this.reichweite = reichweite;
     }
 
-    public bool Pruefen(Spielobjekt o) => o.Position.Entfernung(bezug) <= reichweite;
+    public bool Pruefen(Spielobjekt o)
+    {
+        return o.Position.Entfernung(bezug) <= reichweite;
+    }
 }
 
 class SymbolIst : IPruefer<Spielobjekt>
 {
     private readonly char symbol;
     public SymbolIst(char symbol) { this.symbol = symbol; }
-    public bool Pruefen(Spielobjekt o) => o.Symbol == symbol;
+    public bool Pruefen(Spielobjekt o)
+    {
+        return o.Symbol == symbol;
+    }
 }
 
 Spielfeld feld = LevelParser.Parsen(new EingebauteLevelQuelle().Laden("Kerker"));
@@ -321,8 +350,15 @@ class Ringpuffer<T>
         daten = new T[kapazitaet];
     }
 
-    public int Anzahl => anzahl;
-    public int Kapazitaet => daten.Length;
+    public int Anzahl
+    {
+        get { return anzahl; }
+    }
+
+    public int Kapazitaet
+    {
+        get { return daten.Length; }
+    }
 
     public void Hinzufuegen(T element)
     {

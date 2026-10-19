@@ -36,10 +36,20 @@ public sealed class Falle : StatischesObjekt
     public int Schaden { get; }
     public bool IstAusgeloest { get; private set; }
 
-    public Falle(Koordinate position, int schaden = 1) : base("Falle", position) => Schaden = schaden;
+    public Falle(Koordinate position, int schaden = 1) : base("Falle", position)
+    {
+        Schaden = schaden;
+    }
 
-    public override char Symbol => IstAusgeloest ? '^' : '.';
-    public override bool IstPassierbar => true;
+    public override char Symbol
+    {
+        get { return IstAusgeloest ? '^' : '.'; }
+    }
+
+    public override bool IstPassierbar
+    {
+        get { return true; }
+    }
 
     public string Ausloesen(Spieler spieler)
     {

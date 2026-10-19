@@ -46,9 +46,15 @@ public class Auftrag : ISammelbar
     public string Name { get; }
     public bool Erfuellt { get; private set; }
 
-    public Auftrag(string name) => Name = name;
+    public Auftrag(string name)
+    {
+        return Name = name;
+    }
 
-    string ISammelbar.Aufheben(Spieler spieler) => $"{spieler.Name} nimmt den Auftrag „{Name}“ an.";
+    string ISammelbar.Aufheben(Spieler spieler)
+    {
+        return $"{spieler.Name} nimmt den Auftrag „{Name}“ an.";
+    }
 }
 ```
 
@@ -74,7 +80,10 @@ public interface ISammelbar
     string Name { get; }
     string Aufheben(Spieler spieler);
 
-    string Beschreibung() => $"{Name} – liegt hier und kann aufgehoben werden.";
+    string Beschreibung()
+    {
+        return $"{Name} – liegt hier und kann aufgehoben werden.";
+    }
 }
 ```
 
@@ -102,13 +111,19 @@ Ein Punkt, der gern übersehen wird: Eine Methode, die ein Interface implementie
 ```csharp
 public abstract class Gegenstand : StatischesObjekt, ISammelbar
 {
-    public virtual string Aufheben(Spieler spieler) => $"{spieler.Name} hebt {Name} auf.";
+    public virtual string Aufheben(Spieler spieler)
+    {
+        return $"{spieler.Name} hebt {Name} auf.";
+    }
 }
 
 public sealed class Schatz : Gegenstand
 {
     public int Wert { get; }
-    public override char Symbol => '$';
+    public override char Symbol
+    {
+        get { return '$'; }
+    }
 
     public override string Aufheben(Spieler spieler)
     {
@@ -158,7 +173,10 @@ public class EingebauteLevel : ILevelQuelle
         // "Katakomben" ...
     };
 
-    public IReadOnlyList<string> LevelNamen => level.Keys.ToList();
+    public IReadOnlyList<string> LevelNamen
+    {
+        get { return new List<string>(level.Keys); }
+    }
 
     public Level Laden(string name)
     {

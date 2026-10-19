@@ -67,8 +67,14 @@ Auch die Parameter einer Komponente sind eine Einweg-Bindung: `Runde="@feld.Rund
 <div class="editor-titel"><a href="https://github.com/erodner/prog2-adventure/blob/v03-blazor/Adventure.Web/Components/Statusleiste.razor">Adventure.Web/Components/Statusleiste.razor</a> (im <code>@code</code>-Block)</div>
 
 ```csharp
-private string Herzen => new string('♥', Spieler.Lebenspunkte)
-                       + new string('♡', Spieler.MaxLebenspunkte - Spieler.Lebenspunkte);
+private string Herzen
+{
+    get
+    {
+        return new string('♥', Spieler.Lebenspunkte)
+            + new string('♡', Spieler.MaxLebenspunkte - Spieler.Lebenspunkte);
+    }
+}
 ```
 
 </div>

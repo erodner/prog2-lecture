@@ -66,8 +66,16 @@ Interessant ist der Rückgabetyp. Wer `ObjektAn` aufruft, bekommt ein `Spielobje
 ```csharp
 public class Spielobjekt
 {
-    public virtual char Symbol => '?';
-    public virtual bool IstPassierbar => false;
+    public virtual char Symbol
+    {
+        get { return '?'; }
+    }
+
+    public virtual bool IstPassierbar
+    {
+        get { return false; }
+    }
+
     // Name, Position, Konstruktor, Beschreibung wie bisher
 }
 ```
@@ -75,20 +83,26 @@ public class Spielobjekt
 `Wand` und `Spieler` überschreiben das Symbol mit `override`. Die Signatur muss dabei exakt dieselbe sein wie in der Basisklasse:
 
 ```csharp
-public sealed class Wand : Spielobjekt
+public class Wand : Spielobjekt
 {
     // Konstruktor wie bisher
-    public override char Symbol => '#';
+    public override char Symbol
+    {
+        get { return '#'; }
+    }
 }
 
 public class Spieler : Spielobjekt
 {
     // Lebenspunkte, Konstruktor, Bewegen wie bisher
-    public override char Symbol => '@';
+    public override char Symbol
+    {
+        get { return '@'; }
+    }
 }
 ```
 
-`virtual` und `override` funktionieren für Properties wie `Symbol` genauso wie für Methoden. `Symbol` ist hier eine *Expression-bodied Property*, also ein `get`-Zugriff mit `=>`.
+`virtual` und `override` funktionieren für Properties wie `Symbol` genauso wie für Methoden. `Symbol` hat nur einen `get`-Teil und berechnet seinen Wert jedes Mal neu, statt ihn in einem Feld zu speichern.
 {: .notice--primary}
 
 ## Polymorphie beim Zeichnen
@@ -194,7 +208,7 @@ Fehlt in der Basisklasse das `virtual`, meldet der Compiler beim `override` den 
 
 Im Zweifel gilt: Ein Mitglied, das abgeleitete Klassen sinnvoll anpassen könnten, wird `virtual`. Eines, dessen Verhalten für alle Erben verbindlich sein soll (etwa die geprüfte Schrittlogik in `Bewegen`), bleibt ohne `virtual` oder wird ausdrücklich versiegelt, siehe [`sealed`](/modules/sealed/sealed.md) (erweitertes Wissen).
 
-Übung: Schreibe eine dritte Klasse `Ausgang : Spielobjekt`, die `: base("Ausgang", position)` aufruft, das Symbol `E` bekommt und `IstPassierbar` mit `=> true` überschreibt – der Held soll den Ausgang schließlich betreten können. Setze einen Ausgang in die rechte Wand des Raums oben und gib das Spielfeld aus. Überlege *vorher*, was passiert, wenn du das `override` bei `IstPassierbar` weglässt: Welche der beiden Methoden `AlsText` und `IstFrei` verhält sich dann anders, und warum musstest du an keiner von beiden etwas ändern, um den Ausgang einzubauen?
+Übung: Schreibe eine dritte Klasse `Ausgang : Spielobjekt`, die `: base("Ausgang", position)` aufruft, das Symbol `E` bekommt und `IstPassierbar` so überschreibt, dass es `true` liefert – der Held soll den Ausgang schließlich betreten können. Setze einen Ausgang in die rechte Wand des Raums oben und gib das Spielfeld aus. Überlege *vorher*, was passiert, wenn du das `override` bei `IstPassierbar` weglässt: Welche der beiden Methoden `AlsText` und `IstFrei` verhält sich dann anders, und warum musstest du an keiner von beiden etwas ändern, um den Ausgang einzubauen?
 {: .notice--info}
 
 ## Weitere Quellen

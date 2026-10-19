@@ -52,7 +52,10 @@ public class Temperatur : IComparable<Temperatur>
         return Grad.CompareTo(other.Grad);
     }
 
-    public override string ToString() => $"{Grad} °C";
+    public override string ToString()
+    {
+        return $"{Grad} °C";
+    }
 }
 ```
 
@@ -69,7 +72,7 @@ Console.WriteLine(string.Join(", ", messungen)); // nutzt ToString jedes Element
 
 List<Temperatur> liste = new List<Temperatur>(messungen);
 liste.Sort();
-Console.WriteLine(liste[^1]); // 30,2 °C
+Console.WriteLine(liste[liste.Count - 1]); // 30,2 °C
 ```
 
 Im Quelltext steht `21.5` mit Punkt, in der Ausgabe erscheint `21,5` mit Komma: Das Literal folgt der C#-Syntax, die Ausgabe der Ländereinstellung deines Systems. Auf einem englischsprachigen Rechner steht dort wieder ein Punkt.
@@ -153,7 +156,10 @@ Der Unterschied in einem Satz: `IComparable<T>` sagt „ich weiß, wie ich mich 
 Für einen einzigen, schnellen Sonderfall wirkt eine ganze Comparer-Klasse schwerfällig. `List<T>.Sort` akzeptiert deshalb auch ein `Comparison<T>` – das ist ein **Delegat**, im Kern eine Methode als Wert, die man direkt übergeben kann:
 
 ```csharp
-static int NachSymbol(Gegner a, Gegner b) => a.Symbol.CompareTo(b.Symbol);
+static int NachSymbol(Gegner a, Gegner b)
+{
+    return a.Symbol.CompareTo(b.Symbol);
+}
 
 nachNaehe.Sort(NachSymbol);   // Methodenname statt Comparer-Objekt: erst alle V, dann alle W
 ```

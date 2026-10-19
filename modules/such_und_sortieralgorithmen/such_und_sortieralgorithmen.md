@@ -109,7 +109,7 @@ static int BinaereSuche(IReadOnlyList<int> sortiert, int gesucht)
 Wir berechnen die Mitte als `unten + (oben - unten) / 2` statt `(unten + oben) / 2` – bei sehr großen Listen könnte die Summe sonst den `int`-Bereich überschreiten. Die Schleife endet, sobald `unten` über `oben` hinausläuft, also der Bereich leer ist:
 
 ```csharp
-List<int> bestenliste = [120, 340, 500, 720, 980, 1150, 1400, 1870, 2300, 3100];
+List<int> bestenliste = new List<int> { 120, 340, 500, 720, 980, 1150, 1400, 1870, 2300, 3100 };
 Console.WriteLine(BinaereSuche(bestenliste, 1150)); // 5
 Console.WriteLine(BinaereSuche(bestenliste, 800));  // -1
 ```

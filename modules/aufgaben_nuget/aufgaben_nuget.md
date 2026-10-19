@@ -154,8 +154,8 @@ public class SemVersion : IComparable<SemVersion>
         int minus = text.IndexOf('-');
         if (minus >= 0)
         {
-            kern = text[..minus];
-            Vorabversion = text[(minus + 1)..];
+            kern = text.Substring(0, minus);
+            Vorabversion = text.Substring(minus + 1);
         }
 
         string[] teile = kern.Split('.');
@@ -202,9 +202,9 @@ Die drei Zahlen delegieren an `int.CompareTo` – das Muster „erst nach A, bei
 **Schritt 4 — Vorhersage prüfen:**
 
 ```csharp
-List<string> texte = ["6.2.0", "6.10.0", "6.2.0-beta.1", "5.3.4", "6.9.0"];
+List<string> texte = new List<string> { "6.2.0", "6.10.0", "6.2.0-beta.1", "5.3.4", "6.9.0" };
 
-List<string> alsString = [.. texte];
+List<string> alsString = new List<string>(texte);
 alsString.Sort();
 Console.WriteLine(string.Join(" < ", alsString));
 // 5.3.4 < 6.10.0 < 6.2.0 < 6.2.0-beta.1 < 6.9.0
