@@ -43,6 +43,8 @@ Auch `@if`, `@foreach` und `@for` funktionieren wie in C#, nur dass im Rumpf Mar
 
 Das Markup beschreibt, wie die Seite aussehen soll. Kommen neue Level dazu, hat die Liste automatisch mehr Einträge.
 
+Wann also `@` und wann `@code`? Aus [Die erste Blazor-App](/modules/blazor_erste_app/blazor_erste_app.md) wissen wir, dass aus der Razor-Datei eine Klasse wird. Das Markup wird zu einer Methode, die bei jedem Neuzeichnen läuft, und der `@code`-Block liefert die übrigen Bestandteile der Klasse. Daraus folgt eine Faustregel: Was etwas ausgibt oder entscheidet, *welches* Markup entsteht, steht mit `@` im Markup. Felder, Properties und Methoden stehen im `@code`-Block. Ein `@foreach` gehört deshalb nicht in den `@code`-Block, und eine Methode schreiben wir nicht ins Markup. Das Markup ruft sie nur auf, zum Beispiel mit `@SymbolFuer(objekt)` oder `@onclick="NeuStarten"`.
+
 ## Das Spielfeld: zwei Schleifen über das Raster
 
 Für die Karte gehen zwei Schleifen über alle Felder und fragen das `Spielfeld` mit `ObjektAn`, was dort liegt (vereinfacht gegenüber dem Projekt):
